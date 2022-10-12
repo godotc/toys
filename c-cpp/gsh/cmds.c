@@ -69,8 +69,8 @@ STATUS gsh_launch(char **args)
     {
         do
         {
-            wpid = waitpid(pid, &status, WUNTRACED);
-        } while (!WIFEXITED(status) && !WIFSIGNALED(status)); //没有退出 && 没有收到信号
+            wpid = waitpid(pid, &status, WUNTRACED); // WUNTRACED: would not raced, 子线程进入暂停马上返回
+        } while (!WIFEXITED(status) && !WIFSIGNALED(status)); //判断status非0 即正常退出  &&  没有收到信号(异常终止)
     }
     return 1;
 }
