@@ -1,0 +1,130 @@
+#include <arpa/inet.h>
+#include <asm-generic/socket.h>
+#include <netinet/in.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+
+#include "log.h"
+
+
+static int      sockfd, epollfd;
+pthread_mutex_t LOG_MTX;
+
+
+void handleEvent(epoll_event* event)
+{
+    char clientip[1024];
+
+    if (event->events & EPOLLIN)
+    {
+        if (event->data.fd == sockfd) {
+
+            sockaddr_in client_addr;
+            socklen_t   len = sizeof(client_addr);
+
+            int cfd = ::accept4(sockfd, (sockaddr*)&client_addr,
+                                &len, SOCK_NONBLOCK);
+
+            ::log_debug("New client, ip: %s, port: %d\n",
+                        ::inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, clientip, sizeof(clientip)),
+                        ::ntohs(client_addr.sin_port));
+
+            epoll_event event;
+            event.data.fd = cfd;
+            event.events  = EPOLLOUT | EPOLLIN;
+
+            int ret = ::epoll_ctl(epollfd, EPOLL_CTL_ADD, cfd, &event);
+            if (ret == -1)
+                perror("Error when add new epoll event(after accept)");
+        }
+        else {
+            int  cfd = event->data.fd;
+            char buf[1024];
+            ::read(cfd, buf, 1024);
+            printf("Receve msg:%s \n", buf);
+            ::send(cfd, buf, strlen(buf), 0);
+        }
+    }
+
+
+    else if (event->events & EPOLLOUT)
+    {
+    }
+}
+
+void log_lock(bool is_unlocked, void* udata);
+void initLog();
+
+int main(int argc, char* argv[])
+{
+    initLog();
+
+    const char* ip   = "127.0.0.1";
+    const int   port = atoi(argv[1]);
+
+    ::sockfd = ::socket(AF_INET, SOCK_STREAM, 0);
+
+    int opt;
+    ::setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port   = htons(port);
+    ::inet_pton(AF_INET, ip, &addr.sin_addr.s_addr);
+
+    int ret = ::bind(sockfd, (sockaddr*)&addr, sizeof(addr));
+
+    ::listen(sockfd, 128);
+
+    ::epollfd = ::epoll_create(1);
+
+    epoll_event event;
+    event.data.fd = sockfd;
+    event.events  = EPOLLIN | EPOLLOUT;
+
+    ::epoll_ctl(epollfd, EPOLL_CTL_ADD, sockfd, &event);
+
+    epoll_event events[1024];
+
+
+
+    while (true) {
+        int nums = ::epoll_wait(epollfd, events, 1024, -1);
+
+        for (int i = 0; i < nums; ++i)
+        {
+            epoll_event* event = events + i;
+
+            handleEvent(event);
+        }
+    }
+
+    pthread_mutex_destroy(&LOG_MTX);
+    return 0;
+}
+
+
+void log_lock(bool is_unlocked, void* udata)
+{
+    auto LOCK = static_cast<pthread_mutex_t*>(udata);
+    if (is_unlocked)
+        pthread_mutex_lock(LOCK);
+    else
+        pthread_mutex_unlock(LOCK);
+}
+void initLog()
+{
+    log_set_level(0);
+    log_set_quiet(0);
+
+    pthread_mutex_init(&LOG_MTX, nullptr);
+    log_set_lock(log_lock, &LOG_MTX);
+}
