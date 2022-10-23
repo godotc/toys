@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <audio id="local-audio" autoplay controls>Play the voice from micro catch</audio>
+    <button id="playAudio">open microphone </button>
+    <p> via getUserMedia()</p>
+</body>
+<script>
+    const constraints = {
+        audio: true,
+        viedo: false
+    }
+
+    document.querySelector("#playAudio").
+        addEventListener("click", function onOpenMicrophone(e) {
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(function handleSuccess(stream) {
+                    const audio = document.querySelector("#local-audio");
+                    audio.srcObject = stream;
+                })
+                .catch(function handleerror(error) {
+                    console.error("open audio:" + error);
+                })
+        });
+
+</script>
+
+</html>

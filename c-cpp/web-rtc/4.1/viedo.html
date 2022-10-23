@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+
+<html>
+
+<body>
+	<video id="local-video" autoplay playsinline controls></video>
+	<button id="showVideo"> open camera </button>
+	<p> get video via getUserMedia()</p>
+</body>
+
+<script>
+	const constraints = {
+		viedo: true,
+		audio: false
+	}
+
+	function handleSuccess(stream) {
+		const video = document.querySelector("#local-video");
+		video.srcObject = stream;
+	}
+
+	function onOpenCamera(e) {
+		navigator.mediaDevices.getUserMedia(constraints).
+			then(handleSuccess).
+			catch(function handleerror(error) {
+				console.error("open carmera:" + error);
+			});
+	}
+
+
+	document.querySelector("#showVideo").addEventListener("click", onOpenCamera);
+</script>
+
+</html>
