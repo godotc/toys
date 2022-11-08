@@ -1,7 +1,1 @@
-[
-{
-  "directory": "D:/msys64/home/msys2/toys/c-cpp/GLFW_Test/build",
-  "command": "D:/msys64/mingw64/bin/c++.exe -DGLFW_DLL  -g -Wall -std=gnu++17 -o CMakeFiles/main.dir/src/main.cc.obj -c D:/msys64/home/msys2/toys/c-cpp/GLFW_Test/src/main.cc",
-  "file": "D:/msys64/home/msys2/toys/c-cpp/GLFW_Test/src/main.cc"
-}
-]
+./build/compile_commands.json
