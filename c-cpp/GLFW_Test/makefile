@@ -1,11 +1,11 @@
 
 
 run:
-	bash ./run.sh
+	@alias r="make run"
+	@bash ./run.sh
 
 build:
-	bash ./build.sh
-
+	@bash ./build.sh
 
 
 linux:

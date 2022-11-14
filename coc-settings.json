@@ -1,0 +1,37 @@
+{
+	"languageserver": {
+		"clangd": {
+			"command": "clangd",
+			"rootPatterns": [
+				"compile_flags.txt",
+				"compile_commands.json"
+			],
+			"filetypes": [
+				"c",
+				"cc",
+				"cpp",
+				"c++",
+				"objc",
+				"objcpp"
+			],
+			"args": [
+				// "--completion-style=bundled", // bundled 补全打包为一个建议, 相反为 detailed
+				"-j=4",
+				"--background-index", // 后台自动分析文件(compile_commands)
+				"--clang-tidy",
+				// "--pretty", // 美化输出的json
+				"--cross-file-rename", // 跨文件重命名变量
+				"--function-arg-placeholders=false" // 启用这项时，补全函数时，将会给参数提供占位符，键入后按 Tab 可以切换到下一占位符，乃至函数末k
+			]
+		},
+		"golang": {
+			"command": "gopls",
+			"rootPatterns": [
+				"go.mod"
+			],
+			"filetypes": [
+				"go"
+			]
+		}
+	}
+}

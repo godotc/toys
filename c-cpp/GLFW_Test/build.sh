@@ -1,3 +1,3 @@
 
 cd build
-make -j4
+make main -j4
