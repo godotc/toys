@@ -1,7 +1,15 @@
 
 
+
+help:
+	@echo run
+	@echo build
+	@echo linux
+	@echo wsl
+	@echo win
+
 run:
-	@alias r="make run"
+	alias r="make run"
 	@bash ./run.sh
 
 build:
@@ -16,9 +24,6 @@ linux:
 	rm ./compile_commands.json
 	ln -s ./build/compile_commands.json 
 
-#-D MING64PREFIX=/msys64/mingw64/lib/cmake \
-#-D CMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
-#-D CMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
 
 wsl:
 	rm build -rf
