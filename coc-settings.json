@@ -27,11 +27,30 @@
 		"golang": {
 			"command": "gopls",
 			"rootPatterns": [
-				"go.mod"
+				"go.work",
+				"go.mod",
+				".vim/",
+				".git/",
+				".hg/"
 			],
 			"filetypes": [
 				"go"
-			]
+			],
+			"initializationOptions": {
+				"usePlaceholders": false
+			}
+		},
+		"cmake": {
+			"command": "cmake-language-server",
+			"filetypes": [
+				"cmake"
+			],
+			"rootPatterns": [
+				"build/"
+			],
+			"initializationOptions": {
+				"buildDirectory": "build"
+			}
 		}
 	}
 }
