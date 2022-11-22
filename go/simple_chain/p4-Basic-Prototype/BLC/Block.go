@@ -29,17 +29,17 @@ func CreateGenesisBlock(data string) *Block {
 			0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0},
-		1, nil)
+		1)
 }
 
 // ! Create New Block
-func NewBlock(data string, preBlockHash []byte, height int64, hash []byte) *Block {
+func NewBlock(data string, preBlockHash []byte, height int64) *Block {
 	block := &Block{
 		Data:         []byte(data),
 		PreBlockHash: preBlockHash,
 		Height:       height,
 		Timestamp:    time.Now().Unix(),
-		Hash:         hash,
+		Hash:         nil,
 	}
 	block.SetHash()
 
