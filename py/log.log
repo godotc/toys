@@ -1,0 +1,26 @@
+[W 2022-11-20 06:19:29.869 LabApp] 'password' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[W 2022-11-20 06:19:29.870 LabApp] 'password' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[I 2022-11-20 06:19:29.881 LabApp] JupyterLab extension loaded from /usr/lib/python3.10/site-packages/jupyterlab
+[I 2022-11-20 06:19:29.881 LabApp] JupyterLab application directory is /usr/share/jupyter/lab
+[I 06:19:29.888 NotebookApp] Serving notebooks from local directory: /home/gloria/toy/py
+[I 06:19:29.888 NotebookApp] Jupyter Notebook 6.5.2 is running at:
+[I 06:19:29.888 NotebookApp] http://localhost:8888/
+[I 06:19:29.888 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[W 06:19:36.018 NotebookApp] 404 DELETE /api/sessions/b1233c6c-afa3-4f09-8856-1089c13e495f (127.0.0.1): Session not found: session_id='b1233c6c-afa3-4f09-8856-1089c13e495f'
+[W 06:19:36.018 NotebookApp] Session not found: session_id='b1233c6c-afa3-4f09-8856-1089c13e495f'
+[W 06:19:36.019 NotebookApp] 404 DELETE /api/sessions/b1233c6c-afa3-4f09-8856-1089c13e495f (127.0.0.1) 3.110000ms referer=http://localhost:8888/notebooks/Untitled.ipynb?kernel_name=python3
+[I 06:19:36.168 NotebookApp] Kernel started: f7586a05-a05b-46b3-b17a-d91922bd4748, name: python3
+[I 06:19:43.105 NotebookApp] Starting buffering for f7586a05-a05b-46b3-b17a-d91922bd4748:904634ff87ec46ce88ceee5f49e425d7
+[W 06:19:49.085 NotebookApp] Notebook Untitled.ipynb is not trusted
+[W 06:19:49.227 NotebookApp] 404 GET /nbextensions/widgets/notebook/js/extension.js?v=20221120061928 (127.0.0.1) 9.120000ms referer=http://localhost:8888/notebooks/Untitled.ipynb
+[I 06:20:34.820 NotebookApp] Saving file at /lagrange.ipynb
+[I 06:23:49.581 NotebookApp] Saving file at /lagrange.ipynb
+/usr/lib/python3.10/site-packages/nbformat/__init__.py:128: MissingIDFieldWarning: Code cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.
+  validate(nb)
+/usr/lib/python3.10/site-packages/notebook/services/contents/manager.py:353: MissingIDFieldWarning: Code cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.
+  validate_nb(model['content'])
+[I 06:24:42.769 NotebookApp] Starting buffering for f7586a05-a05b-46b3-b17a-d91922bd4748:967ebebb346643fb8a179242c9e41fd6
+[C 06:24:49.425 NotebookApp] received signal 15, stopping
+[I 06:24:49.426 NotebookApp] Shutting down 1 kernel
+[I 06:24:49.428 NotebookApp] Kernel shutdown: f7586a05-a05b-46b3-b17a-d91922bd4748
+[I 06:24:50.146 NotebookApp] Shutting down 0 terminals

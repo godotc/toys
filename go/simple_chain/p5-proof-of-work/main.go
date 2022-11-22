@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/godotc/simple-chain/p4-Basic-Prototype/BLC"
+	"github.com/godotc/simple-chain/p5-proof-of-work/BLC"
 )
 
 func main() {

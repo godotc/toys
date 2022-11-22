@@ -1,0 +1,3 @@
+/home/gloria/toy/c-cpp/GL/LearnOpenGL/build/CMakeFiles/main.dir
+/home/gloria/toy/c-cpp/GL/LearnOpenGL/build/CMakeFiles/edit_cache.dir
+/home/gloria/toy/c-cpp/GL/LearnOpenGL/build/CMakeFiles/rebuild_cache.dir
