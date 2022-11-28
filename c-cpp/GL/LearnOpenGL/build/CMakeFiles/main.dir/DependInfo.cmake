@@ -9,7 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/gloria/toy/c-cpp/GL/LearnOpenGL/src/glad.c" "CMakeFiles/main.dir/src/glad.c.o" "gcc" "CMakeFiles/main.dir/src/glad.c.o.d"
-  "/home/gloria/toy/c-cpp/GL/LearnOpenGL/src/shader.cc" "CMakeFiles/main.dir/src/shader.cc.o" "gcc" "CMakeFiles/main.dir/src/shader.cc.o.d"
+  "/home/gloria/toy/c-cpp/GL/LearnOpenGL/src/template.cc" "CMakeFiles/main.dir/src/template.cc.o" "gcc" "CMakeFiles/main.dir/src/template.cc.o.d"
   )
 
 # Targets to which this target links.

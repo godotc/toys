@@ -1,1 +1,1 @@
-/usr/sbin/c++ -g -Wall -rdynamic CMakeFiles/main.dir/src/glad.c.o CMakeFiles/main.dir/src/shader.cc.o -o /home/gloria/toy/c-cpp/GL/LearnOpenGL/bin/main  /usr/lib/libglfw.so.3.3 -lOpenGL 
+/usr/sbin/c++ -g -Wall -rdynamic CMakeFiles/main.dir/src/glad.c.o CMakeFiles/main.dir/src/template.cc.o -o /home/gloria/toy/c-cpp/GL/LearnOpenGL/bin/main  /usr/lib/libglfw.so.3.3 -lOpenGL 

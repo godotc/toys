@@ -6,7 +6,7 @@
 },
 {
   "directory": "/home/gloria/toy/c-cpp/GL/LearnOpenGL/build",
-  "command": "/usr/sbin/c++  -I/home/gloria/toy/c-cpp/GL/LearnOpenGL/./include -g -Wall -std=gnu++17 -o CMakeFiles/main.dir/src/shader.cc.o -c /home/gloria/toy/c-cpp/GL/LearnOpenGL/src/shader.cc",
-  "file": "/home/gloria/toy/c-cpp/GL/LearnOpenGL/src/shader.cc"
+  "command": "/usr/sbin/c++  -I/home/gloria/toy/c-cpp/GL/LearnOpenGL/./include -g -Wall -std=gnu++17 -o CMakeFiles/main.dir/src/template.cc.o -c /home/gloria/toy/c-cpp/GL/LearnOpenGL/src/template.cc",
+  "file": "/home/gloria/toy/c-cpp/GL/LearnOpenGL/src/template.cc"
 }
 ]

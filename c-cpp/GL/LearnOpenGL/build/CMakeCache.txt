@@ -222,7 +222,7 @@ GLFW_Test_IS_TOP_LEVEL:STATIC=ON
 GLFW_Test_SOURCE_DIR:STATIC=/home/gloria/toy/c-cpp/GL/LearnOpenGL
 
 //The directory containing a CMake configuration file for glfw3.
-glfw3_DIR:PATH=/usr/lib64/cmake/glfw3
+glfw3_DIR:PATH=/usr/lib/cmake/glfw3
 
 
 ########################
@@ -238,9 +238,9 @@ CMAKE_CACHEFILE_DIR:INTERNAL=/home/gloria/toy/c-cpp/GL/LearnOpenGL/build
 //Major version of cmake used to create the current loaded cache
 CMAKE_CACHE_MAJOR_VERSION:INTERNAL=3
 //Minor version of cmake used to create the current loaded cache
-CMAKE_CACHE_MINOR_VERSION:INTERNAL=24
+CMAKE_CACHE_MINOR_VERSION:INTERNAL=25
 //Patch version of cmake used to create the current loaded cache
-CMAKE_CACHE_PATCH_VERSION:INTERNAL=3
+CMAKE_CACHE_PATCH_VERSION:INTERNAL=0
 //ADVANCED property for variable: CMAKE_COLOR_MAKEFILE
 CMAKE_COLOR_MAKEFILE-ADVANCED:INTERNAL=1
 //Path to CMake executable.
