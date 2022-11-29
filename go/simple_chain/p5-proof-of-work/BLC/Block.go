@@ -1,10 +1,6 @@
 package BLC
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"fmt"
-	"strconv"
 	"time"
 )
 
@@ -19,6 +15,8 @@ type Block struct {
 	Timestamp int64
 	//! HASH
 	Hash []byte
+	//! 工作量证明
+	Nonce int64
 }
 
 // ! Create the ORIGINAL block
@@ -41,30 +39,15 @@ func NewBlock(data string, preBlockHash []byte, height int64) *Block {
 		Timestamp:    time.Now().Unix(),
 		Hash:         nil,
 	}
-	block.SetHash()
+
+	// Call proof of work func , return validational [Hash] and [Nonce]
+	pow := NewProofOfWork(block)
+
+	// Mining validation
+	hash, nonce := pow.Run()
+
+	block.Hash = hash[:]
+	block.Nonce = nonce
 
 	return block
-}
-
-func (b *Block) SetHash() {
-	// 1. convet b.Height to byte array
-	heightBytes := IntToHex(b.Height)
-	fmt.Println("height:", heightBytes)
-
-	// 2. conver Timestamp to bye arrary
-	timeString := strconv.FormatInt(b.Timestamp, 2) // 2 进制
-	timeBytes := []byte(timeString)
-	fmt.Println("time", timeBytes)
-
-	// 3. attach all properties
-	blockBytes := bytes.Join([][]byte{b.PreBlockHash, heightBytes, timeBytes, b.Data, b.Hash}, []byte{})
-	fmt.Println("block bytes:", blockBytes)
-
-	// 4. generate hash
-	hash := sha256.Sum256(blockBytes)
-	fmt.Println("hash:", hash)
-
-	b.Hash = hash[:32]
-	fmt.Println("block.Hash:", hash)
-
 }

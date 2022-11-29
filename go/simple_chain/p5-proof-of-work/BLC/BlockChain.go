@@ -18,4 +18,5 @@ func InitBlockChain() *BlockChain {
 func (blc *BlockChain) AddNewBlock(data string, height int64, preHash []byte) {
 	newBlock := NewBlock(data, preHash, height)
 	blc.Blocks = append(blc.Blocks, newBlock)
+
 }
