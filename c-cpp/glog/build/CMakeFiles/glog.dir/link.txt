@@ -1,0 +1,2 @@
+/usr/sbin/ar qc /home/gloria/toy/c-cpp/glog/lib/libglog.a CMakeFiles/glog.dir/src/logger.cc.o
+/usr/sbin/ranlib /home/gloria/toy/c-cpp/glog/lib/libglog.a

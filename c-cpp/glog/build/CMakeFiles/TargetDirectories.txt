@@ -1,0 +1,5 @@
+/home/gloria/toy/c-cpp/glog/build/CMakeFiles/glog.dir
+/home/gloria/toy/c-cpp/glog/build/CMakeFiles/test01.dir
+/home/gloria/toy/c-cpp/glog/build/CMakeFiles/test.dir
+/home/gloria/toy/c-cpp/glog/build/CMakeFiles/edit_cache.dir
+/home/gloria/toy/c-cpp/glog/build/CMakeFiles/rebuild_cache.dir

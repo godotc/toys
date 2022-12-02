@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/gloria/toy/c-cpp/glog/build",
+  "command": "/usr/sbin/c++  -I/home/gloria/toy/c-cpp/glog/./include -std=gnu++20 -o CMakeFiles/glog.dir/src/logger.cc.o -c /home/gloria/toy/c-cpp/glog/src/logger.cc",
+  "file": "/home/gloria/toy/c-cpp/glog/src/logger.cc"
+},
+{
+  "directory": "/home/gloria/toy/c-cpp/glog/build",
+  "command": "/usr/sbin/c++  -I/home/gloria/toy/c-cpp/glog/./include -std=gnu++20 -o CMakeFiles/test01.dir/test/test.cc.o -c /home/gloria/toy/c-cpp/glog/test/test.cc",
+  "file": "/home/gloria/toy/c-cpp/glog/test/test.cc"
+}
+]

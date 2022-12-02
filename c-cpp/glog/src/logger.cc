@@ -19,7 +19,7 @@
 
 using namespace gstl::utility;
 
-char* Logger::pp_level[LEVEL_COUNT]{
+char *Logger::pp_level[LEVEL_COUNT]{
     "DEBUG",
     "INFO",
     "WARN",
@@ -27,10 +27,10 @@ char* Logger::pp_level[LEVEL_COUNT]{
     "FATAL",
 };
 
-Logger* Logger::p_instance = nullptr;
+Logger *Logger::p_instance = nullptr;
 
 
-Logger::Logger() : m_isRunning(true)
+Logger::Logger()
 {
     std::thread(worker());
 }
@@ -39,7 +39,7 @@ Logger::~Logger()
 {
     m_isRunning = false;
 
-    for (auto& [name, appender] : m_appenders)
+    for (auto &[name, appender] : m_appenders)
     {
         appender->m_stream.close();
         delete appender;
@@ -53,16 +53,18 @@ void Logger::worker()
         Msg message;
         m_blockQueue.pop(message);
 
-        const char* msg   = message.p_msg;
+        const char *msg   = message.p_msg;
         Level       level = message.m_level;
 
 
-        if (m_listenLevel >= level) std::cout << msg << std::endl;
+        if (m_listenLevel >= level)
+            std::cout << msg << std::endl;
 
-        if (msg == nullptr) continue;
+        if (msg == nullptr)
+            continue;
 
 
-        for (auto& [name, appender] : m_appenders)
+        for (auto &[name, appender] : m_appenders)
         {
             if (appender->level >= level)
             {
@@ -83,16 +85,17 @@ void Logger::worker()
 }
 
 
-void Logger::log(Level level, const char* file, int line, const char* format, ...)
+void Logger::log(Level level, const char *file, int line, const char *format, ...)
 {
-    if (level < m_appenderLevel) return;
-    char    timestamp[32];  // 时间戳
-    va_list arg_ptr;        // format 内容指针
-    char*   buffer;         // log 总共的 buffer
+    if (level < m_appenderLevel)
+        return;
+    char    timestamp[32]; // 时间戳
+    va_list arg_ptr;       // format 内容指针
+    char   *buffer;        // log 总共的 buffer
 
     // time str
     time_t     now  = time(nullptr);
-    struct tm* p_tm = localtime(&now);
+    struct tm *p_tm = localtime(&now);
     std::memset(timestamp, 0, sizeof(timestamp));
     ::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", p_tm);
     /*
@@ -102,12 +105,12 @@ void Logger::log(Level level, const char* file, int line, const char* format, ..
 
 
     // status fmt size
-    const char* fmt         = "%s [%s] %s:%d ";
+    const char *fmt         = "%s [%s] %s:%d ";
     int         status_size = snprintf(NULL, 0, fmt, timestamp, pp_level[level], file, line);
 
     //  content msg size
     ::va_start(arg_ptr, format);
-    int content_size = vsnprintf(NULL, 0, format, arg_ptr);  // vnsprintf
+    int content_size = vsnprintf(NULL, 0, format, arg_ptr); // vnsprintf
     ::va_end(arg_ptr);
 
     // format
@@ -128,7 +131,7 @@ void Logger::log(Level level, const char* file, int line, const char* format, ..
     m_blockQueue.push(msg);
 }
 
-Logger* Logger::getInstance()
+Logger *Logger::getInstance()
 {
     if (p_instance == nullptr) {
         p_instance = new Logger;
@@ -136,15 +139,15 @@ Logger* Logger::getInstance()
     return p_instance;
 }
 
-void Logger::addAppender(const std::string& filename, Level level)
+void Logger::addAppender(const std::string &filename, Level level)
 {
-    Appender* appender = new Appender(filename, level);
+    Appender *appender = new Appender(filename, level);
 
     m_appenders.insert({filename, appender});
 }
 
 
-void Logger::closeAppender(const std::string& logname)
+void Logger::closeAppender(const std::string &logname)
 {
     auto it = m_appenders.find(logname);
     if (it != m_appenders.end()) {
@@ -167,7 +170,7 @@ void Logger::setMaxFileSize(int size)
 
 constexpr bool Logger::running() { return m_isRunning; }
 
-Logger::Appender::Appender(const std::string& name, Level level) : m_max(10000000), len(0), level(level)
+Logger::Appender::Appender(const std::string &name, Level level) : m_max(10000000), len(0), level(level)
 {
     std::string filename = std::string(LOG_PREFIX) + pp_level[level] + '-' + name;
     m_stream.open(filename, std::ios::app);

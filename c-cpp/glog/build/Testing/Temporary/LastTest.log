@@ -1,0 +1,19 @@
+Start testing: Nov 29 16:16 CST
+----------------------------------------------------------
+1/1 Testing: TestingLog
+1/1 Test: TestingLog
+Command: "/home/gloria/toy/c-cpp/glog/bin/test01"
+Directory: /home/gloria/toy/c-cpp/glog/build
+"TestingLog" start time: Nov 29 16:16 CST
+Output:
+----------------------------------------------------------
+hello world
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"TestingLog" end time: Nov 29 16:16 CST
+"TestingLog" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 29 16:16 CST

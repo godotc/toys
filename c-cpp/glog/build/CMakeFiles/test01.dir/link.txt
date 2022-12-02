@@ -1,0 +1,1 @@
+/usr/sbin/c++ -rdynamic CMakeFiles/test01.dir/test/test.cc.o -o /home/gloria/toy/c-cpp/glog/bin/test01  /home/gloria/toy/c-cpp/glog/lib/libglog.a 
