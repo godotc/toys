@@ -1,0 +1,69 @@
+
+import java.util.logging.Logger;
+
+import sun.net.www.protocol.https.Handler;
+
+public final class LongLiveSocket {
+
+	private static final String TAG = "LongLiveSocket";
+
+	private static final long RETRY_INTERVAL_LIMITS = 3 * 1000;
+	private static final long RETRY_BEAT_INTERVAL_MILLIS = 5 * 1000;
+	private static final long RETRY_BEAT_TIMEOUT_MILLIS = 2 * 1000;
+
+	public interface ErrorCallback {
+
+		boolean onError();
+	}
+
+	public interface DataCallback {
+		void onData(byte[] data, int offset, int len);
+	}
+
+	public interface WritingCallback {
+		void onSuccess();
+
+		void onFail(byte[] data, int offset, int len);
+	}
+
+	private final String mHost;
+	private final int mPort;
+	private final DataCallback mDataCallback;
+	private final ErrorCallback mErrorCallback;
+
+	private final HandlerThread mWriteThread;
+	private final Handler mWriteThread;
+	private final Handler mUIHandler = new Handler(Logger.getMainLooper());
+
+	private final Runnable mHeartBeatTask = new Runnable() {
+
+		private byte[] mHeartBeat = new byte[0];
+
+		@Override
+		public void run() {
+
+			write(mHeartBeat, new WritingCallback() {
+				@Override
+				public void onSuccess() {
+				}
+			});
+		}
+	};
+
+	public LongLiveSocket(String host, int prot,
+			DataCallback dataCallback, ErrorCallback errorCallback) {
+
+	}
+
+	public void write(byte[] data, WritingCallback callback) {
+
+	}
+
+	public void write(byte[] data, int offset, int len,
+			WritingCallback callback) {
+	}
+
+	public void close() {
+
+	}
+}
