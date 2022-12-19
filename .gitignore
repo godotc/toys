@@ -5,5 +5,5 @@ c-cpp/web-rtc/webcocket/node_modules
 c-cpp/GLFW_Test/bin
 c-cpp/GLFW_Test/build
 
-/build
-/bin
+build
+bin
