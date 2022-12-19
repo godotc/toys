@@ -1,0 +1,6 @@
+Name: search-api
+Host: 127.0.0.1
+Port: 8889
+Auth:
+  AccessSecret: jwt-imtest-you-20221219
+  AccessExpire: 360000
