@@ -12,8 +12,6 @@ Plug 'octol/vim-cpp-enhanced-highlight'
 Plug 'itchyny/lightline.vim' "status line
 Plug 'frazrepo/vim-rainbow' "彩虹括号
 
-
-
 " Theme
 Plug 'joshdick/onedark.vim'
 Plug 'rakr/vim-one'
@@ -36,9 +34,14 @@ endif
 
 set laststatus=2
 let g:lightline = {
-	  \ 'colorscheme': 'onedark',
-	  \ }
-let g:airline_theme='onedark'
+      \ 'component_function': {
+      \   'filename': 'LightlineFilename'
+      \ }
+      \ }
+function! LightlineFilename()
+  return expand('%')
+endfunction
+
 
 
 

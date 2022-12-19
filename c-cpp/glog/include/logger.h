@@ -9,8 +9,7 @@
 
 #include "block_queue.hpp"
 
-namespace gstl {
-namespace utility {
+namespace gstl::utility {
 
 
 
@@ -30,7 +29,7 @@ namespace utility {
 
 class Logger
 {
-   public:
+  public:
     enum Level
     {
         DEBUG = 0,
@@ -40,13 +39,14 @@ class Logger
         FATAL,
         LEVEL_COUNT
     };
-    static Logger* getInstance();
+
+    static Logger *getInstance();
     void           worker();
 
-    void log(Level level, const char* file, int line, const char* format, ...);
+    void log(Level level, const char *file, int line, const char *format, ...);
 
-    void addAppender(const std::string& filename, Level level);
-    void closeAppender(const std::string& logname);
+    void addAppender(const std::string &filename, Level level);
+    void closeAppender(const std::string &logname);
 
     void seListenLevel(Level level);
     void setMaxFileSize(int size);
@@ -54,15 +54,15 @@ class Logger
     constexpr bool running();
 
 
-   private:
+  private:
     Logger();
     ~Logger();
 
-   private:
-    static Logger* p_instance;             // 单例
-    static char*   pp_level[LEVEL_COUNT];  // level string
+  private:
+    static Logger *p_instance;            // 单例
+    static char   *pp_level[LEVEL_COUNT]; // level string
 
-    bool m_isRunning{true};  // 是否在运行
+    bool m_isRunning{true}; // 是否在运行
 
     struct Appender
     {
@@ -71,14 +71,14 @@ class Logger
         int           len;
         Level         level;
 
-        Appender(const std::string& name, Level level);
+        Appender(const std::string &name, Level level);
         ~Appender();
     };
 
-    std::unordered_map<std::string, Appender*> m_appenders;
+    std::unordered_map<std::string, Appender *> m_appenders;
 
 
-    Level m_listenLevel;  // 标准输出level;
+    Level m_listenLevel; // 标准输出level;
     Level m_appenderLevel;
 
     int m_fileMaxSize{10000000};
@@ -86,7 +86,7 @@ class Logger
 
     struct Msg
     {
-        char* p_msg{nullptr};
+        char *p_msg{nullptr};
         Level m_level{DEBUG};
     };
 
@@ -95,6 +95,5 @@ class Logger
 
 
 
-}  // namespace utility
-}  // namespace gstl
+} // namespace gstl::utility
 #endif

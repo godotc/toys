@@ -33,12 +33,15 @@ build_prompt() {
   PS1+="→$reset  $cyan\W$reset $diy$ " # construct rest of prompt
 }
 
-export LANG=zh_CN.UTF-8
 
 export DISPLAY=172.31.208.1:0
 export PYTHONSTARTUP=~/.pythonstartup
 export PATH="$PATH:$(go env GOPATH)/bin"
+export PATH="$PATH:$(go env GOROOT)/bin"
 export PATH=$PATH:/home/gloria/.local/bin
+
+# etcd
+export PATH=$PATH:"/apt/etcd-v3.5.6"
 
 export PYENV_ROOR="~/.pyenv"
 export PATH=$PYENV_ROOT/shims:$PATH
@@ -57,3 +60,4 @@ alias gr="go run"
 alias py="python"
 alias tat="tmux attach -t"
 alias sshRoot="ssh root@godot.link"
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
