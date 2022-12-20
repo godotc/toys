@@ -2,10 +2,10 @@ package logic
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"time"
 
+	"book/common/errorx"
 	"book/service/user/api/internal/svc"
 	"book/service/user/api/internal/types"
 
@@ -41,16 +41,17 @@ func (l *LoginLogic) getJwtToken(sceretKey string, iat, seconds, userId int64) (
 func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginReply, err error) {
 	// todo: add your logic here and delete this line
 	if len(strings.TrimSpace(req.Username)) == 0 || len(strings.TrimSpace(req.Password)) == 0 {
-		return nil, errors.New("Argument error!")
+		return nil, errorx.NewDefaultError("Argument Error")
+		//return nil, errors.New("Argument error!")
 	}
 
 	userInfo, err := l.svcCtx.UserModel.FindOneByNumber(l.ctx, req.Username)
 	if err != nil {
-		return nil, errors.New("Username not exist!")
+		return nil, errorx.NewDefaultError("Username not exist!")
 	}
 
 	if userInfo.Password != req.Password {
-		return nil, errors.New("Password not correct!")
+		return nil, errorx.NewDefaultError("Password not correct!")
 	}
 
 	// ts begin

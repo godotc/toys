@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/gloria/toy/c-cpp/GLFW_Test/build",
-  "command": "/usr/sbin/c++   -g -Wall -std=gnu++17 -o CMakeFiles/main.dir/src/perspective.cc.o -c /home/gloria/toy/c-cpp/GLFW_Test/src/perspective.cc",
-  "file": "/home/gloria/toy/c-cpp/GLFW_Test/src/perspective.cc"
-}
-]

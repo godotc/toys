@@ -4,3 +4,8 @@ Port: 8889
 Auth:
   AccessSecret: jwt-imtest-you-20221219
   AccessExpire: 360000
+UserRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: user.rpc

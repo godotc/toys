@@ -14,8 +14,9 @@ type (
 	jwt: Auth
 	middleware: Example
 )
+
 service search-api {
-	@handler zAsearch
+	@handler search
 	get /search/do (SearchReq) returns (SearchReply)
 }
 
