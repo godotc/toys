@@ -133,7 +133,6 @@ int main()
 
     bindAndEnData(EBO, GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-     Texture
      float texCoords[] =
         {0., 0.,   // left bot
          1., 0.,   // right bot

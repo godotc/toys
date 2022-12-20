@@ -22,8 +22,8 @@
 				"--pretty", // 美化输出的json
 				"--function-arg-placeholders=false", // 启用这项时，补全函数时，将会给参数提供占位符，键入后按 Tab 可以切换到下一占位符，乃至函数末k
 				"--enable-config",
-				"--pch-storage=memory"
-				
+				"--pch-storage=memory",
+				"--query-driver=/bin/gcc"
 			]
 		},
 		"golang": {

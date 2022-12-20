@@ -8,3 +8,6 @@ c-cpp/GLFW_Test/build
 build
 bin
 .cache
+.idea
+.DS_store
+
