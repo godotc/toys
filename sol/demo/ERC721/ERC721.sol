@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
+// Chceck the receiver is a IERC721Receiver
 interface IERC721Receiver {
     function onERC721Received(
         address operator,
@@ -10,6 +11,7 @@ interface IERC721Receiver {
     ) external returns (bytes4);
 }
 
+// The token name, symbol, and URL
 interface IERC721Metadata{
     function name() external view returns(string memory);
     function token() external view returns(string memory);
