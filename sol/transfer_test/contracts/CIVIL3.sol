@@ -1,89 +1,69 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
-interface IERC20 {
+contract CIVIL3 is IERC20, IERC165 {
+    address m_Owner; // Contract deployer
+    uint256 m_TotalSupply; // Amount in circulation
 
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
+    string m_Name;
+    string m_Symbol;
 
-    function totalSupply() external view returns (uint256);
+    uint64 m_Decimals; // 小数位数
 
-    function balanceOf(address account) external view returns (uint256);
-
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
-
-    function approvel(address spender, uint256 amount) external returns (bool);
-
-    function transfer(address to, uint256 amount) external returns (bool);
-
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool);
-}
-
-contract ERC20 is IERC20, IERC165 {
-    address owner;
-
-    uint256 _totalSupply;
-    mapping(address => uint256) _balance;
-    mapping(address => mapping(address => uint256)) _allowance;
-
-    string _name;
-    string _symbol;
+    mapping(address => uint256) m_Balance;
+    mapping(address => mapping(address => uint256)) m_Allowance; // Amount a address approve to another
 
     modifier onlyOwner() {
-        require(owner == msg.sender, "ERROR: only owner");
+        require(msg.sender == m_Owner, "ERROR: only owner");
         _;
     }
 
-    constructor(string memory theName, string memory theSymbol) {
-        owner = msg.sender;
+    constructor(
+        string memory theName,
+        string memory theSymbol,
+        uint256 initialAmount,
+        uint64 theDemecal
+    ) {
+        m_Owner = msg.sender;
 
-        _balance[msg.sender] = 100000;
-        _totalSupply = 100000;
+        m_Balance[msg.sender] = initialAmount;
+        m_TotalSupply = initialAmount;
 
-        _name = theName;
-        _symbol = theSymbol;
+        m_Name = theName;
+        m_Symbol = theSymbol;
+        m_Decimals = theDemecal;
     }
 
     // Create coin
     function mint(address account, uint256 amount) public onlyOwner {
         require(account != address(0), "ERROR: mint for the addrex 0x00");
-        _totalSupply += amount;
-        _balance[account] += amount;
+        m_TotalSupply += amount;
+        m_Balance[account] += amount;
         emit Transfer(address(0), account, amount);
     }
 
     // Destroy
     function burn(address account, uint256 amount) public onlyOwner {
         require(account != address(0), "ERROR: burnning for the addrex 0x00");
-        _totalSupply -= amount;
-        uint256 accountBalance = _balance[account];
+        m_TotalSupply -= amount;
+
+        uint256 accountBalance = m_Balance[account];
         require(
             accountBalance >= amount,
             "ERROR: not enough coin to burn on this address"
         );
-
-        _balance[account] = accountBalance - amount;
+        m_Balance[account] = accountBalance - amount;
         emit Transfer(account, address(0), amount);
     }
 
     function name() public view returns (string memory) {
-        return _name;
+        return m_Name;
     }
 
     function symbol() public view returns (string memory) {
-        return _symbol;
+        return m_Symbol;
     }
 
     function decimals() public pure returns (uint8) {
@@ -91,37 +71,40 @@ contract ERC20 is IERC20, IERC165 {
     }
 
     function totalSupply() external view returns (uint256) {
-        return _totalSupply;
+        return m_TotalSupply;
     }
 
     function balanceOf(address account) external view returns (uint256) {
-        return _balance[account];
+        return m_Balance[account];
     }
 
-    function allowance(address owner_, address spender)
+    // Query the amount of allowance that A approve to B
+    function allowance(address theOwner, address theSpender)
         external
         view
         returns (uint256)
     {
-        return _allowance[owner_][spender];
+        return m_Allowance[theOwner][theSpender];
     }
 
-    function approvel(address spender, uint256 amount) external returns (bool) {
-        _allowance[msg.sender][spender] = amount;
+    // Approve token nubmer to B from A
+    function approve(address spender, uint256 amount) external returns (bool) {
+        m_Allowance[msg.sender][spender] = amount;
         emit Approval(msg.sender, spender, amount);
         return true;
     }
 
+    //
     function _transfer(
         address from,
         address to,
         uint256 amount
     ) public {
-        require(_balance[from] >= amount, "No enough money");
+        require(m_Balance[from] >= amount, "No enough money");
         require(to != address(0), "Trying transfer to address 0 ");
 
-        _balance[from] -= amount;
-        _balance[to] += amount;
+        m_Balance[from] -= amount;
+        m_Balance[to] += amount;
 
         emit Transfer(from, to, amount);
     }
@@ -136,13 +119,14 @@ contract ERC20 is IERC20, IERC165 {
         address to,
         uint256 amount
     ) external returns (bool) {
-        // Check the allowence(额度) from bank
+        // Check the allowence(额度) from bank the approve for you
         require(
-            _allowance[from][msg.sender] >= amount,
-            "ERROR: m_allowance < amount"
+            m_Allowance[from][msg.sender] >= amount,
+            "ERROR::Transfer: no enough credit m_Allowance < amount"
         );
-        _allowance[from][msg.sender] -= amount;
-        emit Approval(from, msg.sender, _allowance[from][msg.sender] - amount);
+        m_Allowance[from][msg.sender] -= amount;
+        // Update amount that approved
+        emit Approval(from, msg.sender, m_Allowance[from][msg.sender]);
 
         // Difinetly tranfer
         _transfer(from, to, amount);
