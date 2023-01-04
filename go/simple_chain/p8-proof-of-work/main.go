@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/godotc/simple-chain/p5-proof-of-work/BLC"
+	"github.com/godotc/simple-chain/p8-proof-of-work/BLC"
 )
 
 func main() {

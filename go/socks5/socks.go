@@ -51,14 +51,14 @@ func handleConnection(conn net.Conn) error {
 	return nil
 }
 
-func auth(conn net.Conn) error {
-	clientAuthMessage, err := NewClientAuthMessage(conn)
-	if err != nil {
-		return err
-	}
-	//log.Println(clientAuthMessage.Version, clientAuthMessage.N_Methods, clientAuthMessage.Methods)
+// func auth(conn net.Conn) error {
+// 	clientAuthMessage, err := NewClientAuthMessage(conn)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	//log.Println(clientAuthMessage.Version, clientAuthMessage.N_Methods, clientAuthMessage.Methods)
 
-	// Only support "no auth" and
+// 	// Only support "no auth" and
 
-	return nil
-}
+// 	return nil
+// }
