@@ -54,5 +54,6 @@
 				"buildDirectory": "build"
 			}
 		}
-	}
+  },
+  "snippets.ultisnips.pythonPrompt": false
 }
