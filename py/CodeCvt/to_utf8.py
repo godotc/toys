@@ -7,13 +7,13 @@ def is_csv(file):
     return str(file).endswith(".csv")
 
 
-def to_utf8_bom (path,originEncoding):
+def to_utf8 (path,originEncoding):
     print(f"Encoding {path}....")
 
     try:
         f=codecs.open(path,'r',originEncoding)
         new_content = f.read()
-        codecs.open(path,'w','utf_8_sig').write(new_content)
+        codecs.open(path,'w','utf_8').write(new_content)
     except IOError as err:
         msg=  format(err)
         print(f"I/O error: {msg}")
@@ -24,12 +24,12 @@ def toUtf8(path):
     print("\n---------------------")
     encoding = get_encode_type(path)
     print(f"File:{path}, Encoding: {encoding}")
-
-    if(encoding == 'utf_8_sig'):
+    if(encoding == 'utf-8'):
         print(f"{path} type already is utf8.")
         return
     else:
-        to_utf8_bom(path, encoding)
+        to_utf8(path, encoding)
+        print("type: ",get_encode_type(path))
     print("-----------------")
 
 
@@ -49,12 +49,11 @@ def get_under_files_of(theDirectory):
     return file_list
      
 
-def convert_files_to_utf8_bom(theDirectory):
+def convert_files_to_utf8(theDirectory):
     "Get files in specific dir"
     file_list = get_under_files_of(theDirectory)
     print(f"Got all files under target directory: {theDirectory}")
     print(file_list,"\n")
-
 
     for file in file_list:
         if is_csv(file):
@@ -64,4 +63,4 @@ def convert_files_to_utf8_bom(theDirectory):
     
 
 if __name__ == '__main__':
-    convert_files_to_utf8_bom(sys.argv[1])
+    convert_files_to_utf8(sys.argv[1])
