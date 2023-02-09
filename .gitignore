@@ -4,9 +4,20 @@ rust/reservation_exc
 
 build
 bin
+lib
 node_modules
+
 .cache
+cache
 .idea
+.vscode
 .DS_store
+.yarn
+3rdParty
+
+
+compile_commands.json
+
+
 
 
