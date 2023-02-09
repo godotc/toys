@@ -45,3 +45,15 @@ zip' ::[a]->[b] ->[(a,b)]
 zip' _ [] = []
 zip' [] _ = []
 zip' (x:xs) (y:ys) = (x,y): zip' xs ys
+
+
+
+elem' ::(  Eq e ) => e->[e] -> Bool
+elem' a [] = False
+elem' a (x:xs)
+    | a == x = True
+    | otherwise =  elem' a xs
+
+
+
+
