@@ -1,0 +1,3 @@
+[submodule "cc/GL/GLX"]
+	path = cc/GL/GLX
+	url = git@github.com:godotc/GLX.git
