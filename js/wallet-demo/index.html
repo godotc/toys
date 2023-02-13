@@ -10,33 +10,30 @@
 </head>
 
 <body>
+    <div>
+        <h3>Connect: Account: <span class="AccountToShow"></span></h3>
+    </div>
     <div dir="ltr">
-        <button type="button" id="btn_login"> Login </button>
+        <button type="button" id="btn_ConnectWallet"> Connect Wallet </button>
         <button type="button" id="btn_test"> Test </button>
     </div>
 
+    <div>
+        <p> Account01 : <input id="account01"> </p>
+        <p> Account02 : <input id="account02"> </p>
+    </div>
+
+    <div>
+        <button type="button" id="btn_transfer"> Transfer </button>
+    </div>
+
+    <div>
+        <button type="button" id="btn_getAllAccounts"> GetAllAccounts </button>
+    </div>
+
+
 </body>
-<script>
-    var web3 = require('web3')
-
-    console.log('hello world')
-
-
-    document.getElementById('btn_login').onclick =
-        function () {
-            console.log("login..")
-            web3.personnal.sign()
-        };
-
-    document.getElementById('btn_test').onclick =
-        function () {
-            console.log("test..")
-            console.warn("test..")
-            console.error("test..")
-        };
-
-</script>
-
-<script type="text/javascript" src="./demo/main.js"></script>
+<script async="async" src="/metmask/metamask.js"></script>
+<script async="async" src="/index.js"></script>
 
 </html>

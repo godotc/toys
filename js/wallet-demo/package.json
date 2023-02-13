@@ -5,13 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "demo": "node ./main.js"
+    "dev": "node ./index.js"
   },
   "author": "godot42",
   "license": "MIT",
   "dependencies": {
     "ejs": "^3.1.8",
+    "eth": "^4.0.1",
+    "etherum": "^1.0.9",
     "express": "^4.18.2",
+    "metamask": "^0.0.1-security",
     "web3": "^1.8.2"
   }
 }
