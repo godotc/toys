@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"github.com/tyler-smith/go-bip39"
@@ -10,17 +11,18 @@ import (
 
 func main() {
 
-	entropy, err := bip39.NewEntropy(128)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//entropy, err := bip39.NewEntropy(128)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	// 助记词
-	mnemonic, _ := bip39.NewMnemonic(entropy)
+	//mnemonic, _ := bip39.NewMnemonic(entropy)
+	mnemonic := os.Args[1]
 	//var mnemonic = "pepper hair process town say voyage exhibit over carry property follow define"
 	fmt.Println("mnemonic:", mnemonic)
 
-	var passowrd string = "123456"
+	var passowrd string = os.Args[2]
 	seed := bip39.NewSeed(mnemonic, passowrd) //这里可以选择传入指定密码或者空字符串，不同密码生成的助记词不同
 
 	wallet, err := hdwallet.NewFromSeed(seed)

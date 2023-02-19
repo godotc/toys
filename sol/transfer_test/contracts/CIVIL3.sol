@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+// import "@openzeppelin/contracts/interfaces/IERC165.sol";
+
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
-contract CIVIL3 is IERC20, IERC165 {
+contract CIVIL3 is IERC20 /*, IERC165*/ {
     address m_Owner; // Contract deployer
     uint256 m_TotalSupply; // Amount in circulation
 
@@ -20,6 +21,7 @@ contract CIVIL3 is IERC20, IERC165 {
         _;
     }
 
+    //deployer.deploy(CIVIL3,"CIVIL3", "CIVIL",50, 18);
     constructor(
         string memory theName,
         string memory theSymbol,
@@ -70,36 +72,31 @@ contract CIVIL3 is IERC20, IERC165 {
         return 18;
     }
 
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() public view returns (uint256) {
         return m_TotalSupply;
     }
 
-    function balanceOf(address account) external view returns (uint256) {
+    function balanceOf(address account) public view returns (uint256) {
         return m_Balance[account];
     }
 
     // Query the amount of allowance that A approve to B
-    function allowance(address theOwner, address theSpender)
-        external
-        view
-        returns (uint256)
-    {
+    function allowance(
+        address theOwner,
+        address theSpender
+    ) public view returns (uint256) {
         return m_Allowance[theOwner][theSpender];
     }
 
     // Approve token nubmer to B from A
-    function approve(address spender, uint256 amount) external returns (bool) {
+    function approve(address spender, uint256 amount) public returns (bool) {
         m_Allowance[msg.sender][spender] = amount;
         emit Approval(msg.sender, spender, amount);
         return true;
     }
 
     //
-    function _transfer(
-        address from,
-        address to,
-        uint256 amount
-    ) public {
+    function _transfer(address from, address to, uint256 amount) public {
         require(m_Balance[from] >= amount, "No enough money");
         require(to != address(0), "Trying transfer to address 0 ");
 
@@ -118,7 +115,7 @@ contract CIVIL3 is IERC20, IERC165 {
         address from,
         address to,
         uint256 amount
-    ) external returns (bool) {
+    ) public returns (bool) {
         // Check the allowence(额度) from bank the approve for you
         require(
             m_Allowance[from][msg.sender] >= amount,
@@ -134,15 +131,11 @@ contract CIVIL3 is IERC20, IERC165 {
     }
 
     // Check if is the availiable interface
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
-        return
-            interfaceId == type(IERC20).interfaceId ||
-            interfaceId == type(IERC165).interfaceId;
-    }
+    // function supportsInterface(
+    //     bytes4 interfaceId
+    // ) public view virtual override returns (bool) {
+    //     return
+    //         interfaceId == type(IERC20).interfaceId ||
+    //         interfaceId == type(IERC165).interfaceId;
+    // }
 }
