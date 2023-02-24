@@ -19,19 +19,19 @@ getMaxOfList' [x] = x
 getMaxOfList' (x:xs) = max x (getMaxOfList xs)
 
 
---  `Num` is not the child class of `Ord`
---  Here we appoint 2 of constraints(约束)
+--`Num` is not the child class of `Ord`
+--Here we appoint 2 of constraints(约束)
 replicate' ::(Num i, Ord i) => i->a->[a]
 replicate' n x
     | n <=0  = []
     | otherwise = x:replicate' (n-1) x
 
--- get fisrt n of xs
+--get fisrt n of xs
 take' ::(Num i, Ord i) => i->[a]->[a]
---- xs is null
+----xs is null
 take' n _ 
     |n<=0 = []          -- only concern about `n`, not about `xs`, if `n` <= 0, goto next match
---- position is null
+----position is null
 take' _ [] = [] 
 take' n (x:xs) = x : take' (n-1) xs
 
@@ -48,6 +48,7 @@ zip' (x:xs) (y:ys) = (x,y): zip' xs ys
 
 
 
+-- Is e the element of [e]
 elem' ::(  Eq e ) => e->[e] -> Bool
 elem' a [] = False
 elem' a (x:xs)
