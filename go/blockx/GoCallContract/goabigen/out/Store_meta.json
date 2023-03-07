@@ -1,0 +1,126 @@
+{
+    "compiler": {
+        "version": "0.8.18+commit.87f61d96"
+    },
+    "language": "Solidity",
+    "output": {
+        "abi": [
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "theVersion",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "internalType": "bytes32",
+                        "name": "key",
+                        "type": "bytes32"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "bytes32",
+                        "name": "value",
+                        "type": "bytes32"
+                    }
+                ],
+                "name": "ItemSet",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "key",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "value",
+                        "type": "bytes32"
+                    }
+                ],
+                "name": "SetItem",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "name": "items",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "version",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ],
+        "devdoc": {
+            "kind": "dev",
+            "methods": {},
+            "version": 1
+        },
+        "userdoc": {
+            "kind": "user",
+            "methods": {},
+            "version": 1
+        }
+    },
+    "settings": {
+        "compilationTarget": {
+            "store.sol": "Store"
+        },
+        "evmVersion": "paris",
+        "libraries": {},
+        "metadata": {
+            "bytecodeHash": "ipfs"
+        },
+        "optimizer": {
+            "enabled": false,
+            "runs": 200
+        },
+        "remappings": []
+    },
+    "sources": {
+        "store.sol": {
+            "keccak256": "0xa7425f4bad3e72b492db87e79b170779bb7cbc35ef45b114d48a6ea134ac8a1e",
+            "license": "SEE LICENSE IN LICENSE",
+            "urls": [
+                "bzz-raw://95eecd736f271d5feb8093e688a8aae35d8e452434857b0ca093d3ca96f620e8",
+                "dweb:/ipfs/QmXyzCdARyK4oRSpBiJSN6NHokFWNQdDvnvVAb9SSqnmoq"
+            ]
+        }
+    },
+    "version": 1
+}

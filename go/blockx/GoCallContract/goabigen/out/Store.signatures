@@ -1,0 +1,7 @@
+Function signatures:
+dbdd24aa: SetItem(bytes32,bytes32)
+48f343f3: items(bytes32)
+54fd4d50: version()
+
+Event signatures:
+e79e73da417710ae99aa2088575580a60415d359acfad9cdd3382d59c80281d4: ItemSet(bytes32,bytes32)

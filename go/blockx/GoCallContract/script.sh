@@ -1,4 +1,4 @@
-solc transfer_test/contracts/CIVIL3.sol --abi -o CIVIL_abi --overwrite
+solc transfer_test/contracts/CIVIL3.sol --abi -o CIVIL3_abi --overwrite
 
 # –abi表示abi文件名
 # –pkg表示生成文件的所属包
