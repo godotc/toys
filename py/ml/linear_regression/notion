@@ -1,0 +1,6 @@
+2 部分code不能用了，比如最后一个词向量项目里tensorflow2.0不能用placeholder了，
+需要用 import tensorflow.compat.v1 as tf代替import tensorflow as tf。另外下载mnist数据集的新的语句是：
+
+from sklearn.datasets import fetch_openml 
+
+mnist = fetch_openml('mnist_784')
