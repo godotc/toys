@@ -1,9 +1,10 @@
-#define DEBUG
 #include "debug.h"
 
 #include <cstddef>
+#include <cstdlib>
 #include <initializer_list>
 #include <iostream>
+#include <memory.h>
 #include <sys/types.h>
 
 namespace gstl {
@@ -58,20 +59,24 @@ vector<__Type>::~vector()
 template <typename __Type>
 void vector<__Type>::extend()
 {
-    LOG("hello world");
-    auto new_size = capacity * 2;
-    auto offset   = cur - begin;
+    DBG("Extend vecotr capacity");
 
-    begin = new __Type[new_size];
-    cur   = begin + offset;
-    end   = cur + new_size;
+    capacity *= 2;
+    auto oldptr = begin;
+
+    begin = new __Type[capacity];
+    cur   = begin + size;
+    end   = cur + capacity;
+    memcpy(begin, oldptr, size);
+    delete oldptr;
 }
 
 
 template <typename __Type>
 void vector<__Type>::push_back(__Type value)
 {
-    if (cur == end) {
+    if (size == capacity)
+    {
         this->extend();
     }
     *cur = value;
