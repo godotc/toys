@@ -6,6 +6,9 @@ Plug 'scrooloose/nerdtree'  "目录树
 Plug 'tpope/vim-surround'
 Plug 'jiangmiao/auto-pairs' "括号配对
 Plug 'vim-scripts/a.vim'
+Plug 'vim-scripts/DoxygenToolkit.vim'
+Plug 'voldikss/vim-floaterm'
+
 
 Plug 'octol/vim-cpp-enhanced-highlight'
 
@@ -47,6 +50,9 @@ endfunction
 
 
 let g:rainbow_active=1
+
+"tab are spaces
+"set expandtab
 
 
 set encoding=utf-8
@@ -121,7 +127,7 @@ noremap <C-h> <Plug>(coc-fix-current)
 
 def SavedAndOpenTerm()
 	:w
-	:bo term
+	:FloatermToggle 
 enddef
 
 function SaveAndFormat()
@@ -174,3 +180,10 @@ let g:cpp_posix_standard = 1
 let g:cpp_experimental_simple_template_highlight = 1
 let g:cpp_concepts_highlight = 1
 
+
+
+" float term config
+let g:floaterm_height=0.8 
+let g:floaterm_with=0.9
+"let g:floaterm_wintype=float 
+let g:floaterm_autoclose=2
