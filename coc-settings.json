@@ -53,7 +53,38 @@
 			"initializationOptions": {
 				"buildDirectory": "build"
 			}
+		},
+		"haskell": {
+			"command": "haskell-language-server-wrapper",
+			"args": [
+				"--lsp"
+			],
+			"rootPatterns": [
+				"*.cabal",
+				"stack.yaml",
+				"cabal.project",
+				"package.yaml",
+				"hie.yaml"
+			],
+			"filetypes": [
+				"haskell",
+				"lhaskell"
+			],
+			// Settings are optional, here are some example values
+			"settings": {
+				"haskell": {
+					"checkParents": "CheckOnSave",
+					"checkProject": true,
+					"maxCompletions": 10,
+					"formattingProvider": "ormolu",
+					"plugin": {
+						"stan": {
+							"globalOn": true
+						}
+					}
+				}
+			}
 		}
-  },
-  "snippets.ultisnips.pythonPrompt": false
+	},
+	"@ignored/coc-solidity.telemetry": true
 }
