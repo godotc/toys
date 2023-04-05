@@ -1,6 +1,7 @@
 import "@nomicfoundation/hardhat-toolbox"
 import { ethers } from "hardhat";
 import { expect } from "chai";
+import { AbiCoder } from "ethers/lib/utils";
 
 describe("encode call test", () => {
 
@@ -32,6 +33,19 @@ describe("encode call test", () => {
         expect(await B.message()).to.eq("hello world")
         // console.log(await B.num())
         // console.log(await B.message())
+
+
+        await A.callBFunction__sig(B.address, BigInt(60), "bello world")
+        console.log(await B.num())
+        console.log(await B.message())
+        expect(await B.num()).to.eq(60)
+        expect(await B.message()).to.eq("bello world")
+
+        await A.callBFunction__selsector(B.address, BigInt(60), "bello world")
+        console.log(await B.num())
+        console.log(await B.message())
+        expect(await B.num()).to.eq(60)
+        expect(await B.message()).to.eq("bello world")
 
     });
 
