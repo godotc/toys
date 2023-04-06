@@ -29,6 +29,7 @@ contract DEX {
     }
 
     function add_liquidty(address token_address, uint amount) public {
+		require(token_address==token1||token_address==token2, "Wrong tokens");
         IERC20(token_address).transferFrom(msg.sender, address(this), amount);
     }
 
