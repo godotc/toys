@@ -90,7 +90,10 @@ void QtGlWidget::initializeGL()
 
         glGetProgramiv(program, GL_LINK_STATUS, &success);
         // TODO: finsh program , use , unuse, delte....
-        if (!)
+        if (!success) {
+            glGetProgramInfoLog(program, 512, nullptr, log);
+            qDebug() << "ERROR::PROGRAM::LINKERROR: " << log;
+        }
     }
 }
 
