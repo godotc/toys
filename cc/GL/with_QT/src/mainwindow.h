@@ -1,7 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "QtGlWidget.h"
+#include "qobjectdefs.h"
 #include <QMainWindow>
+
+class QtGlWidget;
 
 namespace Ui {
 class MainWindow;
@@ -15,10 +19,12 @@ class MainWindow : public QMainWindow
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+
   private:
     Ui::MainWindow *ui;
 
-    QMenu *TestMenu;
+    QtGlWidget *GLW;
+    QMenu      *TestMenu;
 };
 
 #endif // MAINWINDOW_H
