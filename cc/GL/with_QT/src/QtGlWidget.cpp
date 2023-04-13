@@ -94,6 +94,8 @@ void QtGlWidget::initializeGL()
             glGetProgramInfoLog(program, 512, nullptr, log);
             qDebug() << "ERROR::PROGRAM::LINKERROR: " << log;
         }
+
+        glUseProgram(program);
     }
 }
 
