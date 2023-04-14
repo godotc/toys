@@ -123,8 +123,7 @@ void QtGlWidget::paintGL()
     glUseProgram(program);
     glBindVertexArray(VAO);
     glEnableVertexAttribArray(0);
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //  glDrawArrays(GL_TRIANGLES, 0, 3);
+     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    //   glDrawArrays(GL_TRIANGLES, 0, 3);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
