@@ -31,8 +31,6 @@ QtGlWidget::QtGlWidget(QWidget *parent) : QOpenGLWidget(parent) {}
 
 void QtGlWidget::initializeGL()
 {
-
-
     initializeOpenGLFunctions();
 
     float vertices[] = {
@@ -111,6 +109,7 @@ void QtGlWidget::initializeGL()
 
         glDeleteShader(vertShader);
         glDeleteShader(fragShader);
+        glUseProgram(0);
     }
 }
 
