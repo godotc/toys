@@ -1,0 +1,20 @@
+[package]
+name = "ros"
+version = "0.1.0"
+edition = "2021"
+authors = ["godot42 desyourself@gmail.com"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[profile]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+
+[dependencies]
+bootloader = "0.9.23"

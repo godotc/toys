@@ -30,7 +30,7 @@ $(ISO): $(KERNEL) $(GRUB_CFG)
 	cp $(KERNEL) build/isofiles/boot/kernel.bin
 	cp $(GRUB_CFG) build/isofiles/boot/grub
 	grub-mkrescue -o $(ISO)  build/isofiles #2> /dev/null
-	#rm -r build/isofiles
+	rm -r build/isofiles
 
 $(KERNEL): $(ASSEMBLY_OBJECT_FILES) $(LINKER_SCRIPT)
 	ld -n -t $(LINKER_SCRIPT) -o $(KERNEL) $(ASSEMBLY_OBJECT_FILES)
