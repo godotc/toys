@@ -5,8 +5,9 @@ use volatile::Volatile;
 
 #[macro_export]
 macro_rules! println {
-    () => ($crate::vga_buffer::_print!("\n"));
-    ($($arg:tt)*) => ($crate::print!("{}\n",format_args!($($arg)*)));
+    () => ( $crate::vga_buffer::_print!("\n"));
+    ($fmt:expr) => (print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
 }
 #[macro_export]
 macro_rules! print {

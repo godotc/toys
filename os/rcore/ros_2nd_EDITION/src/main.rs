@@ -9,6 +9,7 @@ use core::panic::PanicInfo;
 // -> ! means defined as a diverging function: function will never return `never type`
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
+    println!("{}", _info);
     loop {}
 }
 
@@ -19,5 +20,6 @@ static HELLO: &[u8] = b"Hello World!";
 pub extern "C" fn _start() -> ! {
     println!("Hello world {} !", "godot42");
 
+    panic!("some msg");
     loop {}
 }
