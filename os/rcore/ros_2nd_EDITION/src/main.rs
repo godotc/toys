@@ -13,7 +13,7 @@ use core::panic::PanicInfo;
 // disable name mangling: output func with the name _start without attribute
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("Hello world {} !", "godot42");
+    println!("Hello world {}!", "godot42");
 
     #[cfg(test)]
     test_main();
