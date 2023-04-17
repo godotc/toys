@@ -12,3 +12,4 @@ target("with_QT")
     add_files("src/mainwindow.h")
 	add_packages("glfw", "glew")
 
+
