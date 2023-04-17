@@ -3,16 +3,21 @@ use lazy_static::lazy_static;
 use spin::Mutex;
 use volatile::Volatile;
 
-#[macro_export]
-macro_rules! println {
-    () => ( $crate::vga_buffer::_print!("\n"));
-    ($fmt:expr) => (print!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
-}
+const BUFFER_HEIGHT: usize = 25;
+const BUFFER_WIDTH: usize = 80;
+
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
 }
+
+#[macro_export]
+macro_rules! println {
+	() => (print!("\n"));
+    ($fmt:expr) => (print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => ($crate::print!(concat!($fmt, "\n"), $($arg)*));
+}
+
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
@@ -64,9 +69,6 @@ struct ScreenChar {
     ascii_character: u8,
     color_code: ColorCode,
 }
-
-const BUFFER_HEIGHT: usize = 25;
-const BUFFER_WIDTH: usize = 80;
 
 #[repr(transparent)]
 struct Buffer {
@@ -141,6 +143,8 @@ impl fmt::Write for Writer {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #[allow(dead_code)]
 fn print_somethin() {
     use core::fmt::Write;
@@ -154,4 +158,38 @@ fn print_somethin() {
     writer.write_string("ello ");
     writer.write_string("我rld");
     write!(writer, "The number are {} and {}", 3.141592, 1.0 / 3.0).unwrap();
+}
+
+#[test_case]
+fn test_println_simple() {
+    println!("test_println_simple out");
+}
+
+#[test_case]
+fn test_println_many() {
+    for _ in 0..200 {
+        println!("test_println_many output");
+    }
+}
+
+#[test_case]
+fn test_println_output() {
+    let s = "I dont want to do these tests, who've been forget the previous things!";
+    println!("{}", s);
+
+    for (i, c) in s.chars().enumerate() {
+        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_eq!(char::from(screen_char.ascii_character), c);
+    }
+}
+
+#[test_case]
+fn test_unprintable_chars() {
+    let s = "你好世界";
+    println!("{}", s);
+
+    for (i, c) in s.chars().enumerate() {
+        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_ne!(char::from(screen_char.ascii_character), c);
+    }
 }
