@@ -27,6 +27,19 @@ contract Token is
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
+	event Recevie(address indexed from, uint256  indexed amount);
+
+	receive() payable external{
+		emit  Recevie(_msgSender(),msg.value);
+	}
+
+	fallback() external payable{
+		emit  Recevie(_msgSender(),msg.value);
+	}
+
+	function withdrawl() external onlyRole(DEFAULT_ADMIN_ROLE){
+		payable(_msgSender()).transfer (address(this).balance)	;
+	}
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -45,7 +58,8 @@ contract Token is
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
-
+		_grantRole(MINTER_ROLE,msg.sender);
+		_setRoleAdmin(MINTER_ROLE,DEFAULT_ADMIN_ROLE);
 
         _grantRole(SNAPSHOT_ROLE, msg.sender);
 		_setRoleAdmin(SNAPSHOT_ROLE,DEFAULT_ADMIN_ROLE);
@@ -53,8 +67,8 @@ contract Token is
         _grantRole(PAUSER_ROLE, msg.sender);
 		_setRoleAdmin(PAUSER_ROLE,DEFAULT_ADMIN_ROLE);
 
-        _grantRole(MINTER_ROLE, msg.sender);
-		_setRoleAdmin(MINTER_ROLE,DEFAULT_ADMIN_ROLE);
+
+
 
         _mint(msg.sender, 543210 * 10 ** decimals());
     }
@@ -104,5 +118,5 @@ contract Token is
 	}
 
 
-	uint256[255] gap;
+	uint256[100] gap;
 }
