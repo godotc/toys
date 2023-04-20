@@ -19,6 +19,10 @@ Plug 'frazrepo/vim-rainbow' "彩虹括号
 Plug 'joshdick/onedark.vim'
 Plug 'rakr/vim-one'
 
+" FZF.vim
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+
 " All of your Plugins must be added before the following line
 call plug#end()            " required
 
@@ -119,21 +123,42 @@ endfunction
 
 
 " Neartree
-map <F3> :NERDTreeMirror<CR>
-map <F3> :NERDTreeToggle<CR>
-noremap <C-d> :call SavedAndOpenTerm()<CR>
+nmap <F3> :NERDTreeMirror<CR>
+nmap <F3> :NERDTreeToggle<CR>
 noremap <C-s> :call SaveAndFormat()<CR>
 noremap <C-h> <Plug>(coc-fix-current)
 
-def SavedAndOpenTerm()
+noremap <C-t> :call FloatTerm()<CR>
+tnoremap   <silent>   <C-t>   <C-\><C-n>:FloatermToggle<CR>
+
+nmap <Space>f :Files<CR>
+nmap <Space>b :Buffers<CR>
+nmap <F1> :Commands<CR>
+
+
+
+
+def FloatTerm()
 	:w
-	:FloatermToggle 
+	:FloatermToggle  
 enddef
+
+" when open floatterm run in vim (useless)
+"autocmd User FloatermOpen  tmux
 
 function SaveAndFormat()
 	call CocAction('format')
 	:w
 endfunction
+
+"nnoremap   <silent>   <F7>    :FloatermNew<CR>
+"tnoremap   <silent>   <F7>    <C-\><C-n>:FloatermNew<CR>
+"nnoremap   <silent>   <F8>    :FloatermPrev<CR>
+"tnoremap   <silent>   <F8>    <C-\><C-n>:FloatermPrev<CR>
+"nnoremap   <silent>   <F9>    :FloatermNext<CR>
+"tnoremap   <silent>   <F9>    <C-\><C-n>:FloatermNext<CR>
+"nnoremap   <silent>   <F12>   :FloatermToggle<CR>
+"tnoremap   <silent>   <F12>   <C-\><C-n>:FloatermToggle<CR>
 
 
 " Highlight the symbol and its references when holding the cursor.
