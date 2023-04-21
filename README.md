@@ -1,10 +1,10 @@
 # toys
 
-A repository of toys for stash files or synchronization in multiple place, which codes in  numerous langs.
+A repository of toys which for myself to stash temp files or synchronization in multiple places. This repo contains some codes in  multiple langs.
 
-You can ignore this repo most of the time. Because most of files just are testing or demo script on what I leaned, and some directries are organizae with no meaning and no rule. Maybe some test demo, which I just settup and don't know when to fullfill. So there are a bunch of semi-finish projects.
+You can ignore this repo in most of the time. Because most of files here were just for testing or  practice's demo script about what I leaned, and some directries were not  organizaed with some meanings or specific rules. Maybe some test demo, which I just settup it once upon a time, and then just forgget to continue coding and didn't know when to fullfill it. So there are a bunch of semi-finish projects.
 
-But if you rummage through it... Maybe can see a lot of funny or maybe useful  sample or test what made by me.
+But if you rummage through it... Maybe can find seral funny things  or maybe useful  sample or test what made by me.
 
 
 
