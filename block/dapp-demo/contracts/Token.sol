@@ -29,10 +29,6 @@ contract Token is
 
 	event Recevie(address indexed from, uint256  indexed amount);
 
-	receive() payable external{
-		emit  Recevie(_msgSender(),msg.value);
-	}
-
 	fallback() external payable{
 		emit  Recevie(_msgSender(),msg.value);
 	}
@@ -112,10 +108,11 @@ contract Token is
 	// getRoleAdmin -> onlyRole(DEFAULT_ADMIN_ROLE) -> checkRole(DEFAULT_ADMIN_ROLE, _msgSender())
 	// Role's admin role is a role type, means that the MINTER_ROLE are administered by DEFAULT_ADMIN_ROLE,
 	// And the DEFAULT_ADMIN_ROLE's member has the contract's deployer
-	function setRoleAdmin(bytes32 role, bytes32 adminRole)public onlyRole(getRoleAdmin(role)) returns(bool) {
+	function setRoleAdmin(bytes32 role, bytes32 adminRole)external onlyRole(getRoleAdmin(role)) returns(bool) {
 		super._setRoleAdmin(role, adminRole);
 		return true;
 	}
+
 
 
 	uint256[100] gap;

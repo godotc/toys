@@ -18,5 +18,9 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "typescript": "5.0.4"
+  },
+  "devDependencies": {
+    "@metamask/detect-provider": "^2.0.0",
+    "ether.js": "^1.0.0"
   }
 }

@@ -1,4 +1,4 @@
-import {HardhatUserConfig} from "hardhat/config";
+import { HardhatUserConfig } from "hardhat/config";
 import '@openzeppelin/hardhat-upgrades';
 import "@nomicfoundation/hardhat-toolbox";
 
@@ -13,7 +13,14 @@ const config: HardhatUserConfig = {
 			}
 		},
 		//	allowUnlimitedContractSize: false,
+	},
+
+	networks: {
+		local: {
+			url: "http://127.0.0.1:8545"
+		}
 	}
+
 };
 
 export default config;
