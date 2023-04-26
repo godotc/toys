@@ -17,14 +17,14 @@ contract Civil3NFT is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Acce
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     Counters.Counter private _tokenIdCounter;
 
-	uint256 public immutable MINT_PRICE;
+    uint256 public immutable MINT_PRICE;
 
     constructor(uint256 mintPrice) ERC721("Civil3 NFT", "CVT") EIP712("Civil3 NFT", "1") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
 
-		MINT_PRICE = mintPrice;
+        MINT_PRICE = mintPrice;
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -43,20 +43,13 @@ contract Civil3NFT is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Acce
         _setTokenURI(tokenId, uri);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
-        internal
-        whenNotPaused
-        override(ERC721, ERC721Enumerable)
-    {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize) internal override(ERC721, ERC721Enumerable) whenNotPaused {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
     // The following functions are overrides required by Solidity.
 
-    function _afterTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
-        internal
-        override(ERC721, ERC721Votes)
-    {
+    function _afterTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize) internal override(ERC721, ERC721Votes) {
         super._afterTokenTransfer(from, to, tokenId, batchSize);
     }
 
@@ -64,22 +57,11 @@ contract Civil3NFT is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Acce
         super._burn(tokenId);
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
+    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721Enumerable, AccessControl)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721Enumerable, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
-

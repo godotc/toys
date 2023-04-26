@@ -40,14 +40,13 @@ export default function HomePage() {
 		}
 		connect()
 
-
-
-		window.ethereum.on("accountsChange", (accounts) => {
-			console.log("new: ", accounts[0])
-			setAccount(accounts[0] as any)
-		})
+		if (window.ethereum != null) {
+			(window.ethereum as ethers.providers.Web3Provider).on("accountsChange", (accounts) => {
+				console.log("new: ", accounts[0])
+				setAccount(accounts[0] as any)
+			})
+		} else console.log("unalbe to listen event")
 	}
-
 
 	return (
 		<>
@@ -63,6 +62,7 @@ export default function HomePage() {
 
 				<ul >
 					<li> <Link href={"/NFT"}> NFT </Link > </li>
+					<li> <Link href={"/pages/ipfs"}> IPFS </Link > </li>
 				</ul>
 
 

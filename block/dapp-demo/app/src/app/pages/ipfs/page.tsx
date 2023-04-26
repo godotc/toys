@@ -1,6 +1,7 @@
 
 'use client'
 
+import Image from "next/image"
 import { useState } from "react"
 
 import { Web3Storage, getFilesFromPath } from 'web3.storage'
@@ -39,7 +40,6 @@ export default function IPFS() {
         } catch (error: any) {
             console.log(error.message);
         }
-
     }
 
 
@@ -54,11 +54,12 @@ export default function IPFS() {
                 </form>
 
                 <div className="display">
-                    {urlArry.length !== 0
-                        ? urlArry.map((el, index) => {
-                            return <image src={el} href={el} alt="nfts" width="200" height="200" key={index}></image>
-                        })
-                        : <h3>Upload file</h3>}
+                    {
+                        urlArry.length !== 0 ? urlArry.map(
+                            (el, index) => {
+                                return <img src={el} width="200" height="200" key={index}></img>
+                            }) : <h3>Upload file</h3>
+                    }
                 </div>
 
             </div>
