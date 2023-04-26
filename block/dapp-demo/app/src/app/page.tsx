@@ -1,7 +1,8 @@
 'use client'
 
 
-import { ethers } from "ethers";
+import ethers from "ethers";
+import Link from "next/link";
 import { useEffect, useState } from "react"
 // import TokenDapp from "./component/TokenDapp"
 
@@ -16,8 +17,8 @@ export default function HomePage() {
 		if (!window.ethereum || !provider || !account) {
 			return;
 		}
-		provider.getBalance(account).then((result) => {
-			setBalance(ethers.utils.formatEther(result));
+		(provider as ethers.providers.Web3Provider).getBalance(account).then((result) => {
+			setBalance(ethers.utils.formatEther(result) as any);
 		})
 	}, [account])
 
@@ -27,11 +28,11 @@ export default function HomePage() {
 			alert("Metamask not installed!");
 			return;
 		}
-		const providerweb3 = new ethers.providers.Web3Provider(window.ethereum)
-		setProvider(providerweb3)
+		const providerweb3 = new ethers.providers.Web3Provider(window.ethereum as ethers.providers.ExternalProvider)
+		setProvider(providerweb3 as any)
 
 		const connect = async () => {
-			const accounts = providerweb3.send("eth_requestAccounts")
+			const accounts = providerweb3.send("eth_requestAccounts", [])
 				.then((accounts) => {
 					setAccount(accounts[0])
 
@@ -40,15 +41,17 @@ export default function HomePage() {
 		connect()
 
 
-		ethers.on("accountsChange", (accounts) => {
+		ethers.on("accountsChange", (accounts: string[]) => {
 			console.log("new: ", accounts[0])
-			setAccount(accounts[0])
+			setAccount(accounts[0] as any)
 		})
 	}
 
 
 	return (
 		<>
+			<Link href={"/pages/ipfs"}>IPFS</Link>
+
 			<div className="Container">
 				{/* <TokenDapp /> */}
 				<h5>Account = {account}</h5>
