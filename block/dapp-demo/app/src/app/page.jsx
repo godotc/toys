@@ -1,9 +1,10 @@
 'use client'
 
 
-import { ethers } from "ethers";
-import { useEffect, useState } from "react"
+import {ethers} from "ethers";
+import {useEffect, useState} from "react"
 // import TokenDapp from "./component/TokenDapp"
+import Link from "next/link";
 
 export default function HomePage() {
 
@@ -30,15 +31,10 @@ export default function HomePage() {
 		const providerweb3 = new ethers.providers.Web3Provider(window.ethereum)
 		setProvider(providerweb3)
 
-		const connect = async () => {
-			const accounts = providerweb3.send("eth_requestAccounts")
-				.then((accounts) => {
-					setAccount(accounts[0])
-
-				})
-		}
-		connect()
-
+		providerweb3.send("eth_requestAccounts")
+			.then((accounts) => {
+				setAccount(accounts[0])
+			})
 
 		ethers.on("accountsChange", (accounts) => {
 			console.log("new: ", accounts[0])
@@ -51,6 +47,9 @@ export default function HomePage() {
 		<>
 			<div className="Container">
 				{/* <TokenDapp /> */}
+				<ul>
+					<li> <Link href={"/NFT"}> NFT </Link > </li>
+				</ul>
 				<h5>Account = {account}</h5>
 				<h5>Balances = {balance}</h5>
 				<button onClick={HandleConnectWallet} >Connect</button>
