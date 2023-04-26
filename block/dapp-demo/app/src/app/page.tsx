@@ -1,10 +1,10 @@
 'use client'
 
 
-import ethers from "ethers";
-import Link from "next/link";
+import { ethers } from "ethers";
 import { useEffect, useState } from "react"
 // import TokenDapp from "./component/TokenDapp"
+import Link from "next/link";
 
 export default function HomePage() {
 
@@ -41,7 +41,8 @@ export default function HomePage() {
 		connect()
 
 
-		ethers.on("accountsChange", (accounts: string[]) => {
+
+		window.ethereum.on("accountsChange", (accounts) => {
 			console.log("new: ", accounts[0])
 			setAccount(accounts[0] as any)
 		})
@@ -53,10 +54,17 @@ export default function HomePage() {
 			<Link href={"/pages/ipfs"}>IPFS</Link>
 
 			<div className="Container">
+
 				{/* <TokenDapp /> */}
+
 				<h5>Account = {account}</h5>
 				<h5>Balances = {balance}</h5>
 				<button onClick={HandleConnectWallet} >Connect</button>
+
+				<ul >
+					<li> <Link href={"/NFT"}> NFT </Link > </li>
+				</ul>
+
 
 			</div>
 
