@@ -36,7 +36,7 @@ export default function HomePage() {
 				setAccount(accounts[0])
 			})
 
-		ethers.on("accountsChange", (accounts) => {
+		window.ethereum.on("accountsChange", (accounts) => {
 			console.log("new: ", accounts[0])
 			setAccount(accounts[0])
 		})
@@ -46,13 +46,17 @@ export default function HomePage() {
 	return (
 		<>
 			<div className="Container">
+
 				{/* <TokenDapp /> */}
-				<ul>
-					<li> <Link href={"/NFT"}> NFT </Link > </li>
-				</ul>
+
 				<h5>Account = {account}</h5>
 				<h5>Balances = {balance}</h5>
 				<button onClick={HandleConnectWallet} >Connect</button>
+
+				<ul >
+					<li> <Link href={"/NFT"}> NFT </Link > </li>
+				</ul>
+
 
 			</div>
 
