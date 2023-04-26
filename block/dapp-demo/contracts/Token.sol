@@ -27,15 +27,19 @@ contract Token is
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-	event Recevie(address indexed from, uint256  indexed amount);
+    event Recevie(address indexed from, uint256 indexed amount);
 
-	fallback() external payable{
-		emit  Recevie(_msgSender(),msg.value);
-	}
+    receive() external payable {
+        emit Recevie(_msgSender(), msg.value);
+    }
 
-	function withdrawl() external onlyRole(DEFAULT_ADMIN_ROLE){
-		payable(_msgSender()).transfer (address(this).balance)	;
-	}
+    // fallback() external payable {
+    //     emit Recevie(_msgSender(), msg.value);
+    // }
+
+    function withdrawl() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        payable(_msgSender()).transfer(address(this).balance);
+    }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -54,17 +58,14 @@ contract Token is
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
-		_grantRole(MINTER_ROLE,msg.sender);
-		_setRoleAdmin(MINTER_ROLE,DEFAULT_ADMIN_ROLE);
+        _grantRole(MINTER_ROLE, msg.sender);
+        _setRoleAdmin(MINTER_ROLE, DEFAULT_ADMIN_ROLE);
 
         _grantRole(SNAPSHOT_ROLE, msg.sender);
-		_setRoleAdmin(SNAPSHOT_ROLE,DEFAULT_ADMIN_ROLE);
+        _setRoleAdmin(SNAPSHOT_ROLE, DEFAULT_ADMIN_ROLE);
 
         _grantRole(PAUSER_ROLE, msg.sender);
-		_setRoleAdmin(PAUSER_ROLE,DEFAULT_ADMIN_ROLE);
-
-
-
+        _setRoleAdmin(PAUSER_ROLE, DEFAULT_ADMIN_ROLE);
 
         _mint(msg.sender, 543210 * 10 ** decimals());
     }
@@ -89,8 +90,6 @@ contract Token is
         super._beforeTokenTransfer(from, to, amount);
     }
 
-
-
     // The following functions are overrides required by Solidity.
 
     function _afterTokenTransfer(address from, address to, uint256 amount) internal override(ERC20Upgradeable, ERC20VotesUpgradeable) {
@@ -105,15 +104,13 @@ contract Token is
         super._burn(account, amount);
     }
 
-	// getRoleAdmin -> onlyRole(DEFAULT_ADMIN_ROLE) -> checkRole(DEFAULT_ADMIN_ROLE, _msgSender())
-	// Role's admin role is a role type, means that the MINTER_ROLE are administered by DEFAULT_ADMIN_ROLE,
-	// And the DEFAULT_ADMIN_ROLE's member has the contract's deployer
-	function setRoleAdmin(bytes32 role, bytes32 adminRole)external onlyRole(getRoleAdmin(role)) returns(bool) {
-		super._setRoleAdmin(role, adminRole);
-		return true;
-	}
+    // getRoleAdmin -> onlyRole(DEFAULT_ADMIN_ROLE) -> checkRole(DEFAULT_ADMIN_ROLE, _msgSender())
+    // Role's admin role is a role type, means that the MINTER_ROLE are administered by DEFAULT_ADMIN_ROLE,
+    // And the DEFAULT_ADMIN_ROLE's member has the contract's deployer
+    function setRoleAdmin(bytes32 role, bytes32 adminRole) external onlyRole(getRoleAdmin(role)) returns (bool) {
+        super._setRoleAdmin(role, adminRole);
+        return true;
+    }
 
-
-
-	uint256[100] gap;
+    uint256[100] gap;
 }
