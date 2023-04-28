@@ -10,7 +10,7 @@ class QtGlWidget
 {
   public:
     explicit QtGlWidget(QWidget *parent);
-    ~QtGlWidget() = default;
+    ~QtGlWidget();
 
     virtual void initializeGL() override;
     virtual void resizeGL(int w, int h) override;

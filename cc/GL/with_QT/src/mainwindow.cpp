@@ -10,8 +10,8 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      GLW(new QtGlWidget(this)),
-      ui(new Ui::MainWindow)
+      ui(new Ui::MainWindow),
+      GLW(new QtGlWidget(this))
 {
     ui->setupUi(this);
     setCentralWidget(GLW);
