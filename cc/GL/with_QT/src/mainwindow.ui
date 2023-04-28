@@ -23,6 +23,10 @@
 QMenuBar{
 	background-color: rgb(200, 200, 200);
 	color: rgb(60, 60, 60);
+}
+
+QWidget:checked {
+	background-color: rgb(10, 255, 67);
 }</string>
   </property>
   <widget class="QWidget" name="centralWidget"/>
@@ -32,7 +36,7 @@ QMenuBar{
      <x>0</x>
      <y>0</y>
      <width>433</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
