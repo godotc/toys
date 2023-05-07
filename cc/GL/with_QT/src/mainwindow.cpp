@@ -54,9 +54,10 @@ void MainWindow::initWireframeAction()
 
     auto ctx = __FUNCTION__;
 
-    connect(actionWireframe, &QAction::triggered, this, [this, ctx]() {
-        const auto newState = actionWireframe->isChecked();
-        qDebug() << ctx << ": Toggle Wireframe mode to [" << (newState ? "Line" : "Fill") << "]";
-        GLW->SetWireFrameMode(actionWireframe->isChecked());
-    });
+    connect(actionWireframe, &QAction::triggered, this,
+            [this, ctx]() {
+                const auto newState = actionWireframe->isChecked();
+                qDebug() << ctx << ": Toggle Wireframe mode to [" << (newState ? "Line" : "Fill") << "]";
+                GLW->SetWireFrameMode(newState);
+            });
 }
