@@ -6,6 +6,7 @@
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(shader);
+    Q_INIT_RESOURCE(texture);
 
     QApplication app(argc, argv);
     MainWindow   w;
