@@ -1,48 +1,55 @@
 #include "QtGlWidget.h"
 #include "qopenglext.h"
+#include "qopenglshaderprogram.h"
 #include "qopenglwidget.h"
+#include "qtimer.h"
+#include "qwindowdefs.h"
 #include <GL/gl.h>
+#include <QTime>
+#include <cmath>
 #include <iterator>
+#include <math.h>
 #include <qdebug.h>
 #include <string>
 #include <vector>
 
+
 // Create VAO, VBO object, get uinque ID
 static GLuint VAO, VBO, EBO;
-static GLuint program;
-static GLuint attrib;
 
-static const char *vertSource = R"R(
-	#version 330 core
-	layout(location =0) in vec3 aPos;
-	void main()
-	{
-		gl_Position = vec4(aPos,1);
-	}
-)R";
 
-static const char *fragSource = R"R(
-	#version 330 core
-	out vec4 fragcolor;
-	void main()
-	{
-		fragcolor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-	}
-)R";
 
-QtGlWidget::QtGlWidget(QWidget *parent) : QOpenGLWidget(parent) {}
+QtGlWidget::QtGlWidget(QWidget *parent) : QOpenGLWidget(parent)
+{
+    m_Timer.start(41);
+    connect(&m_Timer, &QTimer::timeout, this, &QtGlWidget::OnTimeout);
+}
 
 QtGlWidget::~QtGlWidget()
 {
     makeCurrent();
     glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &EBO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(program);
+    doneCurrent();
+}
+void QtGlWidget::OnTimeout()
+{
+    makeCurrent();
+    static int tv = 1;
+    ++tv;
+    m_ShaderProgram.setUniformValue("outColor",
+                                    sin(tv),
+                                    0,
+                                    0,
+                                    tan(tv));
+    update();
     doneCurrent();
 }
 
 void QtGlWidget::initializeGL()
 {
+
     initializeOpenGLFunctions();
 
     float vertices[] = {
@@ -80,9 +87,10 @@ void QtGlWidget::initializeGL()
                 // NOTICE: attribute is ref to GL_ARRAY_BUFFER, must VAO->VBO->Attrib-> unbind
                 // It's a state machine!
                 // VAP index, stride, element type, normalized, size, first offset
-                glVertexAttribPointer(attrib, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)0);
+                // index means the layout of vertex shaer's variable
+                glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)0);
+                glEnableVertexAttribArray(2);
             }
-            glEnableVertexAttribArray(attrib);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
         }
@@ -98,42 +106,13 @@ void QtGlWidget::initializeGL()
     }
 
     {
-        GLint                 success;
-        std::array<char, 512> log;
-
-        GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-        GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-        program           = glCreateProgram();
-
-        glShaderSource(vertShader, 1, &vertSource, nullptr);
-        glCompileShader(vertShader);
-        glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
-        if (success != GL_TRUE) {
-            glGetShaderInfoLog(vertShader, 512, nullptr, log.data());
-            qDebug() << "ERROR::SHADER::VERTEX::COMPILATION_FAILED: " << log.data();
+        bool success;
+        m_ShaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/def.vert");
+        m_ShaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/def.frag");
+        success = m_ShaderProgram.link();
+        if (!success) {
+            qDebug() << "ERROR::Shaer" << m_ShaderProgram.log();
         }
-
-        glShaderSource(fragShader, 1, &fragSource, nullptr);
-        glCompileShader(fragShader);
-        glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
-        if (success != GL_TRUE) {
-            glGetShaderInfoLog(fragShader, 512, nullptr, log.data());
-            qDebug() << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED: " << log.data();
-        }
-
-        glAttachShader(program, vertShader);
-        glAttachShader(program, fragShader);
-        glLinkProgram(program);
-        glGetProgramiv(program, GL_LINK_STATUS, &success);
-        if (success != GL_TRUE) {
-            glGetProgramInfoLog(program, 512, nullptr, log.data());
-            qDebug() << "ERROR::PROGRAM::LINKERROR: " << log.data();
-        }
-
-
-        glDeleteShader(vertShader);
-        glDeleteShader(fragShader);
-        glUseProgram(0);
     }
 }
 
@@ -143,10 +122,11 @@ void QtGlWidget::paintGL()
 {
     glClearColor(0.2, 0.3, 0.3, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    glUseProgram(program);
-    glBindVertexArray(VAO);
-    glEnableVertexAttribArray(attrib);
 
+    m_ShaderProgram.bind();
+
+    glBindVertexArray(VAO);
+    glEnableVertexAttribArray(0);
 
 
     switch (m_Shape) {

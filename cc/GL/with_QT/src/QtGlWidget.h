@@ -1,6 +1,9 @@
 #pragma once
 
 #include "qobjectdefs.h"
+#include "qopenglshaderprogram.h"
+#include <QOpenGLShaderProgram>
+#include <QTimer>
 #include <qopenglfunctions_3_3_core.h>
 #include <qopenglwidget.h>
 
@@ -29,10 +32,13 @@ class QtGlWidget
     void DrawShape(Shape shape);
 
   signals:
+    void OnTimeout();
 
   public:
     void SetWireFrameMode(bool bWireframe);
 
   private:
-    Shape m_Shape;
+    Shape                m_Shape;
+    QOpenGLShaderProgram m_ShaderProgram;
+    QTimer               m_Timer;
 };
