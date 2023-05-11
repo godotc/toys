@@ -1,4 +1,4 @@
-import { HardhatUserConfig } from "hardhat/config";
+import {HardhatUserConfig} from "hardhat/config";
 import '@openzeppelin/hardhat-upgrades';
 import "@nomicfoundation/hardhat-toolbox";
 
@@ -20,7 +20,8 @@ const config: HardhatUserConfig = {
 
 	networks: {
 		local: {
-			url: "http://127.0.0.1:8545"
+			url: "http://127.0.0.1:8545",
+			accounts: [process.env.PK as string]
 		},
 		sepolia: {
 			url: "https://sepolia.infura.io/v3/19cd45d3b29b4b558bb0c86031515a54",

@@ -465,6 +465,7 @@
     "@typechain/hardhat": "^6.1.5",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
+    "@types/node": "^20.1.2",
     "ethers": "^5.7.2",
     "mocha": "^7.1.2"
   },
