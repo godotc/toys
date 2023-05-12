@@ -1,16 +1,32 @@
- .Content {
- 	background-color: skyblue;
- 	top: 0;
- }
+.Header {
+	display: flex;
+	color: yellow;
+	align-self: center;
+}
 
- .PrimeNFT {
- 	color: #fff;
- }
 
- .NormalNFT {
- 	color: greenyellow;
- }
 
- .Header {
- 	color: yellow;
- }
+.Content {
+	background-color: skyblue;
+	top: 0;
+}
+
+.homeConent {
+	background-color: skyblue;
+	top: 0;
+	box-align: center;
+	align-content: center;
+}
+
+#h5 {
+	text-align: center;
+	align-content: center;
+}
+
+.PrimeNFT {
+	color: #fff;
+}
+
+.NormalNFT {
+	color: greenyellow;
+}

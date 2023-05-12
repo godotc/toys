@@ -1,9 +1,8 @@
+'use client'
 import Link from "next/link";
 
 
 export default function NFT() {
-
-
 	return (
 		<>
 			<h1> Civil3 NFT Project</h1>

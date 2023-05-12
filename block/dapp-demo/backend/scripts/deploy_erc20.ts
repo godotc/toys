@@ -51,16 +51,15 @@ async function main() {
 
 	log("UserB balacne:", await Proxy.balanceOf(userB.address));
 	log("allowance:", await Proxy.allowance(account.address, facuet_instance.address));
-
-
 }
 
 
 const RecordeInfo = (Info: any) => {
-	const output_dir = __dirname + "/../Info/"
+	const dir_name = 'Output';
+	const output_dir = __dirname + `/../../${dir_name}/`
 
-	fs.mkdir(output_dir, (err) => {log(err)});
-	const file = path.join(output_dir + "info.json");
+	fs.mkdir(output_dir, () => {});
+	const file = path.join(output_dir + "meta.json");
 
 	fs.writeFile(file, JSON.stringify(Info), (err) => {
 		if (err) console.log(err);

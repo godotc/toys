@@ -1,7 +1,7 @@
 {
 	"token": {
-		"address": "0xde915663062fA96dF41Ec4E84A5F47F42F408385",
-		"signer": "0x39f972BA743f1B976E6Af13530705c05DaE94c63",
+		"address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+		"signer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 		"abi": [
 			{
 				"inputs": [],
@@ -402,8 +402,8 @@
 		]
 	},
 	"facuet": {
-		"address": "0x64670148249301e5BEAd2a20eC9bA8a92556Ab2e",
-		"signer": "0x39f972BA743f1B976E6Af13530705c05DaE94c63",
+		"address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+		"signer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 		"abi": [
 			{
 				"inputs": [
