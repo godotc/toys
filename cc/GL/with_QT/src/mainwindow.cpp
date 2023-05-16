@@ -39,6 +39,7 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
 void MainWindow::initWireframeAction()
 {
     this->actionWireframe = new QAction("Wireframe", this);

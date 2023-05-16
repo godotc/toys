@@ -1,10 +1,12 @@
 #pragma once
 
+#include "qmap.h"
 #include "qobjectdefs.h"
 #include "qopenglshaderprogram.h"
 #include <QOpenGLShaderProgram>
 #include <QTimer>
 #include <qopenglfunctions_3_3_core.h>
+#include <qopengltexture.h>
 #include <qopenglwidget.h>
 
 
@@ -41,4 +43,7 @@ class QtGlWidget
     Shape                m_Shape;
     QOpenGLShaderProgram m_ShaderProgram;
     QTimer               m_Timer;
+
+    QString                         m_Texture;
+    QMap<QString, QOpenGLTexture *> m_Textures;
 };

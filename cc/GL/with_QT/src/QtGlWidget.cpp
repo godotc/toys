@@ -1,6 +1,8 @@
 #include "QtGlWidget.h"
+#include "qimage.h"
 #include "qopenglext.h"
 #include "qopenglshaderprogram.h"
+#include "qopengltexture.h"
 #include "qopenglwidget.h"
 #include "qtimer.h"
 #include "qwindowdefs.h"
@@ -11,8 +13,10 @@
 #include <math.h>
 #include <qdebug.h>
 #include <string>
+#include <type_traits>
 #include <vector>
 
+#include <stb/stb_image.h>
 
 // Create VAO, VBO object, get uinque ID
 static GLuint VAO, VBO, EBO;
@@ -21,7 +25,7 @@ static GLuint VAO, VBO, EBO;
 
 QtGlWidget::QtGlWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
-    m_Timer.start(41);
+    // m_Timer.start(41);
     connect(&m_Timer, &QTimer::timeout, this, &QtGlWidget::OnTimeout);
 }
 
@@ -52,28 +56,42 @@ void QtGlWidget::initializeGL()
 
     initializeOpenGLFunctions();
 
-    float vertices[] = {
-        -0.5, -0.5, 0.0,
-        0.5, -0.5, 0.0,
-        -0.5, +0.5, 0.0,
-        +0.5, +0.5, 0.0};
-    GLuint indices[] = {
-        0, 1, 2,
-        1, 2, 3};
+    std::vector<float>  vertices;
+    std::vector<GLuint> indices;
+
+    {
+        indices = {
+            0, 1, 2,
+            1, 2, 3};
+
+        float triangle01[] = {
+            -0.9, -0.5, 0.0,
+            0.0, -0.5, 0.0,
+            -0.45, +0.5, 0.0};
+
+        float triangle02[] = {
+            0.0, -0.5, 0.0,
+            0.9, -0.5, 0.0,
+            +0.45, +0.5, 0.0};
+
+        float *trangle_srcs[2] = {triangle01, triangle02};
+    }
+
+    // textures sample
+    {
+        // 3 vertex 3 color  2 texture
+        vertices = {
+            0.5, 0.5, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0,
+            0.5, -0.5, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0,
+            -0.5, -0.5, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0,
+            -0.5, 0.5, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+
+        indices = {
+            0, 1, 2,
+            2, 3, 0};
+    }
 
 
-
-    float triangle01[] = {
-        -0.9, -0.5, 0.0,
-        0.0, -0.5, 0.0,
-        -0.45, +0.5, 0.0};
-
-    float triangle02[] = {
-        0.0, -0.5, 0.0,
-        0.9, -0.5, 0.0,
-        +0.45, +0.5, 0.0};
-
-    float *trangle_srcs[2] = {triangle01, triangle02};
 
     { // VAO is symbol, VBO is its data
         glGenVertexArrays(1, &VAO);
@@ -83,12 +101,19 @@ void QtGlWidget::initializeGL()
             glBindVertexArray(VAO);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             {
-                glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sizeof(trangle_srcs), vertices, GL_STATIC_DRAW);
+
+                auto getInitalPtr = [](auto cnt, auto type) -> void * {
+                    return (void *)((sizeof(decltype(type)) * cnt));
+                };
+
                 // NOTICE: attribute is ref to GL_ARRAY_BUFFER, must VAO->VBO->Attrib-> unbind
-                // It's a state machine!
-                // VAP index, stride, element type, normalized, size, first offset
-                // index means the layout of vertex shaer's variable
-                glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)0);
+                glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *)0);
+                glEnableVertexAttribArray(0);
+                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, getInitalPtr(3, float()));
+                glEnableVertexAttribArray(1);
+                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, getInitalPtr(6, float()));
                 glEnableVertexAttribArray(2);
             }
             glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -98,13 +123,14 @@ void QtGlWidget::initializeGL()
 
         glGenBuffers(1, &EBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(float) * indices.size(), indices.data(), GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         // Draw as only outline
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
 
+    // shader
     {
         bool success;
         m_ShaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/def.vert");
@@ -113,6 +139,23 @@ void QtGlWidget::initializeGL()
         if (!success) {
             qDebug() << "ERROR::Shaer" << m_ShaderProgram.log();
         }
+    }
+
+    // texture
+    {
+        glBindVertexArray(VAO);
+
+        // GLuint texture;
+        // glGenTextures(1, &texture);
+        // glBindTexture(GL_TEXTURE_2D, texture);
+        // int  w, h, nrChannel;
+        // auto data = stbi_load("abc", &w, &h, &nrChannel, 0);
+
+
+        m_Texture = "brick";
+        m_Textures.insert("arch", new QOpenGLTexture(QImage(":/res/textures/arch.png").mirrored()));
+        m_Textures.insert("brick", new QOpenGLTexture(QImage(":/res/textures/brick.bmp").mirrored()));
+        glBindVertexArray(0);
     }
 }
 
@@ -126,11 +169,10 @@ void QtGlWidget::paintGL()
     m_ShaderProgram.bind();
 
     glBindVertexArray(VAO);
-    glEnableVertexAttribArray(0);
-
 
     switch (m_Shape) {
     case Rect:
+        m_Textures[m_Texture]->bind(0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     case Circle:
