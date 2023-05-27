@@ -44,6 +44,5 @@ class QtGlWidget
     QOpenGLShaderProgram m_ShaderProgram;
     QTimer               m_Timer;
 
-    QString                         m_Texture;
     QMap<QString, QOpenGLTexture *> m_Textures;
 };

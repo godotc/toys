@@ -10,17 +10,16 @@
 #include <QTime>
 #include <cmath>
 #include <iterator>
-#include <math.h>
 #include <qdebug.h>
 #include <string>
 #include <type_traits>
 #include <vector>
 
+
 #include <stb/stb_image.h>
 
 // Create VAO, VBO object, get uinque ID
 static GLuint VAO, VBO, EBO;
-
 
 
 QtGlWidget::QtGlWidget(QWidget *parent) : QOpenGLWidget(parent)
@@ -53,7 +52,6 @@ void QtGlWidget::OnTimeout()
 
 void QtGlWidget::initializeGL()
 {
-
     initializeOpenGLFunctions();
 
     std::vector<float>  vertices;
@@ -152,14 +150,22 @@ void QtGlWidget::initializeGL()
         // auto data = stbi_load("abc", &w, &h, &nrChannel, 0);
 
 
-        m_Texture = "brick";
         m_Textures.insert("arch", new QOpenGLTexture(QImage(":/res/textures/arch.png").mirrored()));
         m_Textures.insert("brick", new QOpenGLTexture(QImage(":/res/textures/brick.bmp").mirrored()));
         glBindVertexArray(0);
     }
+
+    m_ShaderProgram.bind();
+    m_ShaderProgram.setUniformValue("textureArch", 0);
+    m_ShaderProgram.setUniformValue("textureBrick", 1);
+
+    m_Textures["arch"]->bind(2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
 }
 
-void QtGlWidget::resizeGL(int w, int h) {}
 
 void QtGlWidget::paintGL()
 {
@@ -172,9 +178,10 @@ void QtGlWidget::paintGL()
 
     switch (m_Shape) {
     case Rect:
-        m_Textures[m_Texture]->bind(0);
+        m_Textures["brick"]->bind(0);
+        m_Textures["arch"]->bind(1);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     case Circle:
     case Triangle:
     case None:
@@ -195,3 +202,4 @@ void QtGlWidget::DrawShape(Shape shape)
     m_Shape = shape;
     update();
 }
+void QtGlWidget::resizeGL(int w, int h) {}
