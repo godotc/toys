@@ -1,0 +1,15 @@
+{
+  "name": "webgpu",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "b": "tsc"
+  },
+  "dependencies": {
+    "@types/node": "^20.2.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.0.4"
+  }
+}
