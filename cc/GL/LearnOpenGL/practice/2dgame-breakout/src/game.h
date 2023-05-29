@@ -1,5 +1,8 @@
 #pragma once
 
+#include "sprite_render.h"
+#include <string>
+#include <unordered_map>
 enum class GameState
 {
     GAME_ACTIVE,
@@ -23,6 +26,8 @@ class Game
 
   public:
     GameState m_State;
+
+    std::unordered_map<std::string, SpriteRender> Sprites;
 
     bool         m_keys[1024];
     unsigned int m_Width, m_Height;

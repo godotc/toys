@@ -117,7 +117,7 @@ void Shader::checkCompileErrors(unsigned int object, const std::string &type)
         if (!success)
         {
             glGetShaderInfoLog(object, 1024, nullptr, infoLog);
-            std::cout << "| ERROR::SHADER: Compile-time error: Type: " << type << "\n"
+            std::cerr << "| ERROR::SHADER: Compile-time error: Type: " << type << "\n"
                       << infoLog << "\n -- --------------------------------------------------- -- "
                       << std::endl;
         }
@@ -128,7 +128,7 @@ void Shader::checkCompileErrors(unsigned int object, const std::string &type)
         if (!success)
         {
             glGetProgramInfoLog(object, 1024, nullptr, infoLog);
-            std::cout << "| ERROR::Shader: Link-time error: Type: " << type << "\n"
+            std::cerr << "| ERROR::Shader: Link-time error: Type: " << type << "\n"
                       << infoLog << "\n -- --------------------------------------------------- -- "
                       << std::endl;
         }

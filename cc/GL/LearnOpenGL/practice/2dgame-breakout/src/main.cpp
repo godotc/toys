@@ -10,6 +10,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "sprite_render.h"
+
 void framebuffer_resize_cb(auto *wndow, int w, int h);
 void key_cb(auto *window, int key, int scancode, int action, int mode);
 
@@ -28,6 +30,7 @@ int main(int argc, char **argv)
 
     float delta_time = 0.f;
     float last_frame = 0.f;
+
 
     while (!glfwWindowShouldClose(window))
     {

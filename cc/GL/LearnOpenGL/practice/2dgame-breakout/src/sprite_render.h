@@ -12,11 +12,13 @@
 class SpriteRender
 {
   public:
+    SpriteRender() = default;
     SpriteRender(Shader &_shader)
     {
         this->shader = _shader;
         this->initRenderData();
     }
+
     ~SpriteRender()
     {
         glDeleteVertexArrays(1, &this->quadVAO);
@@ -31,6 +33,7 @@ class SpriteRender
     {
         this->shader.Use();
         glm::mat4 model(1.0);
+        model = glm::translate(model, glm::vec3(position, 0.f));
 
         model = glm::translate(model, glm::vec3(0.5 * size.x, 0.5 * size.y, 0.f));
         model = glm::rotate(model, glm::radians(rotate), glm::vec3(0, 0, 1));
@@ -59,13 +62,13 @@ class SpriteRender
     {
         unsigned int VBO;
         float        vertices[] =
-            {0.f, 1.f, 0.f, 1.f,
-             1.f, 0.f, 1.f, 0.f,
-             0.f, 0.f, 0.f, 0.f,
+            {0.0f, 1.0f, 0.0f, 1.0f,
+             1.0f, 0.0f, 1.0f, 0.0f,
+             0.0f, 0.0f, 0.0f, 0.0f,
 
-             0.f, 1.f, 0.f, 1.f,
-             1.f, 1.f, 1.f, 1.f,
-             1.f, 0.f, 1.f, 0.f};
+             0.0f, 1.0f, 0.0f, 1.0f,
+             1.0f, 1.0f, 1.0f, 1.0f,
+             1.0f, 0.0f, 1.0f, 0.0f};
 
         glGenVertexArrays(1, &this->quadVAO);
         glGenBuffers(1, &VBO);
@@ -76,7 +79,7 @@ class SpriteRender
         glBindVertexArray(this->quadVAO);
         {
             glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)nullptr);
+            glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
