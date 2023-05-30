@@ -1,9 +1,14 @@
 #include <GL/freeglut_std.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
+#include <GL/glu.h>
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <ctime>
+#include <glm/glm.hpp>
+#include <glm/trigonometric.hpp>
+#include <math.h>
 #include <ut.h>
 
 #include <iostream>
@@ -136,6 +141,7 @@ void Lines()
             // upper
             x = r * std::cos(angle);
             y = r * std::sin(angle);
+
             glVertex3f(x, y, z);
 
             // bottom
@@ -149,6 +155,126 @@ void Lines()
     glutSwapBuffers();
 }
 
+void StripLine()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+
+#if Strip
+    glBegin(GL_LINE_STRIP);
+#else // loop
+    glBegin(GL_LINE_LOOP);
+#endif
+    {
+        glVertex3f(0., 0., 0.);
+        glVertex3f(50., 50., 0.);
+        glVertex3f(50., 100., 0.);
+    }
+    glEnd();
+
+    glutSwapBuffers();
+}
+
+void StripLinesCircle()
+{
+    GLfloat line_width_range[2];
+    GLfloat steps;
+
+    glGetFloatv(GL_LINE_WIDTH_RANGE, line_width_range);
+    glGetFloatv(GL_LINE_WIDTH_GRANULARITY, &steps);
+
+
+
+    auto draw = []() {
+#if 1
+        float width_range[2];
+        float step;
+        glGetFloatv(GL_LINE_WIDTH_RANGE, width_range);
+        glGetFloatv(GL_LINE_WIDTH_GRANULARITY, &step);
+
+        float current_width = width_range[0];
+
+        float z      = -50.f;
+        float rounds = 7.f;
+        float size   = 120.f;
+        float x, y;
+        for (float angle = 0.f; angle < PI * 2 * rounds; angle += 0.2f)
+        {
+
+            glLineWidth(current_width);
+            current_width += step;
+
+            glBegin(GL_LINE_STRIP);
+            {
+                x = size * sin(angle);
+                y = size * cos(angle);
+                glVertex3f(x, y, z);
+                x = size * sin(angle + 0.1f);
+                y = size * cos(angle + 0.1f);
+                glVertex3f(x, y, z);
+            }
+            glEnd();
+
+            z += 0.5f;
+        }
+#else
+        glBegin(GL_LINE_STRIP);
+        {
+
+            float z      = -50.f;
+            float rounds = 7.f;
+            float size   = 120.f;
+            float x, y;
+            for (float angle = 0.f; angle < PI * 2 * rounds; angle += 0.1f)
+            {
+                x = size * sin(angle);
+                y = size * cos(angle);
+                glVertex3f(x, y, z);
+                z += 0.5f;
+            }
+        };
+        glEnd();
+#endif
+    };
+
+    glPushMatrix();
+    {
+        glTranslated(-250, 0, 0);
+        glRotatef(45.f, 0, 1, 0);
+        glRotatef(45, 1, 0, 0);
+        draw();
+    }
+    glPopMatrix();
+
+    glPushMatrix();
+    {
+        glTranslated(250, 0, 0);
+        glRotatef(45, 1, 0, 0);
+        glRotatef(45.f, 0, 1, 0);
+        draw();
+    }
+    glPopMatrix();
+}
+
+// @dev 点画线:
+void Stippingling()
+{
+    glEnable(GL_LINE_STIPPLE);
+
+    GLint    factor  = 1;      // 乘法因子
+    GLushort pattern = 0x5555; // 点画模式
+
+    glLineStipple(factor, pattern);
+}
+
+
+void Render()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    StripLinesCircle();
+
+    glutSwapBuffers();
+}
 
 // set render condition
 void SetupRC()
@@ -169,25 +295,34 @@ static void onResize(auto w, auto h)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    // create cull area (l, r, bot, top close, far, )
+    // Keep the shape as origin not tranfom by apsect( W: H )
     GLfloat aspect_ratio = w / (GLfloat)h;
     cout << "W : H |" << aspect_ratio << "\n";
 
+    auto X = std::min(W, H);
+
     if (w <= h)
-        glOrtho(-XSize, XSize,
-                -YSize / aspect_ratio, YSize / aspect_ratio,
+        glOrtho(-X / 2.f, X / 2.f,
+                -X / 2.f / aspect_ratio, X / 2.f / aspect_ratio,
                 ZSize, -ZSize);
     else
-        glOrtho(-XSize * aspect_ratio, XSize * aspect_ratio,
-                -YSize, YSize,
+        glOrtho(-X / 2.f * aspect_ratio, X / 2.f * aspect_ratio,
+                -X / 2.f, X / 2.f,
                 ZSize, -ZSize);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
 
-static void onKeyEvent(unsigned char key, int a, int b)
+static void onKeyEvent(unsigned char key, int x, int y)
 {
+    std::cout << "Key: " << key << ", x: " << x << ", y: " << y << std::endl;
+
+
+    // Exit the program if the 'q' key is pressed
+    if (key == 'q') {
+        exit(0);
+    }
 }
 
 
@@ -204,8 +339,11 @@ int main(int argc, char **argv)
     glutKeyboardFunc(onKeyEvent);
 
     // glutDisplayFunc(PointCircle);
-    glutDisplayFunc(IncreasingPointCircle);
-    glutDisplayFunc(Lines);
+    // glutDisplayFunc(IncreasingPointCircle);
+    // glutDisplayFunc(Lines);
+    // glutDisplayFunc(StripLine);
+
+    glutDisplayFunc(Render);
 
     SetupRC();
 

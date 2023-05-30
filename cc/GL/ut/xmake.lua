@@ -19,5 +19,13 @@ target("3")
     set_kind("binary")
     add_files("src/3_pt_&_line.cpp")
 
+target("4")
+    set_kind("binary")
+    add_files("src/4_triangle_or_polygon.cpp")
+
+target("5")
+    set_kind("binary")
+    add_files("src/5_solid.cc")
+
 
 
