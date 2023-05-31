@@ -10,7 +10,6 @@
 #include <glm/matrix.hpp>
 #include <glm/trigonometric.hpp>
 #include <iterator>
-#include <math.h>
 #include <ut.h>
 
 #include <iostream>
@@ -34,143 +33,132 @@ bool bCull    = true;
 bool bDepth   = true;  // Depth test flag
 bool bOutline = false; // polygon mode
 
-static float Xrot = 0;
-static float Yrot = 0;
-static float Zrot = 0;
+static float Xrot     = 0;
+static float Yrot     = 0;
+static float Zrot     = 0;
+static float g_Scaled = 1.f;
 
 static int   prevX = 0, prevY = 0;
 static bool  bLeftMouseButtonPressed = false;
 static float sensitivity             = 0.3f;
 
-// 圆锥
-void CicularCone()
+void PolygonStipple()
 {
-    glRotatef(Xrot, 1, 0, 0);
-    glRotatef(Yrot, 0, 1, 0);
-    glRotatef(Zrot, 0, 0, 1);
+    glColor3f(1, 0, 0);
+    glEnable(GL_POLYGON_STIPPLE);
 
 
-    float      r = 100.f;
-    float      x, y;
-    static int iPivot = 0.f; // flag for color switch between red & green
-    float      step   = 21;
-    step /= 2.f;
+    GLubyte fire[] = {
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x92, 0x29, 0x00,
+        0x00, 0xb0, 0x48, 0x00,
+        0x00, 0xc8, 0x90, 0x00,
+        0x00, 0x85, 0x10, 0x00,
+        0x00, 0x03, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00};
 
-    // conicoid 圆锥曲面
-    glBegin(GL_TRIANGLE_FAN);
+    glPolygonStipple(fire);
+
+    glScaled(200, 200, 0);
+    glTranslated(0.5f, 0, 0);
+
+    glBegin(GL_POLYGON);
     {
-        glVertex3f(0.f, 0.f, -300);
+        glVertex2f(-1, -1);
+        glVertex2f(-2, 0);
+        glVertex2f(-1, 1);
 
-        for (float angle = 0.f; angle <= PI * 2; angle += PI / step) {
-            x = r * cos(angle);
-            y = r * sin(angle);
-
-            if (iPivot % 2 == 0)
-                glColor3f(0, 1, 0);
-            else
-                glColor3f(1, 0, 0);
-            iPivot++;
-
-            // x,y,0
-            glVertex2f(x, y);
-        };
-    }
-    glEnd();
-
-    // bottom of cicular cone: Circle
-    glBegin(GL_TRIANGLE_FAN);
-    {
-        glVertex2f(0, 0); // origin
-
-        for (float angle = 0.f; angle <= PI * 2; angle += PI / step) {
-            x = r * sin(angle);
-            y = r * cos(angle);
-
-            if (iPivot % 2 == 0)
-                glColor3f(0, 1, 0);
-            else
-                glColor3f(1, 0, 0);
-            iPivot++;
-
-            // x,y,0
-            glVertex2f(x, y);
-        };
+        glVertex2f(0, 1);
+        glVertex2f(1, 0);
+        glVertex2f(0, -1);
     }
     glEnd();
 }
 
-
-void CW_CCW()
+void Scissor()
 {
-    auto getXY = [](auto r, auto i, bool bInverse) -> std::pair<float, float> {
-        float x, y;
-        // the direction as angle(i)'s trend fomr 0 ~ PI , so it's the anti clockwise
-        if (bInverse) {
-            x = r * cos(i); //    /|
-            y = r * sin(i); //  r/ | r * sin(x) -> Point's y
-                            //  /  |
-                            // x___|
-                            //  r * cos(x) -> Points's x
-        }
-        // It's postio will from PI/2 -> clock-wise
-        else {
-            x = r * sin(i);
-            y = r * cos(i);
-        }
-        return {x, y};
-    };
+    // blue
+    glClearColor(0.f, 0.f, 1.f, 0.f);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-    int   bRed = 0;
-    float r    = 80.f;
-    float step = 30 / 2;
-
-    glPushMatrix();
+    glEnable(GL_SCISSOR_TEST);
     {
-        glTranslated(-200, 0, 0);
-        glBegin(GL_TRIANGLE_FAN);
-        {
-            glVertex2f(0, 0);
+        // red
+        glClearColor(1, 0, 0, 0);
+        glScissor(100, 100, 600, 400);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-            for (float i = 0; i <= PI * 2; i += PI / step) {
-                auto &&[x, y] = getXY(r, i, false);
-
-                if (bRed % 2 == 0)
-                    glColor3f(1, 0, 0);
-                else
-                    glColor3f(0, 1, 0);
-                ++bRed;
-
-                glVertex2f(x, y);
-            }
-        }
-        glEnd();
+        // green
+        glClearColor(0, 1, 0, 0);
+        glScissor(200, 200, 400, 200);
+        glClear(GL_COLOR_BUFFER_BIT);
     }
-    glPopMatrix();
-
-    glPushMatrix();
-    {
-        glTranslated(200, 0, 0);
-        glBegin(GL_TRIANGLE_FAN);
-        {
-            glVertex2f(0, 0);
-
-            for (float i = 0; i <= PI * 2; i += PI / step) {
-                auto &&[x, y] = getXY(r, i, true);
-
-                if (bRed % 2 == 0)
-                    glColor3f(1, 0, 0);
-                else
-                    glColor3f(0, 1, 0);
-                ++bRed;
-
-                glVertex2f(x, y);
-            }
-        }
-        glEnd();
-    }
-    glPopMatrix();
+    glDisable(GL_SCISSOR_TEST);
 }
 
+
+// mask, 模板， 漏字板
+void Stencil()
+{
+
+    float r = 0.1f;
+    float angle;
+
+    glClearColor(0, 0, 1, 0);
+
+    // 0 represent `clear stencil`
+    glClearStencil(0.f);
+    glEnable(GL_STENCIL_TEST);
+    {
+        glClear(GL_STENCIL_BUFFER_BIT);
+
+        // Render all into STENCIL buffer (NEVER & INCR)
+        glStencilFunc(GL_NEVER, 0x0, 0x0);      // never pass if not cross STENCIL test
+        glStencilOp(GL_INCR, GL_INCR, GL_INCR); // and let not pass add to value in STENCIL test buffer
+
+        glColor3f(1, 1, 1);
+        glBegin(GL_LINE_STRIP);
+        {
+            for (angle = 0; angle < 400.f; angle += 0.1) {
+                glVertex2d(r * std::cos(angle), r * std::sin(angle));
+                r *= 1.002;
+            }
+        }
+        glEnd();
+
+        // Now, allowed draw, but except value eq 0x01 with STENCIL, and did not modify STENCIL buffer
+        glStencilFunc(GL_NOTEQUAL, 0x1, 0x1);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+        glColor3f(1.f, 0.f, 0.f);
+        glRectf(x, y, x + 50, r - 50);
+    }
+}
 
 void Render()
 {
@@ -194,7 +182,18 @@ void Render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPushMatrix();
-    CicularCone();
+    {
+        glRotatef(Xrot, 1, 0, 0);
+        glRotatef(Yrot, 0, 1, 0);
+        glRotatef(Zrot, 0, 0, 1);
+
+        glPushMatrix();
+        {
+            PolygonStipple();
+            // Scissor();
+        }
+        glPopMatrix();
+    }
     glPopMatrix();
 
 
@@ -222,10 +221,12 @@ int main(int argc, char **argv)
     cout << "hello world!!" << endl;
 
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(W, H);
     glutCreateWindow("Triangle");
 
+    // double buffer, ... , ..., 模板缓冲
+    // Can request the buffer dynamicaly
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
 
     glutReshapeFunc(onResize);
     glutKeyboardFunc(onKeyEvent);

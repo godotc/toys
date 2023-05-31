@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("glut")
+add_requires("glut","glfw")
 
 set_targetdir("bin")
 add_includedirs("include")
@@ -27,5 +27,16 @@ target("5")
     set_kind("binary")
     add_files("src/5_solid.cc")
 
+target("6")
+    set_kind("binary")
+    add_files("src/6_polygon_pts_stipple.cc")
+
+
+
+
+target("glfw")
+	set_kind("binary")
+	add_files("test/glfw_test.cc")
+	add_packages("glfw")
 
 
