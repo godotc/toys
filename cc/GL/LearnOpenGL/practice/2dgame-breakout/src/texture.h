@@ -7,6 +7,7 @@
 ** option) any later version.
 ******************************************************************/
 #pragma once
+#include "log.h"
 #include <glad/glad.h>
 
 class Texture2D
@@ -16,7 +17,12 @@ class Texture2D
   public:
     // constructor (sets default texture modes)
     Texture2D();
-    ~Texture2D() { glDeleteTextures(1, &this->ID); }
+    ~Texture2D()
+    {
+        // LOG("Destruct of texture2D: {}", this->ID);
+        // glDeleteTextures(1, &this->ID);
+    }
+
     // generates texture from image data
     void Generate(uint width, uint height, unsigned char *data);
     // binds the texture as the current active GL_TEXTURE_2D texture object
@@ -30,13 +36,14 @@ class Texture2D
   public:
     // texture image dimensions
     uint Width{0}, Height{0}; // width and height of loaded image in pixels
+
     // texture Format
     uint Internal_Format{GL_RGB}; // format of texture object
     uint Image_Format{GL_RGB};    // format of loaded image
+
     // texture configuration
     uint Wrap_S{GL_REPEAT};     // wrapping mode on S axis
     uint Wrap_T{GL_REPEAT};     // wrapping mode on T axis
     uint Filter_Min{GL_LINEAR}; // filtering mode if texture pixels < screen pixels
     uint Filter_Max{GL_LINEAR}; // filtering mode if texture pixels > screen pixels
-                                //
 };

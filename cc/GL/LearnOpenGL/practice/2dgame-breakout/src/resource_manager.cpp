@@ -10,6 +10,8 @@
 ******************************************************************/
 #include "resource_manager.h"
 
+#include "log.h"
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -46,16 +48,13 @@ Texture2D &ResourceManager::GetTexture(std::string name)
 
 void ResourceManager::Clear()
 {
-    /*
 
     // (properly) delete all shaders
-    for (auto iter : Shaders)
+    for (const auto &iter : Shaders)
         glDeleteProgram(iter.second.ID);
     // (properly) delete all textures
-    for (auto iter : Textures)
+    for (const auto &iter : Textures)
         glDeleteTextures(1, &iter.second.ID);
-
-    */
 }
 
 Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile)
@@ -118,6 +117,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char *file, bool alpha)
 
 
     unsigned char *data = stbi_load(file, &width, &height, &nrChannels, 0);
+    LOG("File: {} , W:H = {}:{}, channels: {}", file, width, height, nrChannels);
     // now generate texture
     texture.Generate(width, height, data);
     // and finally free image data

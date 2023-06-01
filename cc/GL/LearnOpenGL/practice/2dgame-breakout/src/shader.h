@@ -9,6 +9,7 @@
 ** option) any later version.
 ******************************************************************/
 
+#include "log.h"
 #include <string>
 
 #include <glad/glad.h>
@@ -27,7 +28,11 @@ class Shader
 
     // constructor
     Shader() = default;
-    ~Shader() { glDeleteProgram(this->ID); }
+    ~Shader()
+    {
+        // LOG("Destruct of Shader: {}", this->ID);
+        //  glDeleteProgram(this->ID);
+    }
 
     // sets the current shader as active
     Shader &Use();

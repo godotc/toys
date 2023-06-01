@@ -8,6 +8,7 @@
 #include <glm/fwd.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/trigonometric.hpp>
+#include <iostream>
 
 class SpriteRender
 {
@@ -21,7 +22,9 @@ class SpriteRender
 
     ~SpriteRender()
     {
-        glDeleteVertexArrays(1, &this->quadVAO);
+        using std::cout, std::endl;
+        // cout << "delete render" << endl;
+        //  glDeleteVertexArrays(1, &this->quadVAO);
     }
 
     void DrawSprite(
@@ -31,8 +34,13 @@ class SpriteRender
         float      rotate = 0.f,
         glm::vec3  color  = glm::vec3(1.f))
     {
+
         this->shader.Use();
+        // glViewport(0, 0, 800, 800);
+
         glm::mat4 model(1.0);
+
+        // scale <- rotate <- translate
         model = glm::translate(model, glm::vec3(position, 0.f));
 
         model = glm::translate(model, glm::vec3(0.5 * size.x, 0.5 * size.y, 0.f));
@@ -55,8 +63,6 @@ class SpriteRender
     }
 
   private:
-    Shader       shader;
-    unsigned int quadVAO;
 
     void initRenderData()
     {
@@ -73,10 +79,11 @@ class SpriteRender
         glGenVertexArrays(1, &this->quadVAO);
         glGenBuffers(1, &VBO);
 
+        glBindVertexArray(this->quadVAO);
+
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-        glBindVertexArray(this->quadVAO);
         {
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
@@ -85,4 +92,8 @@ class SpriteRender
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
+
+  private:
+    Shader       shader;
+    unsigned int quadVAO;
 };
