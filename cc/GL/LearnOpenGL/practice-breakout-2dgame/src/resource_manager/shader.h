@@ -9,7 +9,7 @@
 ** option) any later version.
 ******************************************************************/
 
-#include "log.h"
+#include <log.h>
 #include <string>
 
 #include <glad/glad.h>

@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "resource_manager.h"
+#include "resource_manager/resource_manager.h"
 #include <glad/glad.h>
 
 #include <GLFW/glfw3.h>
@@ -16,7 +16,7 @@
 #include <memory>
 #include <stdexcept>
 
-#include "sprite_render.h"
+#include "render/sprite_render.h"
 
 #include <format>
 
@@ -125,10 +125,10 @@ void key_cb(auto *window, int key, int scancode, int action, int mode)
     }
     if (key > 0 && key <= 1024) {
         if (action == GLFW_PRESS) {
-            // Breakout->m_keys[key] = true;
+            Breakout->m_keys[key] = true;
         }
         else if (action == GLFW_RELEASE) {
-            // Breakout->m_keys[key] = false;
+            Breakout->m_keys[key] = false;
         }
     }
 }

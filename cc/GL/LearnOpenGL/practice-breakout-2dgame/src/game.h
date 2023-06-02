@@ -1,6 +1,7 @@
 #pragma once
 
-#include "sprite_render.h"
+#include "game_level.h"
+#include "render/sprite_render.h"
 #include <string>
 #include <unordered_map>
 enum class GameState
@@ -31,4 +32,5 @@ class Game
 
     bool         m_keys[1024];
     unsigned int m_Width, m_Height;
+    GameLevel    m_Level;
 };

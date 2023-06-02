@@ -1,7 +1,6 @@
 #pragma once
 
-#include "shader.h"
-#include "texture.h"
+#include "../resource_manager/resource_manager.h"
 #include <glm/common.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/quaternion_trigonometric.hpp>
@@ -34,7 +33,6 @@ class SpriteRender
         float      rotate = 0.f,
         glm::vec3  color  = glm::vec3(1.f))
     {
-
         this->shader.Use();
         // glViewport(0, 0, 800, 800);
 

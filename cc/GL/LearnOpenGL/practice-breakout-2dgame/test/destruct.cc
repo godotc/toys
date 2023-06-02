@@ -1,5 +1,5 @@
-#include <bits/stdc++.h>
 #include <cstdio>
+#include <gtest/gtest.h>
 #include <unordered_map>
 
 
@@ -16,7 +16,7 @@ class MyClass
     int m_a;
 };
 
-int main()
+TEST(DISABLED_TestDestruction, should_call_destructon_when_call_equation_constructor)
 {
     {
         unordered_map<string, MyClass> mp;
@@ -33,6 +33,4 @@ int main()
     }
 
     getchar();
-
-    return 0;
 }

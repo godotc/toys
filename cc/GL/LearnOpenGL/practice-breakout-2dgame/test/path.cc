@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <filesystem>
+#include <gtest/gtest.h>
 #include <iostream>
 #include <ostream>
 #include <unistd.h>
@@ -7,9 +8,8 @@
 using namespace std;
 
 
-int main(int a, char **b)
+TEST(DISABLED_TestPath, should_print_the_path)
 {
-    std::cout << b[0] << std::endl;
 
     char bf[256]{};
 
@@ -34,5 +34,4 @@ int main(int a, char **b)
 
 
     std::cout << PROJECT_ROOT_DIR << endl;
-    return 0;
 }
