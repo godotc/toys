@@ -1,8 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include "vec_add.cuh"
 
-
-const int N =5;
 
 __global__ void vec_add(float* out, float* a, float* b, int N)
 {

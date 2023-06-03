@@ -12,14 +12,9 @@
 
 static auto shader = "sprite";
 
-Game::Game(unsigned int width, unsigned int height)
-    : m_State(GameState::GAME_ACTIVE), m_keys(), m_Width(width), m_Height(height)
-{
-}
+Game::Game(unsigned int width, unsigned int height) : m_State(GameState::GAME_ACTIVE), m_keys(), m_Width(width), m_Height(height) {}
 
-Game::~Game()
-{
-}
+Game::~Game() {}
 
 void Game::Init()
 {
@@ -30,14 +25,14 @@ void Game::Init()
     // view projection to resolute the [-1,1]
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->m_Width),
                                       static_cast<float>(this->m_Height), 0.0f,
-                                      -1.0f, 1.0f);
+                                      1.0f, -1.0f);
     ResourceManager::GetShader(shader).SetMatrix4("projection", projection);
 
     // reset image
     ResourceManager::GetShader(shader).Use().SetInteger("image", 0);
     Sprites[shader] = SpriteRender(ResourceManager::GetShader(shader));
 
-    ResourceManager::LoadTexture("../res/textures/arch.bmp", true, "arch");
+    ResourceManager::LoadTexture("../res/textures/arch.png", true, "arch");
 
     // m_Level.Load("../res/levels/default_map", m_Width, m_Height);
 }
@@ -61,7 +56,6 @@ void Game::Render()
     // m_Level.Draw(Sprites[shader]);
 
     // it will draw in the sprite
-
     glPushMatrix();
     glColor3f(1, 1, 1);
     glBegin(GL_LINES);
