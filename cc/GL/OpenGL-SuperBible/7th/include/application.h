@@ -10,6 +10,7 @@
 #include <glad/glad.h>
 
 #include <cstdint>
+#include <log.h>
 #include <stdexcept>
 
 #include <iostream>
@@ -71,6 +72,8 @@ class Application
         m_GL_Ctx = gl_ctx;
 
         glViewport(0, 0, m_Width, m_Height);
+
+        Construct();
     }
 
     virtual ~Application() = default;
@@ -100,13 +103,27 @@ class Application
         SDL_Quit();
     }
 
-  protected:
-    virtual void BeginPlay() {}
 
-    virtual void Tick(uint32_t DeltaT) {}
+  protected:
+
+    virtual void Construct()
+    {
+        LOG("Base Construct..");
+    }
+
+    virtual void BeginPlay()
+    {
+        LOG("Base BeginPlay..");
+    }
+
+    virtual void Tick(uint32_t DeltaT)
+    {
+        // LOG("Base Tick..");
+    }
 
     virtual void OnEvent()
     {
+        // LOG("Base OnEvent..");
         SDL_Event ev;
         SDL_PollEvent(&ev);
         if (ev.type == SDL_QUIT) {
@@ -125,10 +142,9 @@ class Application
     SDL_Window   *m_Window;
     SDL_GLContext m_GL_Ctx;
 
-    Application *Super{nullptr};
 
   protected:
-    using super = Application;
+    using Super = Application;
 
   private:
     bool m_IsRunning{true};
