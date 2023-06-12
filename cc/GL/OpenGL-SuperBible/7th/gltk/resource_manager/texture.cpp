@@ -7,7 +7,7 @@
 ** option) any later version.
 ******************************************************************/
 #include "texture.h"
-#include <gl_macros.h>
+#include "../gl_macros.h"
 
 
 Texture2D::Texture2D()

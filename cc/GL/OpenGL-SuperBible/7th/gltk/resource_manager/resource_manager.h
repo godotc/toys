@@ -21,7 +21,7 @@ class ResourceManager
   public:
 
     static Shader  LoadShader(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile, std::string name);
-    static Shader  LoadShader(const char *UniversalFileName, std::string &name);
+    static Shader  LoadShader(const char *UniversalFileName, const char *name);
     static Shader &GetShader(const char *name);
 
     static Texture2D  LoadTexture(const char *file, bool alpha, std::string name);

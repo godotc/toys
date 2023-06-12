@@ -7,6 +7,7 @@
 
 #include <SDL2/SDL.h>
 #include <cmath>
+#include <cstddef>
 #include <glad/glad.h>
 
 #include <cstdint>
@@ -83,13 +84,13 @@ class Application
     {
         BeginPlay();
 
-        static uint32_t last_frame = SDL_GetTicks();
+        static size_t last_frame = SDL_GetTicks();
 
 
         while (m_IsRunning) {
-            uint32_t cur_frame = SDL_GetTicks();
-            uint32_t dleta     = cur_frame - last_frame;
-            last_frame         = cur_frame;
+            size_t cur_frame = SDL_GetTicks();
+            size_t dleta     = cur_frame - last_frame;
+            last_frame       = cur_frame;
 
             OnEvent();
 
@@ -144,7 +145,8 @@ class Application
 
 
   protected:
-    using Super = Application;
+    using Super          = Application;
+    size_t tick_interval = 1;
 
   private:
     bool m_IsRunning{true};

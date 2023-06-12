@@ -5,7 +5,7 @@
 #include <iostream>
 #include <type_traits>
 
-namespace unknow {
+namespace gltk {
 
 inline void GLClearError()
 {
@@ -25,7 +25,13 @@ inline bool GLLogCall(const char *function, const char *file, int line)
     return true;
 }
 
-} // namespace unknow
+
+inline void warnning()
+{
+#pragma message("Warning: Using GL_CALL with glEnd()")
+}
+
+} // namespace gltk
 
 #if defined(_WIN32)
 #define PLATFORM_BREAK() __debugbreak()
@@ -43,13 +49,15 @@ inline bool GLLogCall(const char *function, const char *file, int line)
 #define __ASSERT(x) (x)
 #endif
 
+
+
 #ifdef NDEBUG
 #define GL_CALL(x) x
 #else
-#define GL_CALL(x)                                           \
-    do {                                                     \
-        unknow::GLClearError();                              \
-        x;                                                   \
-        __ASSERT(unknow::GLLogCall(#x, __FILE__, __LINE__)); \
+#define GL_CALL(x)                                         \
+    do {                                                   \
+        gltk::GLClearError();                              \
+        x;                                                 \
+        __ASSERT(gltk::GLLogCall(#x, __FILE__, __LINE__)); \
     } while (0)
 #endif

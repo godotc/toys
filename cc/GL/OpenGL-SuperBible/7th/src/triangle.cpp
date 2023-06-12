@@ -32,7 +32,8 @@ class Triangle : public Application
     {
         Super::BeginPlay();
 
-        ResourceManager::LoadShader("../res/shaders/sprite/sprite.vert", "../res/shaders/sprite/sprite.frag", nullptr, "Block");
+        // ResourceManager::LoadShader("../res/shaders/sprite/sprite.vert", "../res/shaders/sprite/sprite.frag", nullptr, "Block");
+        ResourceManager::LoadShader("../res/shaders/test.glsl", "Block");
 
         float vertices[] =
             {50, 50, 0.f,

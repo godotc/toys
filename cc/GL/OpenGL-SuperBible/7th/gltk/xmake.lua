@@ -1,5 +1,7 @@
+add_requires("glad","glfw")
+
 target("resource_manager")
 	set_kind("shared")
 	add_cxflags("-fPIC")
 	add_files("./resource_manager/*.cpp")
-	add_packages("glad")
+	add_packages("glad","glfw")

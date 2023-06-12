@@ -9,12 +9,14 @@
 ** option) any later version.
 ******************************************************************/
 #include "resource_manager.h"
-#include "resource_manager/shader.h"
+#include "shader.h"
+
+#include "../gl_macros.h"
 
 #include <cmath>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
-#include <gl_macros.h>
 #include <iostream>
 #include <log.h>
 #include <optional>
@@ -34,7 +36,8 @@ Shader ResourceManager::LoadShader(const char *vShaderFile, const char *fShaderF
     Shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, gShaderFile);
     return Shaders[name];
 }
-Shader ResourceManager::LoadShader(const char *UniversalFileName, std::string &name)
+
+Shader ResourceManager::LoadShader(const char *UniversalFileName, const char *name)
 {
     auto &&[vertSource, fragSource, gemoSource] = parseShaderFile(UniversalFileName);
     if (!vertSource.empty() && !fragSource.empty()) {
@@ -129,8 +132,10 @@ ShaderProgramSource ResourceManager::parseShaderFile(const std::filesystem::path
         WARN("Don't konw shader source file type");
         return {};
     }
+#warning fix the LOG macro
+#warning compare issue
     auto ext = UniversalFilePath.filename().extension();
-    if (ext.c_str() != "glsl") {
+    if (ext.compare(".glsl")) {
         WARN("Not glsl file");
         return {};
     }
