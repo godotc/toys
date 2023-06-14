@@ -1,0 +1,13 @@
+# Xmake cache
+.xmake/
+build/
+bin
+
+# MacOS Cache
+.DS_Store
+
+#clangd
+.cache
+
+
+a.out
