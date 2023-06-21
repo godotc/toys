@@ -7,9 +7,10 @@
 ** option) any later version.
 ******************************************************************/
 #pragma once
+#include "../utils/class_default.h"
 #include <glad/glad.h>
 
-class Texture2D
+class Texture2D : utils::disable_copy_allow_move
 {
     using uint = unsigned int;
 

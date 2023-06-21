@@ -1,8 +1,8 @@
 
 
 #include "shader.h"
+#include <cmath>
 #include <iostream>
-#include <math.h>
 #include <type_traits>
 
 Shader &Shader::Use()

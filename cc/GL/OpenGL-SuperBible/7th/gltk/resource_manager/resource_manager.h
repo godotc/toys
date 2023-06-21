@@ -9,6 +9,7 @@
 
 #include "shader.h"
 #include "texture.h"
+#include "utils/class_default.h"
 
 struct ShaderProgramSource
 {
@@ -16,7 +17,7 @@ struct ShaderProgramSource
 };
 
 
-class ResourceManager
+class ResourceManager : public utils::disable_copy_and_move
 {
   public:
 
