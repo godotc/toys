@@ -71,6 +71,8 @@ void serve(io_context &ioc, unsigned short port)
 
 int main()
 {
+    ERROR("srver listening on {}:{}", server_address, server_port);
+
     try {
         io_context ioc;
         serve(ioc, server_port);
