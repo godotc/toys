@@ -21,7 +21,7 @@
 // General purpose shader object. Compiles from file, generates
 // compile/link-time error messages and hosts several utility
 // functions for easy management.
-class Shader : public utils::disable_copy_allow_move
+class Shader //: public utils::disable_copy_allow_move
 {
   public:
     // state

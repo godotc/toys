@@ -22,8 +22,8 @@ struct disable_copy_allow_move
     disable_copy_allow_move(disable_copy_allow_move const &)            = delete;
     disable_copy_allow_move &operator=(disable_copy_allow_move const &) = delete;
 
-    disable_copy_allow_move(disable_copy_allow_move &&)                  = default;
-    disable_copy_allow_move &operator=(disable_copy_allow_move const &&) = default;
+    disable_copy_allow_move(disable_copy_allow_move &&) = default;
+    // disable_copy_allow_move &operator=(disable_copy_allow_move const &&) = default;
 };
 
 struct explicit_default_constructor

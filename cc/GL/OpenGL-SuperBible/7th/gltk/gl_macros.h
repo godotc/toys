@@ -26,10 +26,10 @@ inline bool GLLogCall(const char *function, const char *file, int line)
 }
 
 
-inline void warnning()
-{
-#pragma message("Warning: Using GL_CALL with glEnd()")
-}
+// inline void warnning()
+//{
+// #pragma message("Warning: Using GL_CALL with glEnd()")
+// }
 
 } // namespace gltk
 

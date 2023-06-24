@@ -10,7 +10,7 @@
 #include "../utils/class_default.h"
 #include <glad/glad.h>
 
-class Texture2D : utils::disable_copy_allow_move
+class Texture2D //: utils::disable_copy_allow_move
 {
     using uint = unsigned int;
 

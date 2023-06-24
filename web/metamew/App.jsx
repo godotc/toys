@@ -6,12 +6,17 @@ import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import IconButton from "./components/IconButton";
 import CircleButton from "./components/CircleButton";
+import EmojiPicker from "./components/EmojiPicker";
+import EmojiList from "./components/EmojiList";
+import EmojiSticker from "./components/EmojiSticker";
 
 const BG = require("./assets/splash.png");
 
 export default function App() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isShowAppOptions, setIsShowAppOption] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [pickedEmoji, setPickedEmoji] = useState(null);
 
   const pickImageAsync = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -34,10 +39,14 @@ export default function App() {
 
   const onAddSticker = () => {
     // we will implement this later
+    setIsModalVisible(ture);
   };
 
   const onSaveImageAsync = async () => {
     // we will implement this later
+  };
+  const onModalClose = () => {
+    setIsModalVisible(false);
   };
 
   //<Text style={{ color: "#f00" }}>Hello World</Text>;
@@ -45,18 +54,27 @@ export default function App() {
     <View style={styles.container}>
       <View style={styles.imageContainer}>
         <ImageViewer placeHolderImage={BG} selectedImage={selectedImage} />
+
+        {pickedEmoji === null ? (
+          <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />
+        ) : null}
       </View>
-      <View style={styles.footerContainer}>
-        <Button
-          theme={"primary"}
-          label={"Choose a photo"}
-          onPress={pickImageAsync}
-        />
-        <Button
-          label={"Use this photo"}
-          onPress={() => setIsShowAppOption(true)}
-        />
-      </View>
+      {isShowAppOptions ? (
+        <View />
+      ) : (
+        <View style={styles.footerContainer}>
+          <Button
+            theme={"primary"}
+            label={"Choose a photo"}
+            onPress={pickImageAsync}
+          />
+
+          <Button
+            label={"Use this photo"}
+            onPress={() => setIsShowAppOption(true)}
+          />
+        </View>
+      )}
 
       {isShowAppOptions ? (
         <View style={styles.optionsContainer}>
@@ -73,6 +91,10 @@ export default function App() {
       ) : (
         <></>
       )}
+
+      <EmojiPicker isVisiable={isModalVisible} onclose={onModalClose}>
+        <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
+      </EmojiPicker>
 
       <StatusBar style="auto" />
     </View>
