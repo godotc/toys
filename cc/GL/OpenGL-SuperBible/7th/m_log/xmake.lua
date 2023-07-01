@@ -1,5 +1,10 @@
 
 add_requires("fmt")
+add_packages("fmt")
+
+if is_os("windows") then
+	add_cxxflags("/Zc:preprocessor")
+end
 
 target("m_log")
 	set_kind("shared")

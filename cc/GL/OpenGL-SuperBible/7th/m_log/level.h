@@ -20,18 +20,18 @@ using string_view = std::string_view;
 namespace __top_level_namespace {
 
 
-enum LogLevel
+enum class LogLevel : int
 {
-    DEBUG = 0,
-    TRACE,
-    LOG,
-    WARN,
-    ERROR,
-    FATAL,
-    LevelCount,
+    L_DEBUG = 0,
+    L_TRACE,
+    L_LOG,
+    L_WARN,
+    L_ERROR = 4,
+    L_FATAL,
+    L_LevelCount
 };
 
-inline static LogLevel LOG_LEVEL = LogLevel::LOG;
+inline static LogLevel LOG_LEVEL = LogLevel::L_DEBUG;
 inline auto            SetLogLevel(LogLevel level) { LOG_LEVEL = level; }
 
 inline char const *LogLevelStrings[] = {
@@ -62,22 +62,21 @@ inline auto get_terminal_color(LogLevel level)
     string_view color = TerminalColor["white"];
 
     switch (level) {
-    case LOG:
-        break;
-    case TRACE:
-        color = TerminalColor["green"];
-        break;
-    case DEBUG:
+    case LogLevel::L_DEBUG:
         color = TerminalColor["cyan"];
         break;
-    case WARN:
+    case LogLevel::L_TRACE:
+    case LogLevel::L_LOG:
+        color = TerminalColor["green"];
+        break;
+    case LogLevel::L_WARN:
         color = TerminalColor["yello"];
         break;
-    case ERROR:
-    case FATAL:
+    case LogLevel::L_ERROR:
+    case LogLevel::L_FATAL:
         color = TerminalColor["red"];
         break;
-    case LevelCount:
+    case LogLevel::L_LevelCount:
         break;
     }
     return color;

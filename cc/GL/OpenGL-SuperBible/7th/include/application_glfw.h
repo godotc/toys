@@ -66,6 +66,7 @@ class Application
         glViewport(0, 0, m_Width, m_Height);
 
         Construct();
+        glfwSetKeyCallback(m_Window, OnKeyEvent);
     }
 
     virtual ~Application() = default;
@@ -83,7 +84,7 @@ class Application
             size_t dleta     = cur_frame - last_frame;
             last_frame       = cur_frame;
 
-            OnEvent();
+            glfwPollEvents();
 
             Tick(dleta);
 
@@ -112,25 +113,16 @@ class Application
         // LOG("Base Tick..");
     }
 
-    virtual void OnEvent()
+    static void OnKeyEvent(GLFWwindow *window, int key, int scancode, int action, int mods)
     {
-        // LOG("Base OnEvent..");
-        // SDL_Event ev;
-        // SDL_PollEvent(&ev);
-        // if (ev.type == SDL_QUIT) {
-        //     m_IsRunning = false;
-        // }
-        // if (ev.type == SDL_KEYDOWN) {
-        //     if (ev.key.keysym.sym == SDLK_ESCAPE) {
-        //         m_IsRunning = false;
-        //     }
-        // }
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
+        }
     }
 
-
-
   public:
-    int m_Width{0}, m_Height{0};
+    int m_Width{0},
+        m_Height{0};
 
     GLFWwindow *m_Window;
 

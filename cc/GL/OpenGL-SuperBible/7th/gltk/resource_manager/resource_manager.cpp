@@ -48,7 +48,7 @@ Shader ResourceManager::LoadShader(const char *UniversalFileName, const char *na
         return shader;
     }
 
-    ERROR("Load shader from file {} failed!", UniversalFileName);
+    LOG_ERROR("Load shader from file {} failed!", UniversalFileName);
     return {};
 }
 

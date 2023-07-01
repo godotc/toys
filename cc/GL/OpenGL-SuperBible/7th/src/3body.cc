@@ -25,6 +25,7 @@
 
 
 #include <time.h>
+#include <vcruntime.h>
 
 static void debug_pts()
 {
@@ -34,9 +35,10 @@ static void debug_pts()
     glVertex2f(0, 0);
     glEnd(); // alawys erro
 }
+struct Celestial;
 
 
-static const float G = 1.f;
+static const float G = 9.8f;
 
 struct Celestial
 {
@@ -78,25 +80,28 @@ struct Celestial
         LOG("Initial Velocity: [{}, {}, {}]", Velocity.x, Velocity.y, Velocity.z);
     }
 
-    auto UpdateVelocity(Celestial &other)
+    auto UpdateVelocity(Celestial &other, float dt, bool all_the_same = true)
     {
-        auto dir = other.Location - Location;
+        DEBUG("Velocity: [{}, {}, {}]", Velocity.x, Velocity.y, Velocity.z);
+
+        auto v12 = other.Location - Location;
         // Get gravity between both celetial
         // 假设有一个万有引力公式：F = G * (m1 * m2) / (r^2)，其中 G 为引力常数
 
-        float distance = glm::length(dir);
-        if (distance == 0)
-            distance += 0.0000000001f;
+        float distance = std::max(0.001f, glm::length(v12));
 
-        const float weight = 0.0000001f;
+        auto dir = glm::normalize(v12);
+        // if (distance == 0.f)
+        //     distance += 0.0000000001f;
 
-        float gravity = weight * G * (Quality * other.Quality) / (distance * distance);
+        const float weight = 0.001f;
 
-        dir = glm::normalize(dir);
+        float gravity{};
+        gravity = weight * G * (Quality * other.Quality) / (distance * distance);
 
         auto increment = gravity * dir;
-        DEBUG("Velocity: [{}, {}, {}]", Velocity.x, Velocity.y, Velocity.z);
-        Velocity += increment;
+
+        Velocity += increment * dt;
     }
 
 
@@ -152,30 +157,69 @@ class TriBody_Intermediate : public Application
         static size_t time_count = 0;
         time_count += dt;
 
-        if (time_count % (size_t)1e6)
+        if (time_count % (size_t)1e3)
         {
-            glClear(GL_COLOR_BUFFER_BIT);
+            int n = 10;
+            dt /= (float)n;
+            for (int i = 0; i < n; ++i) {
 
-            for (int i = 0; i < N; ++i) {
-                for (int j = 0; j < N; ++j) {
-                    if (i == j)
-                        continue;
-                    bodys[i].UpdateVelocity(bodys[j]);
+                glClear(GL_COLOR_BUFFER_BIT);
+
+                for (int i = 0; i < N; ++i) {
+                    for (int j = 0; j < N; ++j) {
+                        if (i == j)
+                            continue;
+                        bodys[i].UpdateVelocity(bodys[j], dt);
+                    }
                 }
-            }
 
-            for (auto &b : bodys) {
-                // std::cout << b << "-------------------------------------------------\n";
-                b.Advance();
-            }
+                for (auto &b : bodys) {
+                    // std::cout << b << "-------------------------------------------------\n";
+                    b.Advance();
+                }
 
-            draw();
+                draw();
+
+                DEBUG("Current energy: {}", enegry());
+            }
         }
     }
 
+    /**
+     * @brief  Get the inner energy of a system
+     *  To check the energy is conservation or not
+     * @return float
+     */
+    auto enegry() -> float
+    {
+        float potE = 0.f;
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                if (i == j)
+                    continue;
+                auto &b1 = bodys[i];
+                auto &b2 = bodys[j];
 
-    void
-    draw()
+                // 引力势能 Gravitational potential enegy (Negative)： E = -SUM (G * mi*mj/r_ij)
+                potE += G * b1.Quality * b2.Quality / glm::length(b2.Location - b1.Location);
+            }
+        }
+
+        float movE = 0.f;
+
+        for (auto &b : bodys) {
+            // 动能 Kinetic(Positive)： E = 0.5*m*v^2
+            // m: quality
+            // v: 质点运动速度
+            auto v = glm::length(b.Velocity);
+            movE += 0.5f * b.Quality * v * v;
+        }
+
+        return movE - potE;
+    }
+
+
+    void draw()
     {
         debug_pts();
 
@@ -237,11 +281,6 @@ class TriBody : public Application
 
 
 
-    void OnEvent() override
-    {
-        Super::OnEvent();
-    }
-
     void Tick(uint32_t DeltaT) override
     {
         Super::Tick(DeltaT);
@@ -265,7 +304,7 @@ int main(int argc, char **argv)
 #if !_HAS_CXX17
     srand(time(nullptr));
 #endif
-    __logcpp::SetLogLevel(__logcpp::LogLevel::LOG);
+    __logcpp::SetLogLevel(__logcpp::LogLevel::L_DEBUG);
 
     LOG("Hello World!");
     TriBody_Intermediate t;
