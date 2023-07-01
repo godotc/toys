@@ -1,3 +1,4 @@
+#include "log.h"
 #include <boost_pch.h>
 
 #include <boost/asio/buffer.hpp>
@@ -50,7 +51,7 @@ void session(const socket_ptr &sock)
         }
     }
     catch (std::exception &e) {
-        ERROR("{}", e.what());
+        LOG_ERROR("{}", e.what());
     }
 }
 
@@ -71,7 +72,7 @@ void serve(io_context &ioc, unsigned short port)
 
 int main()
 {
-    ERROR("srver listening on {}:{}", server_address, server_port);
+    LOG("srver listening on {}:{}", server_address, server_port);
 
     try {
         io_context ioc;
@@ -81,6 +82,6 @@ int main()
         }
     }
     catch (std::exception &e) {
-        ERROR("{}", e.what());
+        LOG_ERROR("{}", e.what());
     }
 }

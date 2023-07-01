@@ -26,8 +26,9 @@ int main()
 
         sock.connect(remote_ep, EC);
         if (EC.value() != 0) {
-            ERROR("Faild to connect to server {} | {}", EC.value(), EC.message());
+            LOG_ERROR("Faild to connect to server {} | {}", EC.value(), EC.message());
         }
+
 
         while (1) {
             std::cout << "Input message>";
@@ -50,6 +51,6 @@ int main()
         }
     }
     catch (std::exception &e) {
-        ERROR("{}", e.what());
+        LOG_ERROR("{}", e.what());
     }
 }
