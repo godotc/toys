@@ -9,8 +9,10 @@
 #pragma once
 #include "../utils/class_default.h"
 #include <glad/glad.h>
+#include <microshit_api.h>
 
-class Texture2D //: utils::disable_copy_allow_move
+
+class GLTK_API Texture2D //: utils::disable_copy_allow_move
 {
     using uint = unsigned int;
 

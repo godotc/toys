@@ -14,14 +14,14 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <microshit_api.h>
 
-#include "../gl_macros.h"
-#include "../utils/class_default.h"
+
 
 // General purpose shader object. Compiles from file, generates
 // compile/link-time error messages and hosts several utility
 // functions for easy management.
-class Shader //: public utils::disable_copy_allow_move
+class GLTK_API Shader //: public utils::disable_copy_allow_move
 {
   public:
     // state

@@ -9,6 +9,7 @@
 ** option) any later version.
 ******************************************************************/
 #include "resource_manager.h"
+
 #include "shader.h"
 
 #include "../gl_macros.h"
@@ -18,10 +19,10 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <log.h>
 #include <optional>
 #include <sstream>
-#include <string_view>
+
+#include "log.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
@@ -132,8 +133,10 @@ ShaderProgramSource ResourceManager::parseShaderFile(const std::filesystem::path
         WARN("Don't konw shader source file type");
         return {};
     }
+#if !_WIN32
 #warning fix the LOG macro
 #warning compare issue
+#endif
     auto ext = UniversalFilePath.filename().extension();
     if (ext.compare(".glsl")) {
         WARN("Not glsl file");

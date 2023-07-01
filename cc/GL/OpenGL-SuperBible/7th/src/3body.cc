@@ -1,4 +1,7 @@
-#include <application.h>
+#include "GLFW/glfw3.h"
+#include "level.h"
+#include <application_glfw.h>
+
 #include <array>
 #include <cmath>
 #include <cstddef>
@@ -17,7 +20,11 @@
 #include <ostream>
 #include <random>
 #include <resource_manager/resource_manager.h>
+#include <stdlib.h>
 #include <sys/types.h>
+
+
+#include <time.h>
 
 static void debug_pts()
 {
@@ -30,6 +37,7 @@ static void debug_pts()
 
 
 static const float G = 1.f;
+
 struct Celestial
 {
     float     Quality = 1.f;
@@ -38,6 +46,7 @@ struct Celestial
 
     Celestial()
     {
+#if _HAS_CXX17
         std::random_device                    rd;
         std::mt19937                          seed(rd());
         std::uniform_real_distribution<float> gen(-1, 1);
@@ -45,12 +54,28 @@ struct Celestial
         Location.x = gen(seed);
         Location.y = gen(seed);
         Location.z = 0.f;
-        // LOG("{} {} {}", Location.x, Location.y, Location.z);
+
         std::uniform_real_distribution<float> gen2(-0.001, 0.001);
 
         Velocity.x = gen2(seed);
         Velocity.y = gen2(seed);
         Velocity.z = 0.f;
+#else
+        auto get_random_float = [](auto min, auto max) -> float {
+            auto d = abs(max - min);
+            return rand() / (float)RAND_MAX * d - max;
+        };
+
+        Location.x = get_random_float(-1, 1);
+        Location.y = get_random_float(-1, 1);
+        Location.z = 0.f;
+
+        Velocity.x = get_random_float(-0.001, 0.001);
+        Velocity.y = get_random_float(-0.001, 0.001);
+        Velocity.z = 0.f;
+#endif
+        LOG("Initial Location: [{}, {}, {}]", Location.x, Location.y, Location.z);
+        LOG("Initial Velocity: [{}, {}, {}]", Velocity.x, Velocity.y, Velocity.z);
     }
 
     auto UpdateVelocity(Celestial &other)
@@ -60,7 +85,8 @@ struct Celestial
         // 假设有一个万有引力公式：F = G * (m1 * m2) / (r^2)，其中 G 为引力常数
 
         float distance = glm::length(dir);
-        // if (distance == 0) distance += 0.01f;
+        if (distance == 0)
+            distance += 0.0000000001f;
 
         const float weight = 0.0000001f;
 
@@ -69,7 +95,7 @@ struct Celestial
         dir = glm::normalize(dir);
 
         auto increment = gravity * dir;
-        // LOG("{} {} {}", increment.x, increment.y, increment.z);
+        DEBUG("Velocity: [{}, {}, {}]", Velocity.x, Velocity.y, Velocity.z);
         Velocity += increment;
     }
 
@@ -93,6 +119,7 @@ struct Celestial
     }
 };
 
+
 std::ostream &operator<<(std::ostream &out, Celestial &c)
 {
     out << "{" << c.Location.x << " " << c.Location.y << " " << c.Location.z << "}\n";
@@ -114,6 +141,7 @@ class TriBody_Intermediate : public Application
         glColor3f(0, 1, 0);
         glPointSize(15.f);
         glEnable(GL_POINT_SMOOTH);
+        // glfwSetWindowShouldClose(m_Window, true);
     }
 
     // slow down this tick
@@ -138,7 +166,6 @@ class TriBody_Intermediate : public Application
 
             for (auto &b : bodys) {
                 // std::cout << b << "-------------------------------------------------\n";
-
                 b.Advance();
             }
 
@@ -150,7 +177,7 @@ class TriBody_Intermediate : public Application
     void
     draw()
     {
-        // debug_pts();
+        debug_pts();
 
         glBegin(GL_POINTS);
         for (auto &b : bodys) {
@@ -201,6 +228,8 @@ class TriBody : public Application
         GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
         GL_CALL(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * sizeof(float), vertices, GL_STATIC_DRAW));
 
+        LOG("hello");
+        TRACE("dd");
         GL_CALL(glEnableVertexAttribArray(0));
         // GL_CALL(glVertexAttribPointer(0, sizeof(vertices), GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0)); // 1281 INVALID_ARGUMENT
         GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0)); // vec3
@@ -230,9 +259,18 @@ class TriBody : public Application
 };
 
 
-int main()
+int main(int argc, char **argv)
 {
+
+#if !_HAS_CXX17
+    srand(time(nullptr));
+#endif
+    __logcpp::SetLogLevel(__logcpp::LogLevel::LOG);
+
+    LOG("Hello World!");
     TriBody_Intermediate t;
     // TriBody t;
     t.Run();
+
+    return 0;
 }

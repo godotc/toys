@@ -10,12 +10,14 @@
 #include <glm/trigonometric.hpp>
 #include <iostream>
 
+#include <microshit_api.h>
+
 
 /**
  * @brief Sprite, reprensent a 2D image or Object in 2D screnn
  *
  */
-class SpriteRender
+class GLTK_API SpriteRender
 {
   public:
     SpriteRender() = default;

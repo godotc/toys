@@ -1,6 +1,7 @@
 
 
 #include "shader.h"
+#include "../gl_macros.h"
 #include <cmath>
 #include <iostream>
 #include <type_traits>

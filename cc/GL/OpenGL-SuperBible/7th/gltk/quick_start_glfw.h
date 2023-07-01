@@ -1,7 +1,6 @@
 #include "gl_macros.h"
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
-#include <gltk/gl_macros.h>
 #include <log.h>
 #include <stdexcept>
 

@@ -2,6 +2,8 @@
 #pragma once
 
 #include <filesystem>
+// #include <experimental/filesystem>
+// #endif
 #include <map>
 #include <string>
 
@@ -9,7 +11,7 @@
 
 #include "shader.h"
 #include "texture.h"
-#include "utils/class_default.h"
+#include <microshit_api.h>
 
 struct ShaderProgramSource
 {
@@ -17,7 +19,8 @@ struct ShaderProgramSource
 };
 
 
-class ResourceManager : public utils::disable_copy_and_move
+
+class GLTK_API ResourceManager //: public utils::disable_copy_and_move
 {
   public:
 

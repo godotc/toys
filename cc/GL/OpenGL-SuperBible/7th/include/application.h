@@ -1,17 +1,21 @@
 #pragma once
 
-#include "SDL_events.h"
-#include "SDL_keycode.h"
-#include "SDL_timer.h"
-#include "SDL_video.h"
+#include <log.h>
 
 #include <SDL2/SDL.h>
+#include <SDL_events.h>
+#include <SDL_keycode.h>
+#include <SDL_timer.h>
+#include <SDL_video.h>
+
+
 #include <cmath>
 #include <cstddef>
 #include <glad/glad.h>
 
 #include <cstdint>
-#include <log.h>
+
+
 #include <stdexcept>
 
 #include <iostream>
@@ -104,6 +108,10 @@ class Application
         SDL_Quit();
     }
 
+    void Shutdown()
+    {
+        m_IsRunning = false;
+    }
 
   protected:
 
@@ -136,6 +144,8 @@ class Application
             }
         }
     }
+
+
 
   public:
     int m_Width{0}, m_Height{0};

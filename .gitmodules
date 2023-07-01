@@ -1,3 +1,6 @@
 [submodule "cc/GL/GLX"]
 	path = cc/GL/GLX
 	url = git@github.com:godotc/GLX.git
+[submodule "cc/GL/OpenGL-SuperBible/7th/include/stb"]
+	path = cc/GL/OpenGL-SuperBible/7th/include/stb
+	url = git@github.com:nothings/stb.git
