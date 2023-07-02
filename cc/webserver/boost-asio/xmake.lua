@@ -25,14 +25,22 @@ target("boost-asio")
 	add_files("src/*.cpp")
 	add_deps("m_log")
 
-target("1_1_sync_server")
+target("3_1_sync_server")
 	set_kind("binary")
 	add_files("sample/3_synchornous_server/server.cpp")
 	add_deps("m_log")
 
-target("1_2_sync_client")
+target("3_2_sync_client")
 	set_kind("binary")
 	add_files("sample/3_synchornous_server/client.cpp")
 	add_deps("m_log")
+
+target("4_0_async_api")
+	set_kind("binary")
+	add_files("sample/4_0_async_api/*.cc")
+	add_deps("m_log")
+
+
+
 
 
