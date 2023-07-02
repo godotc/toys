@@ -1,5 +1,7 @@
 #pragma once
 
+#include <gl_macros.h>
+
 #include "../resource_manager/resource_manager.h"
 #include <glm/common.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -50,14 +52,14 @@ class SpriteRender
         this->shader.SetMatrix4("model", model);
         this->shader.SetVector3f("spriteColor", color);
 
-        glActiveTexture(GL_TEXTURE0);
+        GL_CALL(glActiveTexture(GL_TEXTURE0));
         texture.Bind();
 
-        glBindVertexArray(this->quadVAO);
+        GL_CALL(glBindVertexArray(this->quadVAO));
         {
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+            GL_CALL(glDrawArrays(GL_TRIANGLES, 0, 6));
         }
-        glBindVertexArray(0);
+        GL_CALL(glBindVertexArray(0));
     }
 
   private:

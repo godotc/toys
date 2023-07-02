@@ -22,12 +22,14 @@
 
 #include <GL/gl.h>
 
-void framebuffer_resize_cb(auto *wndow, int w, int h);
-void key_cb(auto *window, int key, int scancode, int action, int mode);
+void            framebuffer_resize_cb(auto *wndow, int w, int h);
+void            key_cb(auto *window, int key, int scancode, int action, int mode);
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
 
 
 
-const unsigned int WIN_W = 800, WIN_H = 600;
+const unsigned int WIN_W = 800,
+                   WIN_H = 600;
 
 static std::unique_ptr<Game> Breakout;
 
@@ -69,19 +71,32 @@ static std::unique_ptr<Game> Breakout;
     const GLubyte *bytes = glGetString(GL_VERSION);
     std::cout << bytes << '\n';
 
+    // During init, enable debug output
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(MessageCallback, 0);
 
     return window;
 }
 
 int main(int argc, char **argv)
 {
+    LOG_PURE_ERROR("hello world");
+    LOG("hello world");
+    TRACE("hello world");
+    DEBUG("hello world");
+    TRACE("hello world");
+    WARN("hello world");
+    LOG_ERROR("hello world");
+    LOG_FATAL("hello world");
+
     auto window = init_glfw();
 
     Breakout = std::make_unique<Game>(WIN_W, WIN_H);
     Breakout->Init();
 
-    float delta_time = 0.f;
+    float dt         = 0.f;
     float last_frame = 0.f;
+
 
 
     while (!glfwWindowShouldClose(window))
@@ -89,11 +104,11 @@ int main(int argc, char **argv)
         glfwPollEvents();
 
         float current_frame = glfwGetTime();
-        delta_time          = current_frame - last_frame;
+        dt                  = current_frame - last_frame;
         last_frame          = current_frame;
 
-        Breakout->ProcessInput(delta_time);
-        Breakout->Update(delta_time);
+        Breakout->ProcessInput(dt);
+        Breakout->Update(dt);
 
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -109,6 +124,23 @@ int main(int argc, char **argv)
     glfwTerminate();
 
     return 0;
+}
+void GLAPIENTRY MessageCallback(GLenum        source,
+                                GLenum        type,
+                                GLuint        id,
+                                GLenum        severity,
+                                GLsizei       length,
+                                const GLchar *message,
+                                const void   *userParam)
+{
+    if (type == GL_DEBUG_TYPE_ERROR) {
+        LOG_PURE_ERROR("{} type = 0x{:x} | severity = 0x{:x} \n\t{}", "[GL]",
+                       type, severity, message);
+    }
+    else {
+        DEBUG("{} type = 0x{:x} | severity = 0x{:x} \n\t{}", "[GL]",
+              type, severity, message);
+    }
 }
 
 

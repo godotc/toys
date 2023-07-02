@@ -1,11 +1,13 @@
 
 
 #include "shader.h"
+#include <gl_macros.h>
 #include <iostream>
+
 
 Shader &Shader::Use()
 {
-    glUseProgram(this->ID);
+    GL_CALL(glUseProgram(this->ID));
     return *this;
 }
 
@@ -61,7 +63,7 @@ void Shader::SetInteger(const char *name, int value, bool useShader)
 {
     if (useShader)
         this->Use();
-    glUniform1i(glGetUniformLocation(this->ID, name), value);
+    GL_CALL(glUniform1i(glGetUniformLocation(this->ID, name), value));
 }
 void Shader::SetVector2f(const char *name, float x, float y, bool useShader)
 {

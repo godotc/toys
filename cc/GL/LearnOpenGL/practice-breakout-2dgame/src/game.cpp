@@ -1,6 +1,6 @@
 #include "game.h"
-#include "render/game_object.h"
 #include "render/sprite_render.h"
+#include <gl_macros.h>
 
 #include "resource_manager/resource_manager.h"
 
@@ -8,6 +8,7 @@
 #include <glm/fwd.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/mat4x4.hpp>
+
 
 
 static auto shader = "sprite";
@@ -19,22 +20,30 @@ Game::~Game() {}
 void Game::Init()
 {
     LOG("W: {} | H: {}", m_Width, m_Height);
+
     ResourceManager::LoadShader("../res/shaders/a.vert", "../res/shaders/a.frag", nullptr, shader);
 
-
     // view projection to resolute the [-1,1]
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->m_Width),
-                                      static_cast<float>(this->m_Height), 0.0f,
+    glm::mat4 projection = glm::ortho(0.0f, (float)this->m_Width,
+                                      (float)this->m_Height, 0.0f,
                                       1.0f, -1.0f);
-    ResourceManager::GetShader(shader).SetMatrix4("projection", projection);
 
+    // NOTICE: Must use this program first
+    ResourceManager::GetShader(shader).Use();
+
+    ResourceManager::GetShader(shader).SetMatrix4("projection", projection);
     // reset image
     ResourceManager::GetShader(shader).Use().SetInteger("image", 0);
+    ResourceManager::GetShader(shader).Use().SetInteger("hasTexture", 1);
+
     Sprites[shader] = SpriteRender(ResourceManager::GetShader(shader));
 
     ResourceManager::LoadTexture("../res/textures/arch.png", true, "arch");
+    ResourceManager::GetTexture("arch").Bind();
 
     // m_Level.Load("../res/levels/default_map", m_Width, m_Height);
+
+    GL_CHECK_HEALTH();
 }
 
 void Game::Update(float dt)
@@ -59,10 +68,13 @@ void Game::Render()
     glPushMatrix();
     glColor3f(1, 1, 1);
     glBegin(GL_LINES);
-    glVertex2f(0, 800);
-    glVertex2f(800, 0);
-    glVertex2f(0, -0.5);
-    glVertex2f(-0.5, 0.5);
+    {
+        glVertex2f(0, 800);
+        glVertex2f(800, 0);
+
+        glVertex2f(-1, -1);
+        glVertex2f(1, 1);
+    }
     glEnd();
     glPopMatrix();
 }

@@ -7,6 +7,7 @@
 ** option) any later version.
 ******************************************************************/
 #include "texture.h"
+#include "gl_macros.h"
 
 
 Texture2D::Texture2D()
@@ -32,9 +33,11 @@ void Texture2D::Generate(unsigned int width, unsigned int height, unsigned char 
 
     // unbind texture
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    GL_CHECK_HEALTH();
 }
 
 void Texture2D::Bind() const
 {
-    glBindTexture(GL_TEXTURE_2D, this->ID);
+    GL_CALL(glBindTexture(GL_TEXTURE_2D, this->ID));
 }

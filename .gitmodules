@@ -4,3 +4,6 @@
 [submodule "cc/GL/OpenGL-SuperBible/7th/include/stb"]
 	path = cc/GL/OpenGL-SuperBible/7th/include/stb
 	url = git@github.com:nothings/stb.git
+[submodule "cc/GL/LearnOpenGL/practice-breakout-2dgame/m_log"]
+	path = cc/GL/LearnOpenGL/practice-breakout-2dgame/m_log
+	url = git@github.com:godotc/m_log.git

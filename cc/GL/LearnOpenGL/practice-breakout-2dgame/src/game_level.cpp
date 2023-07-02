@@ -15,7 +15,7 @@ void GameLevel::Load(const char *file, uint level_width, uint level_height)
 
     std::ifstream ifs(file);
     if (ifs.fail() || !ifs.is_open()) {
-        ERROR("load level file {} failed", file);
+        LOG_ERROR("load level file {} failed", file);
         return;
     }
 
@@ -52,7 +52,7 @@ void GameLevel::Draw(SpriteRender &render)
     }
 }
 
-bool GameLevel::IsCompleted() {}
+bool GameLevel::IsCompleted() { return false; }
 
 void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width, uint level_height)
 {
