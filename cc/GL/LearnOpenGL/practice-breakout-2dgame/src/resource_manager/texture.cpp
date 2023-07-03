@@ -8,6 +8,7 @@
 ******************************************************************/
 #include "texture.h"
 #include "gl_macros.h"
+#include "log.h"
 
 
 Texture2D::Texture2D()
@@ -15,7 +16,7 @@ Texture2D::Texture2D()
     GL_CALL(glGenTextures(1, &this->ID));
 }
 
-void Texture2D::Generate(unsigned int width, unsigned int height, unsigned char *data)
+void Texture2D::Generate(const unsigned int width, const unsigned int height, const unsigned char *data)
 {
     this->Width  = width;
     this->Height = height;
@@ -23,7 +24,10 @@ void Texture2D::Generate(unsigned int width, unsigned int height, unsigned char 
 
     // create Texture
     GL_CALL(glBindTexture(GL_TEXTURE_2D, this->ID));
-    glTexImage2D(GL_TEXTURE_2D, 0, this->Internal_Format, width, height, 0, this->Image_Format, GL_UNSIGNED_BYTE, data);
+
+    // LOG_DEBUG("Data is: {}", (char *)data);
+    // Load a texture from .bmp not a nullptr but, error on this line
+    GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, this->Internal_Format, width, height, 0, this->Image_Format, GL_UNSIGNED_BYTE, data));
 
     // set Texture wrap and filter modes
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, this->Wrap_S));

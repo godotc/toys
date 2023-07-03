@@ -58,9 +58,9 @@ Shader &ResourceManager::GetShader(const char *name)
     return Shaders[name];
 }
 
-Texture2D ResourceManager::LoadTexture(const char *file, bool alpha, std::string name)
+Texture2D ResourceManager::LoadTexture(const char *file, std::string name)
 {
-    Textures[name] = loadTextureFromFile(file, alpha);
+    Textures[name] = loadTextureFromFile(file);
     return Textures[name];
 }
 
@@ -191,21 +191,30 @@ ShaderProgramSource ResourceManager::parseShaderFile(const std::filesystem::path
     return {ss[0].str(), ss[1].str(), ss[2].str()};
 }
 
-Texture2D ResourceManager::loadTextureFromFile(const char *file, bool alpha)
+Texture2D ResourceManager::loadTextureFromFile(const char *file)
 {
     // create texture object
     Texture2D texture;
-    if (alpha)
-    {
-        texture.Internal_Format = GL_RGBA;
-        texture.Image_Format    = GL_RGBA;
-    }
+    texture.Internal_Format = GL_RGBA;
+    texture.Image_Format    = GL_RGBA;
+
     // load image
     int width, height, nrChannels;
 
 
     unsigned char *data = stbi_load(file, &width, &height, &nrChannels, 0);
     LOG_LOG("File: {} , W:H = {}:{}, channels: {}", file, width, height, nrChannels);
+    if (!data) {
+        LOG_ERROR("Load the texture from file {}, but get nullptr!", file);
+        return texture;
+    }
+
+    if (nrChannels < 4) {
+        texture.Internal_Format = GL_RGB;
+        texture.Image_Format    = GL_RGB;
+    }
+
+
     // now generate texture
     texture.Generate(width, height, data);
     // and finally free image data

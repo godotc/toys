@@ -27,7 +27,7 @@ class ResourceManager //: public utils::disable_copy_and_move
     static Shader  LoadShader(const char *UniversalFileName, const char *name);
     static Shader &GetShader(const char *name);
 
-    static Texture2D  LoadTexture(const char *file, bool alpha, std::string name);
+    static Texture2D  LoadTexture(const char *file, std::string name);
     static Texture2D  GetTexture(std::string name);
     static Texture2D &GetTextureRef(std::string name);
 
@@ -39,7 +39,7 @@ class ResourceManager //: public utils::disable_copy_and_move
 
     static Shader    loadShaderFromFile(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile = nullptr);
     static Shader    loadShaderFromFile(std::filesystem::path UniversalFilePath);
-    static Texture2D loadTextureFromFile(const char *file, bool alpha);
+    static Texture2D loadTextureFromFile(const char *file);
 
     static ShaderProgramSource parseShaderFile(const std::filesystem::path &UniversalFilePath);
 

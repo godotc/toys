@@ -24,7 +24,7 @@ class Texture2D
     }
 
     // generates texture from image data
-    void Generate(uint width, uint height, unsigned char *data);
+    void Generate(const uint width, const uint height, const unsigned char *data);
     // binds the texture as the current active GL_TEXTURE_2D texture object
     void Bind() const;
 
