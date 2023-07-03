@@ -18,12 +18,12 @@
 
 #include "render/sprite_render.h"
 
-#include <format>
 
 #include <GL/gl.h>
 
-void            framebuffer_resize_cb(auto *wndow, int w, int h);
-void            key_cb(auto *window, int key, int scancode, int action, int mode);
+void framebuffer_resize_cb(auto *wndow, int w, int h);
+void key_cb(auto *window, int key, int scancode, int action, int mode);
+
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
 
 
@@ -72,24 +72,32 @@ static std::unique_ptr<Game> Breakout;
     std::cout << bytes << '\n';
 
     // During init, enable debug output
+    // Notice: this is a specific driver extension
     glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(MessageCallback, 0);
+    if (glDebugMessageCallback != nullptr) {
+        glDebugMessageCallback(MessageCallback, nullptr);
+        DEBUG("Bound GL debug callback successfully");
+    }
+    else {
+        WARN("glDebugMessageCallback is nullptr. Maye your driver not support this extionsion!");
+    }
 
     return window;
 }
 
 int main(int argc, char **argv)
 {
-    LOG_PURE_ERROR("hello world");
-    LOG("hello world");
-    TRACE("hello world");
-    DEBUG("hello world");
-    TRACE("hello world");
-    WARN("hello world");
-    LOG_ERROR("hello world");
-    LOG_FATAL("hello world");
+    // LOG_PURE_ERROR("hello world");
+    // LOG("hello world");
+    // TRACE("hello world");
+    // DEBUG("hello world");
+    // TRACE("hello world");
+    // WARN("hello world");
+    // LOG_ERROR("hello world");
+    // LOG_FATAL("hello world");
 
     auto window = init_glfw();
+    LOG("GLFW has initialize successfully");
 
     Breakout = std::make_unique<Game>(WIN_W, WIN_H);
     Breakout->Init();
@@ -97,6 +105,7 @@ int main(int argc, char **argv)
     float dt         = 0.f;
     float last_frame = 0.f;
 
+    LOG("Game has initialized suffeccfully");
 
 
     while (!glfwWindowShouldClose(window))
@@ -125,13 +134,14 @@ int main(int argc, char **argv)
 
     return 0;
 }
-void GLAPIENTRY MessageCallback(GLenum        source,
-                                GLenum        type,
-                                GLuint        id,
-                                GLenum        severity,
-                                GLsizei       length,
-                                const GLchar *message,
-                                const void   *userParam)
+
+void MessageCallback(GLenum        source,
+                     GLenum        type,
+                     GLuint        id,
+                     GLenum        severity,
+                     GLsizei       length,
+                     const GLchar *message,
+                     const void   *userParam)
 {
     if (type == GL_DEBUG_TYPE_ERROR) {
         LOG_PURE_ERROR("{} type = 0x{:x} | severity = 0x{:x} \n\t{}", "[GL]",

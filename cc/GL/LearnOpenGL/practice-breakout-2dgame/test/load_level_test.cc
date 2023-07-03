@@ -9,7 +9,7 @@ TEST(TestLoadLevel, should_read_the_right_level_from_plain_text)
     auto          file = "../res/levels/default_map";
     std::ifstream ifs(file);
     if (ifs.fail() || !ifs.is_open()) {
-        ERROR("load level file {} failed", file);
+        LOG_ERROR("load level file {} failed", file);
         return;
     }
 

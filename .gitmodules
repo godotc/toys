@@ -7,3 +7,6 @@
 [submodule "cc/GL/LearnOpenGL/practice-breakout-2dgame/m_log"]
 	path = cc/GL/LearnOpenGL/practice-breakout-2dgame/m_log
 	url = git@github.com:godotc/m_log.git
+[submodule "design_parttern/m_log"]
+	path = design_parttern/m_log
+	url = git@github.com:godotc/m_log.git
