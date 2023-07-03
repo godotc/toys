@@ -13,11 +13,11 @@ set_languages("c++2a")
 add_defines('PROJECT_ROOT_DIR="$(projectdir)"')
 
 includes("m_log")
-	add_includedirs("m_log")
-	-- Add this to top_level xmake if msvc
-	if is_os("windows") then
-		add_cxxflags("/Zc:preprocessor")
-	end
+add_includedirs("m_log")
+-- Add this to top_level xmake if msvc
+if is_os("windows") then
+	add_cxxflags("/Zc:preprocessor")
+end
 
 target("breakout")
     set_kind("binary")
@@ -25,6 +25,7 @@ target("breakout")
 	add_includedirs("include")
 	add_packages("glfw","glm","stb")
 	add_packages("glad")
+	add_packages("fmt")
 	add_deps("m_log")
 
 

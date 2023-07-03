@@ -48,44 +48,66 @@ void GameLevel::Load(const char *file, uint level_width, uint level_height)
 void GameLevel::Draw(SpriteRender &render)
 {
     for (auto &brick : Bricks) {
-        brick.Draw(render);
+        if (!brick.IsDestroyed)
+            brick.Draw(render);
     }
 }
 
-bool GameLevel::IsCompleted() { return false; }
+bool GameLevel::IsCompleted()
+{
+    for (auto &tile : this->Bricks) {
+        if (!tile.IsSolid && !tile.IsDestroyed) {
+            return false;
+        }
+    }
+    return true;
+}
 
 void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width, uint level_height)
 {
     using glm::vec2, glm::vec3;
 
-    int  posX = 0, posY = 0;
+    int posX = 0, posY = 0;
+
     auto sizeX = level_width / (float)tile_data.size();
     auto sizeY = level_height / (float)tile_data[0].size();
 
+
+    vec2 size(sizeX, sizeY);
 
     for (auto &row : tile_data)
     {
         for (auto ui : row)
         {
-            vec3       color;
-            uint       value = ui;
-            GameObject obj;
+            vec3 color = vec3(1.f);
+            uint value = ui;
+            vec2 pos(posX, posY);
+
+            Texture2D &texuture = ResourceManager::GetTexture("arch");
+
             if (value != 0) {
                 if (value == 1) {
-                    color = vec3(0.9, 0.9, 0.9);
+                    texuture = ResourceManager::GetTexture("block_solid");
+                    color    = glm::vec3(0.8f, 0.8f, 0.7f);
                 }
                 else {
-                    color = vec3(sin(value), cos(value), tan(value));
+                    texuture = ResourceManager::GetTexture("block");
+                    if (value == 2) {
+                        color = glm::vec3(0.2f, 0.6f, 1.0f);
+                    }
+                    else if (value == 3) {
+                        color = glm::vec3(0.0f, 0.7f, 0.0f);
+                    }
+                    else if (value == 4) {
+                        color = glm::vec3(0.8f, 0.8f, 0.4f);
+                    }
+                    else if (value == 3) {
+                        color = glm::vec3(1.0f, 0.5f, 0.0f);
+                    }
                 }
-
-                obj = GameObject(vec2(posX, posY),
-                                 vec2(sizeX, sizeY),
-                                 ResourceManager::GetTexture("arch"),
-                                 color,
-                                 vec2(0, 0));
             }
 
-            Bricks.push_back(obj);
+            this->Bricks.emplace_back(GameObject(pos, size, texuture, color));
 
             posX += sizeX;
         }
