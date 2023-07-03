@@ -10,11 +10,20 @@
 ******************************************************************/
 #include "resource_manager.h"
 
-#include "log.h"
+#include "shader.h"
+
+#include "gl_macros.h"
+
 #include <cmath>
+#include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <optional>
 #include <sstream>
+
+#include "log.h"
+#include "texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
@@ -30,7 +39,21 @@ Shader ResourceManager::LoadShader(const char *vShaderFile, const char *fShaderF
     return Shaders[name];
 }
 
-Shader &ResourceManager::GetShader(std::string name)
+Shader ResourceManager::LoadShader(const char *UniversalFileName, const char *name)
+{
+    auto &&[vertSource, fragSource, gemoSource] = parseShaderFile(UniversalFileName);
+    if (!vertSource.empty() && !fragSource.empty()) {
+        Shader shader;
+        shader.Compile(vertSource.c_str(), fragSource.c_str(), gemoSource.c_str());
+        Shaders[name] = shader;
+        return shader;
+    }
+
+    LOG_ERROR("Load shader from file {} failed!", UniversalFileName);
+    return {};
+}
+
+Shader &ResourceManager::GetShader(const char *name)
 {
     return Shaders[name];
 }
@@ -41,8 +64,21 @@ Texture2D ResourceManager::LoadTexture(const char *file, bool alpha, std::string
     return Textures[name];
 }
 
-Texture2D &ResourceManager::GetTexture(std::string name)
+Texture2D ResourceManager::GetTexture(std::string name)
 {
+#ifndef NDBUG
+    if (Textures.find(name) == Textures.end())
+        LOG_ERROR("Not such texture: {} ", name);
+#endif
+    return Textures[name];
+}
+
+Texture2D &ResourceManager::GetTextureRef(std::string name)
+{
+#ifndef NDBUG
+    if (Textures.find(name) == Textures.end())
+        LOG_ERROR("Not such texture: {} ", name);
+#endif
     return Textures[name];
 }
 
@@ -51,10 +87,10 @@ void ResourceManager::Clear()
 
     // (properly) delete all shaders
     for (const auto &iter : Shaders)
-        glDeleteProgram(iter.second.ID);
+        GL_CALL(glDeleteProgram(iter.second.ID));
     // (properly) delete all textures
     for (const auto &iter : Textures)
-        glDeleteTextures(1, &iter.second.ID);
+        GL_CALL(glDeleteTextures(1, &iter.second.ID));
 }
 
 Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile)
@@ -69,6 +105,7 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
         std::ifstream     vertexShaderFile(vShaderFile);
         std::ifstream     fragmentShaderFile(fShaderFile);
         std::stringstream vShaderStream, fShaderStream;
+
         // read file's buffer contents into streams
         vShaderStream << vertexShaderFile.rdbuf();
         fShaderStream << fragmentShaderFile.rdbuf();
@@ -103,6 +140,57 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
     return shader;
 }
 
+
+ShaderProgramSource ResourceManager::parseShaderFile(const std::filesystem::path &UniversalFilePath)
+{
+    if (!UniversalFilePath.has_extension()) {
+        LOG_WARN("Don't konw shader source file type");
+        return {};
+    }
+#if !_WIN32
+#warning fix the LOG macro
+#warning compare issue
+#endif
+    auto ext = UniversalFilePath.filename().extension();
+    if (ext.compare(".glsl")) {
+        LOG_WARN("Not glsl file");
+        return {};
+    }
+
+
+    std::ifstream stream(UniversalFilePath);
+
+    enum class ShaderType
+    {
+        NONE     = -1,
+        VERTEX   = 0,
+        FRAGMENT = 1,
+        GEOMETRY = 2,
+    };
+
+    std::string       line;
+    std::stringstream ss[3];
+    ShaderType        type = ShaderType::NONE;
+
+    while (std::getline(stream, line))
+    {
+        if (line.find("#shader") != std::string::npos)
+        {
+            if (line.find("vertex") != std::string::npos)
+                type = ShaderType::VERTEX;
+            else if (line.find("fragment") != std::string::npos)
+                type = ShaderType::FRAGMENT;
+            else if (line.find("geometry") != std::string::npos)
+                type = ShaderType::GEOMETRY;
+        }
+        else
+        {
+            ss[(int)type] << line << "\n";
+        }
+    }
+    return {ss[0].str(), ss[1].str(), ss[2].str()};
+}
+
 Texture2D ResourceManager::loadTextureFromFile(const char *file, bool alpha)
 {
     // create texture object
@@ -117,7 +205,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char *file, bool alpha)
 
 
     unsigned char *data = stbi_load(file, &width, &height, &nrChannels, 0);
-    LOG("File: {} , W:H = {}:{}, channels: {}", file, width, height, nrChannels);
+    LOG_LOG("File: {} , W:H = {}:{}, channels: {}", file, width, height, nrChannels);
     // now generate texture
     texture.Generate(width, height, data);
     // and finally free image data

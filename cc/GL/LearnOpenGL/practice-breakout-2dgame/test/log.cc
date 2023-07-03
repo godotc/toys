@@ -3,5 +3,5 @@
 
 TEST(DISABLED_TestLog, should_use_format_string)
 {
-    LOG("hello{} {}", "world", "bb");
+    LOG_LOG("hello{} {}", "world", "bb");
 }

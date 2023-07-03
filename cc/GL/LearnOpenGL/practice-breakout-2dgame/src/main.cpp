@@ -1,4 +1,5 @@
 #include "game.h"
+#include "level.h"
 #include "log.h"
 
 #include <bit>
@@ -73,13 +74,13 @@ static std::unique_ptr<Game> Breakout;
 
     // During init, enable debug output
     // Notice: this is a specific driver extension
-    glEnable(GL_DEBUG_OUTPUT);
     if (glDebugMessageCallback != nullptr) {
+        glEnable(GL_DEBUG_OUTPUT);
         glDebugMessageCallback(MessageCallback, nullptr);
-        DEBUG("Bound GL debug callback successfully");
+        LOG_DEBUG("Bound GL debug callback successfully");
     }
     else {
-        WARN("glDebugMessageCallback is nullptr. Maye your driver not support this extionsion!");
+        LOG_WARN("glDebugMessageCallback is nullptr. Maye your driver not support this extionsion!");
     }
 
     return window;
@@ -95,9 +96,11 @@ int main(int argc, char **argv)
     // WARN("hello world");
     // LOG_ERROR("hello world");
     // LOG_FATAL("hello world");
+    __logcpp::SetLogLevel(__logcpp::LogLevel::L_DEBUG);
+
 
     auto window = init_glfw();
-    LOG("GLFW has initialize successfully");
+    LOG_LOG("GLFW has initialize successfully");
 
     Breakout = std::make_unique<Game>(WIN_W, WIN_H);
     Breakout->Init();
@@ -105,7 +108,7 @@ int main(int argc, char **argv)
     float dt         = 0.f;
     float last_frame = 0.f;
 
-    LOG("Game has initialized suffeccfully");
+    LOG_LOG("Game has initialized suffeccfully");
 
 
     while (!glfwWindowShouldClose(window))
@@ -148,8 +151,8 @@ void MessageCallback(GLenum        source,
                        type, severity, message);
     }
     else {
-        DEBUG("{} type = 0x{:x} | severity = 0x{:x} \n\t{}", "[GL]",
-              type, severity, message);
+        LOG_DEBUG("{} type = 0x{:x} | severity = 0x{:x} \n\t{}", "[GL]",
+                  type, severity, message);
     }
 }
 

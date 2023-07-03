@@ -1,9 +1,10 @@
 
 
 #include "shader.h"
-#include <gl_macros.h>
+#include "gl_macros.h"
+#include <cmath>
 #include <iostream>
-
+#include <type_traits>
 
 Shader &Shader::Use()
 {
@@ -16,48 +17,49 @@ void Shader::Compile(const char *vertexSource, const char *fragmentSource, const
     unsigned int sVertex, sFragment, gShader;
 
     // vertex Shader
-    sVertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(sVertex, 1, &vertexSource, nullptr);
-    glCompileShader(sVertex);
+    GL_CALL(sVertex = glCreateShader(GL_VERTEX_SHADER));
+    GL_CALL(glShaderSource(sVertex, 1, &vertexSource, nullptr));
+    GL_CALL(glCompileShader(sVertex));
     checkCompileErrors(sVertex, "VERTEX");
 
+
     // fragment Shader
-    sFragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(sFragment, 1, &fragmentSource, nullptr);
-    glCompileShader(sFragment);
+    GL_CALL(sFragment = glCreateShader(GL_FRAGMENT_SHADER));
+    GL_CALL(glShaderSource(sFragment, 1, &fragmentSource, nullptr));
+    GL_CALL(glCompileShader(sFragment));
     checkCompileErrors(sFragment, "FRAGMENT");
 
     // if geometry shader source code is given, also compile geometry shader
     if (geometrySource != nullptr)
     {
-        gShader = glCreateShader(GL_GEOMETRY_SHADER);
-        glShaderSource(gShader, 1, &geometrySource, nullptr);
-        glCompileShader(gShader);
+        GL_CALL(gShader = glCreateShader(GL_GEOMETRY_SHADER));
+        GL_CALL(glShaderSource(gShader, 1, &geometrySource, nullptr));
+        GL_CALL(glCompileShader(gShader));
         checkCompileErrors(gShader, "GEOMETRY");
     }
 
     // shader program
     this->ID = glCreateProgram();
-    glAttachShader(this->ID, sVertex);
-    glAttachShader(this->ID, sFragment);
+    GL_CALL(glAttachShader(this->ID, sVertex));
+    GL_CALL(glAttachShader(this->ID, sFragment));
     if (geometrySource != nullptr)
-        glAttachShader(this->ID, gShader);
+        GL_CALL(glAttachShader(this->ID, gShader));
 
-    glLinkProgram(this->ID);
+    GL_CALL(glLinkProgram(this->ID));
     checkCompileErrors(this->ID, "PROGRAM");
 
     // delete the shaders as they're linked into our program now and no longer necessary
-    glDeleteShader(sVertex);
-    glDeleteShader(sFragment);
+    GL_CALL(glDeleteShader(sVertex));
+    GL_CALL(glDeleteShader(sFragment));
     if (geometrySource != nullptr)
-        glDeleteShader(gShader);
+        GL_CALL(glDeleteShader(gShader));
 }
 
 void Shader::SetFloat(const char *name, float value, bool useShader)
 {
     if (useShader)
         this->Use();
-    glUniform1f(glGetUniformLocation(this->ID, name), value);
+    GL_CALL(glUniform1f((glGetUniformLocation(this->ID, name)), value));
 }
 void Shader::SetInteger(const char *name, int value, bool useShader)
 {
@@ -69,43 +71,43 @@ void Shader::SetVector2f(const char *name, float x, float y, bool useShader)
 {
     if (useShader)
         this->Use();
-    glUniform2f(glGetUniformLocation(this->ID, name), x, y);
+    GL_CALL(glUniform2f(glGetUniformLocation(this->ID, name), x, y));
 }
 void Shader::SetVector2f(const char *name, const glm::vec2 &value, bool useShader)
 {
     if (useShader)
         this->Use();
-    glUniform2f(glGetUniformLocation(this->ID, name), value.x, value.y);
+    GL_CALL(glUniform2f(glGetUniformLocation(this->ID, name), value.x, value.y));
 }
 void Shader::SetVector3f(const char *name, float x, float y, float z, bool useShader)
 {
     if (useShader)
         this->Use();
-    glUniform3f(glGetUniformLocation(this->ID, name), x, y, z);
+    GL_CALL(glUniform3f(glGetUniformLocation(this->ID, name), x, y, z));
 }
 void Shader::SetVector3f(const char *name, const glm::vec3 &value, bool useShader)
 {
     if (useShader)
         this->Use();
-    glUniform3f(glGetUniformLocation(this->ID, name), value.x, value.y, value.z);
+    GL_CALL(glUniform3f(glGetUniformLocation(this->ID, name), value.x, value.y, value.z));
 }
 void Shader::SetVector4f(const char *name, float x, float y, float z, float w, bool useShader)
 {
     if (useShader)
         this->Use();
-    glUniform4f(glGetUniformLocation(this->ID, name), x, y, z, w);
+    GL_CALL(glUniform4f(glGetUniformLocation(this->ID, name), x, y, z, w));
 }
 void Shader::SetVector4f(const char *name, const glm::vec4 &value, bool useShader)
 {
     if (useShader)
         this->Use();
-    glUniform4f(glGetUniformLocation(this->ID, name), value.x, value.y, value.z, value.w);
+    GL_CALL(glUniform4f(glGetUniformLocation(this->ID, name), value.x, value.y, value.z, value.w));
 }
 void Shader::SetMatrix4(const char *name, const glm::mat4 &matrix, bool useShader)
 {
     if (useShader)
         this->Use();
-    glUniformMatrix4fv(glGetUniformLocation(this->ID, name), 1, false, glm::value_ptr(matrix));
+    GL_CALL(glUniformMatrix4fv(glGetUniformLocation(this->ID, name), 1, false, glm::value_ptr(matrix)));
 }
 
 
@@ -115,10 +117,10 @@ void Shader::checkCompileErrors(unsigned int object, const std::string &type)
     char infoLog[1024];
     if (type != "PROGRAM")
     {
-        glGetShaderiv(object, GL_COMPILE_STATUS, &success);
+        GL_CALL(glGetShaderiv(object, GL_COMPILE_STATUS, &success));
         if (!success)
         {
-            glGetShaderInfoLog(object, 1024, nullptr, infoLog);
+            GL_CALL(glGetShaderInfoLog(object, 1024, nullptr, infoLog));
             std::cerr << "| ERROR::SHADER: Compile-time error: Type: " << type << "\n"
                       << infoLog << "\n -- --------------------------------------------------- -- "
                       << std::endl;
@@ -126,10 +128,10 @@ void Shader::checkCompileErrors(unsigned int object, const std::string &type)
     }
     else
     {
-        glGetProgramiv(object, GL_LINK_STATUS, &success);
+        GL_CALL(glGetProgramiv(object, GL_LINK_STATUS, &success));
         if (!success)
         {
-            glGetProgramInfoLog(object, 1024, nullptr, infoLog);
+            GL_CALL(glGetProgramInfoLog(object, 1024, nullptr, infoLog));
             std::cerr << "| ERROR::Shader: Link-time error: Type: " << type << "\n"
                       << infoLog << "\n -- --------------------------------------------------- -- "
                       << std::endl;

@@ -4,7 +4,6 @@
 #include "render/sprite_render.h"
 #include <string>
 #include <unordered_map>
-#include <vcruntime.h>
 enum class GameState
 {
     GAME_ACTIVE,
@@ -27,12 +26,12 @@ class Game
     void Render();
 
   private:
-    void dbgDraw();
+    void debugDraw();
 
   public:
     GameState m_State;
 
-    std::unordered_map<std::string, SpriteRender> Sprites;
+    std::unordered_map<std::string, SpriteRender> SpriteRenders;
 
     bool         m_keys[1024];
     unsigned int m_Width, m_Height;

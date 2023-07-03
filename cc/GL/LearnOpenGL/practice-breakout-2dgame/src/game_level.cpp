@@ -83,7 +83,7 @@ void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width,
             uint value = ui;
             vec2 pos(posX, posY);
 
-            Texture2D &texuture = ResourceManager::GetTexture("arch");
+            Texture2D texuture = ResourceManager::GetTexture("arch");
 
             if (value != 0) {
                 if (value == 1) {
@@ -101,7 +101,7 @@ void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width,
                     else if (value == 4) {
                         color = glm::vec3(0.8f, 0.8f, 0.4f);
                     }
-                    else if (value == 3) {
+                    else if (value == 5) {
                         color = glm::vec3(1.0f, 0.5f, 0.0f);
                     }
                 }

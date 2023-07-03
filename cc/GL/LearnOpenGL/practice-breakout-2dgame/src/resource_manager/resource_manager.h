@@ -1,15 +1,9 @@
 
-
-/*******************************************************************
-** This code is part of Breakout.
-**
-** Breakout is free software: you can redistribute it and/or modify
-** it under the terms of the CC BY 4.0 license as published by
-** Creative Commons, either version 4 of the License, or (at your
-** option) any later version.
-******************************************************************/
 #pragma once
 
+#include <filesystem>
+// #include <experimental/filesystem>
+// #endif
 #include <map>
 #include <string>
 
@@ -18,16 +12,24 @@
 #include "shader.h"
 #include "texture.h"
 
+struct ShaderProgramSource
+{
+    std::string VertexSource, FragmentSource, GemoetySource;
+};
 
-class ResourceManager
+
+
+class ResourceManager //: public utils::disable_copy_and_move
 {
   public:
 
     static Shader  LoadShader(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile, std::string name);
-    static Shader &GetShader(std::string name);
+    static Shader  LoadShader(const char *UniversalFileName, const char *name);
+    static Shader &GetShader(const char *name);
 
     static Texture2D  LoadTexture(const char *file, bool alpha, std::string name);
-    static Texture2D &GetTexture(std::string name);
+    static Texture2D  GetTexture(std::string name);
+    static Texture2D &GetTextureRef(std::string name);
 
     static void Clear();
 
@@ -36,7 +38,10 @@ class ResourceManager
     ResourceManager() = default;
 
     static Shader    loadShaderFromFile(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile = nullptr);
+    static Shader    loadShaderFromFile(std::filesystem::path UniversalFilePath);
     static Texture2D loadTextureFromFile(const char *file, bool alpha);
+
+    static ShaderProgramSource parseShaderFile(const std::filesystem::path &UniversalFilePath);
 
   public:
     // resource storage

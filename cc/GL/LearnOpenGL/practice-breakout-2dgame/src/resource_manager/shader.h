@@ -16,10 +16,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
+
 // General purpose shader object. Compiles from file, generates
 // compile/link-time error messages and hosts several utility
 // functions for easy management.
-class Shader
+class Shader //: public utils::disable_copy_allow_move
 {
   public:
     // state
@@ -30,7 +31,7 @@ class Shader
     ~Shader()
     {
         // LOG("Destruct of Shader: {}", this->ID);
-        //  glDeleteProgram(this->ID);
+        //  GL_CALL(glDeleteProgram(this->ID));
     }
 
     // sets the current shader as active

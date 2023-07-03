@@ -9,8 +9,9 @@ uniform int hasTexture= 0;
 
 void main()
 {
+
 	if(0 == hasTexture){
-		color = vec4(spriteColor, 1.0);
+	 	 color = vec4(spriteColor, 1.0);
 	}else{
 		color = vec4(spriteColor, 1.0) * texture(image, TexCoords);
 	}
