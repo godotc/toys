@@ -6,22 +6,24 @@
 
 TEST(TestLoadLevel, should_read_the_right_level_from_plain_text)
 {
-    auto          file = "../res/levels/default_map";
+    auto          file = "../res/levels/0_standard";
     std::ifstream ifs(file);
     if (ifs.fail() || !ifs.is_open()) {
         LOG_ERROR("load level file {} failed", file);
         return;
     }
 
-    uint        tile_code;
+    using ui = unsigned int;
+
+    ui          tile_code;
     std::string line;
 
     using std::vector;
-    vector<vector<uint>> tile_data;
+    vector<vector<ui>> tile_data;
 
     while (std::getline(ifs, line))
     {
-        std::vector<uint> row;
+        std::vector<ui> row;
         row.reserve(5);
 
         std::istringstream ss(line);

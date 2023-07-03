@@ -40,3 +40,5 @@ target("test")
 	add_packages("glfw","glm","stb")
 	add_packages("glad")
 	add_packages("gtest")
+
+	add_deps("m_log")

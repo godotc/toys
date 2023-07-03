@@ -29,11 +29,11 @@ class SpriteRender
     }
 
     void DrawSprite(
-        Texture2D &texture,
-        glm::vec2  position,
-        glm::vec2  size   = glm::vec2(10.f, 10.f),
-        float      rotate = 0.f,
-        glm::vec3  color  = glm::vec3(1.f))
+        const Texture2D &texture,
+        glm::vec2        position,
+        glm::vec2        size   = glm::vec2(10.f, 10.f),
+        float            rotate = 0.f,
+        glm::vec3        color  = glm::vec3(1.f))
     {
         this->shader.Use();
         // glViewport(0, 0, 800, 800);
