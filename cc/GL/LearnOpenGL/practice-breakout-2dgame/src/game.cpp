@@ -15,7 +15,6 @@
 #include <math.h>
 #include <mutex>
 #include <string_view>
-#include <unistd.h>
 #include <vector>
 
 #include <fmt/format.h>
@@ -71,22 +70,27 @@ void Game::Init()
         for (const auto texture : std::filesystem::directory_iterator("../res/textures/"))
         {
             const auto &file_path = texture.path().string();
+            // LOG_DEBUG("Trying to load texture from '{}'", file_path);
+
             for (auto &suffx : support_suffixs)
             {
-                if (file_path.ends_with(suffx)) {
-                    const auto texture_name = GetFileNameWithoutExtension(std::ref(file_path));
-                    // LOG_DEBUG("__{}__", texture_name);
+                if (file_path.ends_with(suffx))
+                {
+                    LOG_TRACE("Trying to load texture from '{}'", file_path);
+
+                    const std::string texture_name = GetFileNameWithoutExtension(std::ref(file_path));
+
                     std::lock_guard<std::mutex> lg(mtx);
-                    ResourceManager::LoadTexture(file_path.c_str(), true, texture_name);
+                    ResourceManager::LoadTexture(file_path.c_str(), texture_name);
                 }
             }
         }
 #else
-        // ResourceManager::LoadTexture("../res/textures/arch.png", true, "arch");
-        // ResourceManager::LoadTexture("../res/textures/brick.bmp", true, "brick");
-        // ResourceManager::LoadTexture("../res/textures/block_solid.png", true, "block_solid");
-        // ResourceManager::LoadTexture("../res/textures/block.png", true, "block");
-        // ResourceManager::LoadTexture("../res/textures/background.jpg", true, "background");
+        ResourceManager::LoadTexture("../res/textures/arch.png", "arch");
+        ResourceManager::LoadTexture("../res/textures/brick.bmp", "brick");
+        ResourceManager::LoadTexture("../res/textures/block_solid.png", "block_solid");
+        ResourceManager::LoadTexture("../res/textures/block.png", "block");
+        ResourceManager::LoadTexture("../res/textures/background.jpg", "background");
 #endif
     }
 
@@ -96,15 +100,16 @@ void Game::Init()
     size_t level_count        = 4;
     m_Levels                  = std::vector<GameLevel>(level_count);
     const char *level_names[] = {
-        "1_standard",
-        "2_a_few_small_gaps",
-        "3_space_invader",
-        "4_bounce_galore",
+        "0_standard",
+        "1_a_few_small_gaps",
+        "2_space_invader",
+        "3_bounce_galore",
     };
     for (int i = 0; i < level_count; ++i)
     {
         m_Levels[i].Load(fmt::format("../res/levels/{}", level_names[i]).c_str(), m_Width, m_Height / 2);
     }
+
 
     m_LevelIndex = 0;
 
@@ -123,19 +128,17 @@ void Game::ProcessInput(float dt)
 void Game::Render()
 {
 
-    // if (this->m_State == GameState::GAME_ACTIVE) {
-    //     // draw BG
-    //     Sprites[shader].DrawSprite(ResourceManager::GetTexture("background"),
-    //                                glm::vec2(0.f, 0.f),
-    //                                glm::vec2(m_Width, m_Height),
-    //                                0.f);
-    //     // draw level
-    //     m_Levels[m_LevelIndex].Draw(Sprites[shader]);
-    // }
+    if (this->m_State == GameState::GAME_ACTIVE) {
+        // draw BG
+        SpriteRenders[shader].DrawSprite(ResourceManager::GetTextureRef("background"),
+                                         glm::vec2(0.f, 0.f),
+                                         glm::vec2(m_Width, m_Height),
+                                         0.f);
+        // draw level
+        m_Levels[m_LevelIndex].Draw(SpriteRenders[shader]);
+    }
 
-    // m_Level.Draw(Sprites[shader]);
-
-    debugDraw();
+    // debugDraw();
 }
 
 

@@ -1,4 +1,5 @@
 #include "game_level.h"
+#include "log.h"
 #include "render/game_object.h"
 #include "resource_manager/resource_manager.h"
 #include <cmath>
@@ -40,6 +41,7 @@ void GameLevel::Load(const char *file, uint level_width, uint level_height)
         tile_data.push_back(row);
     }
 
+
     if (tile_data.size() > 0) {
         init(tile_data, level_width, level_height);
     }
@@ -48,8 +50,10 @@ void GameLevel::Load(const char *file, uint level_width, uint level_height)
 void GameLevel::Draw(SpriteRender &render)
 {
     for (auto &brick : Bricks) {
-        if (!brick.IsDestroyed)
+        if (!brick.IsDestroyed) {
             brick.Draw(render);
+            // LOG_DEBUG("brick's properties: size: {}, {},  location: {}, {}", brick.Size.x, brick.Size.y, brick.Position.x, brick.Position.y);
+        }
     }
 }
 
@@ -67,16 +71,19 @@ void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width,
 {
     using glm::vec2, glm::vec3;
 
-    int posX = 0, posY = 0;
 
-    auto sizeX = level_width / (float)tile_data.size();
-    auto sizeY = level_height / (float)tile_data[0].size();
+    auto sizeX = level_width / (float)tile_data[0].size();
+    auto sizeY = level_height / (float)tile_data.size();
+    LOG_DEBUG("Every brick size x & Y: {} | {}", sizeX, sizeY);
 
 
     vec2 size(sizeX, sizeY);
 
+    int posY = 0;
+    int posX = 0;
     for (auto &row : tile_data)
     {
+        posX = 0;
         for (auto ui : row)
         {
             vec3 color = vec3(1.f);
@@ -105,12 +112,15 @@ void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width,
                         color = glm::vec3(1.0f, 0.5f, 0.0f);
                     }
                 }
+                GameObject obj(pos, size, texuture, color, vec2(0, 0));
+                this->Bricks.push_back(obj);
             }
-
-            this->Bricks.emplace_back(GameObject(pos, size, texuture, color));
 
             posX += sizeX;
         }
         posY += sizeY;
     }
+
+    LOG_DEBUG("Finnal pos: {} | {}", posX, posY);
+    // exit(1);
 }
