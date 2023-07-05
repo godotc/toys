@@ -18,7 +18,7 @@ TEST(TestPath, should_print_the_path)
 
     char path[1024]{};
 
-    _getcwd(path, 256);
+    getcwd(path, 256);
     std::cout << "getcwd:\t ";
     std::cout << path << "\n";
 
