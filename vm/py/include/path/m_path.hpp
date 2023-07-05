@@ -3,6 +3,6 @@
 #include <filesystem>
 
 namespace FPATH {
-std::filesystem::path p(__FILE__);
+std::filesystem::path a;
 
 };

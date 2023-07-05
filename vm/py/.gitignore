@@ -8,3 +8,4 @@ build/
 
 __pycache__
 .cache
+a.out

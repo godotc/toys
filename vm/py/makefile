@@ -6,3 +6,10 @@ r:
 	xmake b $(T)
 	xmake r $(T)
 
+
+
+wendows:
+	Set-Alias xmk xmake
+	#Set-Alias v nvim
+	
+

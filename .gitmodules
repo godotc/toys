@@ -10,3 +10,6 @@
 [submodule "design_parttern/m_log"]
 	path = design_parttern/m_log
 	url = git@github.com:godotc/m_log.git
+[submodule "vm/py/packages/m_log"]
+	path = vm/py/packages/m_log
+	url = git@github.com:godotc/m_log.git
