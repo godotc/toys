@@ -33,8 +33,7 @@ fn partition(array: &mut [i32]) -> usize {
     idx
 }
 
-#[test]
-fn quick_sort_test() {
+fn main() {
     let mut rng = thread_rng();
     let mut array: Vec<i32> = (0..N).map(|_| rng.gen_range(0..100)).collect();
 
