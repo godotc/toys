@@ -11,8 +11,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    BufferInputStream stream(argv[1]);
-    printf("magic numblr is 0x%x\n", stream.ReadInt());
+    pyvm::BufferInputStream stream(argv[1]);
+    printf("magic numblr is 0x%x\n", stream.read_int());
 
     return 0;
 }

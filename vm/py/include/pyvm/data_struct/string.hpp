@@ -1,10 +1,12 @@
 #pragma once
 
+
 #include "../object.hpp"
+#include "pyvm/pyvm.h"
 #include <cstring>
 #include <string.h>
-#include <vcruntime_string.h>
 
+PYVM_TOP_LEVEL_NAMESPACE_BEGIN
 
 class PyString : public PyObject
 {
@@ -28,3 +30,5 @@ class PyString : public PyObject
     char *m_Value;
     int   m_Length;
 };
+
+PYVM_TOP_LEVEL_NAMESPACE_END

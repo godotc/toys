@@ -1,10 +1,11 @@
 #pragma once
 
 #include "../object.hpp"
+#include "pyvm/pyvm.h"
 #include <cstring>
 #include <string.h>
-#include <vcruntime_string.h>
 
+PYVM_TOP_LEVEL_NAMESPACE_BEGIN
 
 class PyInteger : public PyObject
 {
@@ -19,3 +20,5 @@ class PyInteger : public PyObject
   private:
     int m_Value;
 };
+
+PYVM_TOP_LEVEL_NAMESPACE_END

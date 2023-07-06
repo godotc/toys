@@ -27,4 +27,14 @@ target("py")
 target("1")
 	set_kind("binary")
 	add_files("sample/1_arithmetic/arithmetic.cc")
+	add_deps("m_log")
+
+
+
+target("bfpt")
+	set_kind("binary")
+	add_files("test/binary_file_parse_test.cc")
+
+	add_deps("m_log")
+
 

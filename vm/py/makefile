@@ -8,8 +8,10 @@ r:
 
 
 
-wendows:
-	Set-Alias xmk xmake
-	#Set-Alias v nvim
+
+bytecodes:
+	python -m compileall res/bytecodes/read_bytecode_test.py
+	hexdump res/bytecodes/__pycache__/read_bytecode_test.*.pyc > res/bytecodes/hexdump.txt
+	xxd res/bytecodes/__pycache__/read_bytecode_test.*.pyc > res/bytecodes/xxd.txt
 	
 

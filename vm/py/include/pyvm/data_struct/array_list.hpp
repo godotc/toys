@@ -2,7 +2,10 @@
 
 #include "fmt/core.h"
 #include "log.h"
+#include "pyvm/pyvm.h"
 
+
+PYVM_TOP_LEVEL_NAMESPACE_BEGIN
 
 #define USE_ARRAYLIST_INSTEAD_OF_VECTOR
 #ifdef USE_ARRAYLIST_INSTEAD_OF_VECTOR
@@ -74,3 +77,5 @@ class PyArrayList
 };
 
 #endif
+
+PYVM_TOP_LEVEL_NAMESPACE_END
