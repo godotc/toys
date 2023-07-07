@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <fstream>
 #include <ios>
+#include <iostream>
 #include <log.h>
 
 
@@ -21,8 +22,10 @@ class BufferInputStream
   public:
     BufferInputStream(char const *filepath)
     {
-        ifs.open(filepath, std::ios_base::in);
-        if (!ifs.is_open() || ifs.fail()) {
+        m_Buffer = new char[BUFFER_LEN];
+
+        ifs.open(filepath, std::ios_base::in | std::ios_base::binary);
+        if (!ifs.is_open() || ifs.fail() || ifs.fail() || ifs.bad()) {
             LOG_ERROR("Failed to open {}", filepath);
             return;
         }
@@ -31,7 +34,7 @@ class BufferInputStream
 
         LOG_DEBUG("The first data that read:");
         for (int i = 0; i < BUFFER_LEN; ++i) {
-            printf("%x", m_Buffer[i]);
+            printf("%x", (unsigned char)m_Buffer[i]);
         }
         printf("\n");
         for (int i = 0; i < BUFFER_LEN; ++i) {
@@ -77,7 +80,7 @@ class BufferInputStream
 
   private:
     std::ifstream ifs;
-    char          m_Buffer[BUFFER_LEN];
+    char         *m_Buffer;
     unsigned int  m_Index;
 };
 
