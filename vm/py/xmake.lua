@@ -35,6 +35,7 @@ target("1")
 target("bfpt")
 	set_kind("binary")
 	add_files("test/binary_file_parse_test.cc")
+	add_files("src/pyvm/**.cc")
 
 	add_deps("m_log")
 

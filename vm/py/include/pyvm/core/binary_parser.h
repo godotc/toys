@@ -26,7 +26,6 @@ class BinaryFileParser
 
 
   private:
-
     PyString                *get_byte_code();
     PyArrayList<PyObject *> *get_consts();
     PyArrayList<PyObject *> *get_names();

@@ -37,7 +37,7 @@ class CodeObject : public PyObject
     }
 
 
-  private:
+  public:
     int                      m_ArgCount;
     int                      m_NumLocals;
     int                      m_StackSize;

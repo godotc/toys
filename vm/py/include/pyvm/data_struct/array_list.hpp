@@ -5,7 +5,6 @@
 #include "pyvm/pyvm.h"
 #include <memory>
 #include <string.h>
-#include <vadefs.h>
 
 
 PYVM_TOP_LEVEL_NAMESPACE_BEGIN

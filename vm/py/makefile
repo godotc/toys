@@ -29,8 +29,8 @@ bytecodes:
 	
 
 t2:
-	./bin/py.exe ./res/bytecodes/read_bytecode_test.pyc
+	./bin/py ./res/bytecodes/read_bytecode_test.pyc
 	
 t3:
-	./bin/py.exe ./res/bytecodes/__pycache__/read_bytecode_test.cpython-310.pyc
+	./bin/py ./res/bytecodes/__pycache__/read_bytecode_test.cpython-310.pyc
 
