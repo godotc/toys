@@ -1,0 +1,1 @@
+Set-Alias.exe py python3

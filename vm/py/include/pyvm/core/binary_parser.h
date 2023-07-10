@@ -19,61 +19,13 @@ class BinaryFileParser
     BinaryFileParser(BufferInputStream *stream) { m_Filestream = stream; }
 
   public:
-    CodeObject *parse()
-    {
-        int magic_number = m_Filestream->read_int();
-        LOG_DEBUG("magic number is 0x{:x}", magic_number);
-        // m_Filestream->read_int();
+    CodeObject *parse();
 
-        int mod_date = m_Filestream->read_int();
-        LOG_DEBUG("mod date is 0x{:x}", mod_date);
-
-        char object_type = m_Filestream->read();
-        if (object_type == 'c') {
-            CodeObject *result = get_code_object();
-            LOG_TRACE("parse successfully!\n");
-            return result;
-        }
-
-        return nullptr;
-    }
+  private:
+    CodeObject *get_code_object();
 
 
   private:
-    CodeObject *get_code_object()
-    {
-        int argcount = m_Filestream->read_int();
-        LOG_DEBUG("argcount: {}", argcount);
-
-        int n_locals = m_Filestream->read_int();
-        LOG_DEBUG("n_locals: {}", n_locals);
-
-        int stack_size = m_Filestream->read_int();
-
-        int flags = m_Filestream->read_int();
-        LOG_DEBUG("flags: {}", flags);
-
-        PyString *byte_code = get_byte_code();
-
-        PyArrayList<PyObject *> *consts    = get_consts();
-        PyArrayList<PyObject *> *names     = get_names();
-        PyArrayList<PyObject *> *var_names = get_var_names();
-        PyArrayList<PyObject *> *free_vars = get_free_vars();
-        PyArrayList<PyObject *> *cell_vars = get_cell_vars();
-
-        PyString *file_name   = get_file_name();
-        PyString *module_name = get_name();
-
-        int begin_line_number = m_Filestream->read_int();
-
-        PyString *no_table = get_no_table();
-
-
-        return new CodeObject(argcount, n_locals, stack_size, flags,
-                              byte_code,
-                              consts, names, var_names, free_vars, cell_vars,
-                              file_name, module_name, begin_line_number, no_table);
-    }
 
     PyString                *get_byte_code();
     PyArrayList<PyObject *> *get_consts();
@@ -87,9 +39,11 @@ class BinaryFileParser
 
 
   private:
-    auto get_string() -> PyString *;
-    auto get_tuple() -> PyArrayList<PyObject *> *;
+    PyString                *get_string();
+    PyArrayList<PyObject *> *get_tuple();
 
+  private:
+    PyArrayList<PyString *> *m_StringTable;
 
   private:
     BufferInputStream *m_Filestream;

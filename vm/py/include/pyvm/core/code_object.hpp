@@ -9,7 +9,8 @@
 PYVM_TOP_LEVEL_NAMESPACE_BEGIN
 
 
-class CodeObject
+class CodeObject : public PyObject
+
 {
   public:
     CodeObject(

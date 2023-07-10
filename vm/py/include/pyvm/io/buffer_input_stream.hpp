@@ -9,6 +9,7 @@
 #include <ios>
 #include <iostream>
 #include <log.h>
+#include <stdio.h>
 
 
 PYVM_TOP_LEVEL_NAMESPACE_BEGIN
@@ -32,7 +33,7 @@ class BufferInputStream
 
         ifs.read(m_Buffer, BUFFER_LEN);
 
-        LOG_DEBUG("The first data that read:");
+        LOG_DEBUG("The first data that have been read are:");
         for (int i = 0; i < BUFFER_LEN; ++i) {
             printf("%x", (unsigned char)m_Buffer[i]);
         }
@@ -41,6 +42,7 @@ class BufferInputStream
             printf("%c", m_Buffer[i]);
         }
         printf("\n");
+        printf("============================================\n");
 
         m_Index = 0;
     }

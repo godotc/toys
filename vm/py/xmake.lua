@@ -19,7 +19,8 @@ add_includedirs("include")
 
 target("py")
     set_kind("binary")
-    add_files("src/*.cpp")
+    add_files("src/**.cpp")
+    add_files("src/**.cc")
 
 	add_deps("m_log")
 

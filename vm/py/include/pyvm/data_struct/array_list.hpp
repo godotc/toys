@@ -3,6 +3,9 @@
 #include "fmt/core.h"
 #include "log.h"
 #include "pyvm/pyvm.h"
+#include <memory>
+#include <string.h>
+#include <vadefs.h>
 
 
 PYVM_TOP_LEVEL_NAMESPACE_BEGIN
@@ -61,13 +64,13 @@ class PyArrayList
     {
         int new_size  = m_Capacity << 1;
         T  *new_array = new T[new_size];
-        memcp(new_array, m_Array, m_Capacity);
+        memcpy(new_array, m_Array, m_Capacity);
 
         delete[] m_Array;
         m_Array    = new_array;
         m_Capacity = new_size;
 
-        LOG_DEBUG("Expand a array {:x} to {}, size is {}", this, m_Capacity, m_Size);
+        LOG_DEBUG("Expand a array 0x{:x} to {}, size is {}", reinterpret_cast<std::uintptr_t>(this), m_Capacity, m_Size);
     }
 
   private:
