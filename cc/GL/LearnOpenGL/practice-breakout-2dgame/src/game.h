@@ -11,6 +11,9 @@ enum class GameState
     GAME_WIN,
 };
 
+inline const glm::vec2 PLAYER_SIZE{100.f, 20.f};
+inline const float     PLAYER_VELOCITY{500.f};
+
 class Game
 {
     using uint = unsigned int;
@@ -36,6 +39,7 @@ class Game
     bool         m_keys[1024];
     unsigned int m_Width, m_Height;
 
-    std::vector<GameLevel> m_Levels;
-    size_t                 m_LevelIndex;
+    std::shared_ptr<GameObject> m_Player;
+    std::vector<GameLevel>      m_Levels;
+    size_t                      m_LevelIndex;
 };

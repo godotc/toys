@@ -1,5 +1,5 @@
 #include "game.h"
-#include "glm/geometric.hpp"
+#include "GLFW/glfw3.h"
 #include "render/sprite_render.h"
 #include <cstddef>
 #include <filesystem>
@@ -15,10 +15,12 @@
 #include <math.h>
 #include <mutex>
 #include <string_view>
+#include <vcruntime.h>
 #include <vector>
 
 #include <fmt/format.h>
 #include <log.h>
+#include <xerrc.h>
 
 
 
@@ -53,20 +55,20 @@ void Game::Init()
     // load texture
     {
 #if 1
-        auto GetFileNameWithoutExtension = [](const std::string &path) {
-            size_t slash_pos = path.find_last_of("/\\");
-            size_t dot_pos   = path.find_last_of(".");
+        auto GetFileNameWithoutExtension =
+            [](const std::string &path) {
+                size_t slash_pos = path.find_last_of("/\\");
+                size_t dot_pos   = path.find_last_of(".");
 
-            // DEBUG("{}, {}, {}", path, slash_pos, dot_pos);
-            auto filename = path.substr(slash_pos + 1, dot_pos - slash_pos - 1);
-            // LOG("{}", filename);
-            return filename;
-        };
+                // DEBUG("{}, {}, {}", path, slash_pos, dot_pos);
+                auto filename = path.substr(slash_pos + 1, dot_pos - slash_pos - 1);
+                // LOG("{}", filename);
+                return filename;
+            };
 
         std::vector<std::string> support_suffixs = {".jpg", ".png", ".bmp"};
         LOG_WARN("Load texture with '{}', '{}', '{}'", support_suffixs[0], support_suffixs[1], support_suffixs[2]);
 
-        std::mutex mtx;
         for (const auto texture : std::filesystem::directory_iterator("../res/textures/"))
         {
             const auto &file_path = texture.path().string();
@@ -77,10 +79,8 @@ void Game::Init()
                 if (file_path.ends_with(suffx))
                 {
                     LOG_TRACE("Trying to load texture from '{}'", file_path);
-
                     const std::string texture_name = GetFileNameWithoutExtension(std::ref(file_path));
 
-                    std::lock_guard<std::mutex> lg(mtx);
                     ResourceManager::LoadTexture(file_path.c_str(), texture_name);
                 }
             }
@@ -97,21 +97,34 @@ void Game::Init()
 
 
     // load Levels
-    size_t level_count        = 4;
-    m_Levels                  = std::vector<GameLevel>(level_count);
-    const char *level_names[] = {
-        "0_standard",
-        "1_a_few_small_gaps",
-        "2_space_invader",
-        "3_bounce_galore",
-    };
+    size_t level_count = 4;
+    m_Levels           = std::vector<GameLevel>(level_count);
+    const char *level_names[] =
+        {
+            "0_standard",
+            "1_a_few_small_gaps",
+            "2_space_invader",
+            "3_bounce_galore",
+        };
     for (int i = 0; i < level_count; ++i)
     {
-        m_Levels[i].Load(fmt::format("../res/levels/{}", level_names[i]).c_str(), m_Width, m_Height / 2);
+        m_Levels[i].Load(fmt::format("../res/levels/{}", level_names[i]).c_str(),
+                         m_Width,
+                         m_Height / 2);
     }
 
-
     m_LevelIndex = 0;
+
+
+
+    // Player
+    glm::vec2 player_pos = glm::vec2(
+        m_Width / 2.f - PLAYER_SIZE.x / 2.f,
+        m_Height - PLAYER_SIZE.y);
+
+    m_Player = std::make_shared<GameObject>(player_pos, PLAYER_SIZE,
+                                            ResourceManager::GetTextureRef("paddle"));
+
 
 
     GL_CHECK_HEALTH();
@@ -119,14 +132,37 @@ void Game::Init()
 
 void Game::Update(float dt)
 {
+    static float time = 0;
+    time += dt;
+
+    // LOG_DEBUG("{}", time);
+    // if (time > 2)
+    // {
+    //     time -= 2;
+    //     m_LevelIndex = (m_LevelIndex + 1) % m_Levels.size();
+    // }
 }
 
 void Game::ProcessInput(float dt)
 {
+    if (this->m_State == GameState::GAME_ACTIVE)
+    {
+        float velocity = PLAYER_VELOCITY * dt;
+
+        if (this->m_keys[GLFW_KEY_A]) {
+            if (m_Player->Position.x >= 0.f)
+                m_Player->Position.x -= velocity;
+        }
+        if (this->m_keys[GLFW_KEY_D]) {
+            if (m_Player->Position.x <= m_Width - m_Player->Size.x)
+                m_Player->Position.x += velocity;
+        }
+    }
 }
 
 void Game::Render()
 {
+
 
     if (this->m_State == GameState::GAME_ACTIVE) {
         // draw BG
@@ -136,6 +172,8 @@ void Game::Render()
                                          0.f);
         // draw level
         m_Levels[m_LevelIndex].Draw(SpriteRenders[shader]);
+
+        m_Player->Draw(SpriteRenders[shader]);
     }
 
     // debugDraw();

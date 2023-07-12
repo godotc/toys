@@ -118,6 +118,7 @@ int main(int argc, char **argv)
         float current_frame = glfwGetTime();
         dt                  = current_frame - last_frame;
         last_frame          = current_frame;
+        // LOG_DEBUG("dt: {}", dt);
 
         Breakout->ProcessInput(dt);
         Breakout->Update(dt);

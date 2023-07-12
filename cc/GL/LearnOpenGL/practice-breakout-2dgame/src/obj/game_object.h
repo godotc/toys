@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "sprite_render.h"
+#include "../render/sprite_render.h"
 #include <glm/ext/vector_float2.hpp>
 #include <glm/fwd.hpp>
 #include <glm/glm.hpp>
