@@ -1,8 +1,7 @@
 use rand::{thread_rng, Rng};
+use std::env;
 
-const N: i32 = 10;
-
-fn quick_sort(array: &mut [i32]) {
+pub fn quick_sort(array: &mut [i32]) {
     let len = array.len();
     if len >= 2 {
         let pivot = partition(array);
@@ -33,9 +32,15 @@ fn partition(array: &mut [i32]) -> usize {
     idx
 }
 
+#[warn(dead_code)]
 fn main() {
+    let mut size = 10;
+    if let Some(arg1) = env::args().nth(1) {
+        size = arg1.parse().unwrap_or(10);
+    }
+
     let mut rng = thread_rng();
-    let mut array: Vec<i32> = (0..N).map(|_| rng.gen_range(0..100)).collect();
+    let mut array: Vec<i32> = (0..size).map(|_| rng.gen_range(0..100)).collect();
 
     println!("Origin array: {:?}", array);
     quick_sort(&mut array);

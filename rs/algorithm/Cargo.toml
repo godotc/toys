@@ -16,6 +16,15 @@ path = "src/main.rs"
 name = "qs"
 path = "src/quick_sort.rs"
 
+[[bin]]
+name="ms"
+path = "src/merge_sort.rs"
+
+[[bin]]
+name="bs"
+path = "src/buble_sort.rs"
+
+
 [dependencies]
 rand = "0.8.5"
 
