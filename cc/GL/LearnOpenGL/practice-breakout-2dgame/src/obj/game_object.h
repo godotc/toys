@@ -20,11 +20,11 @@ class GameObject
     virtual void Draw(SpriteRender &render);
 
   public:
-    vec2  Position, Size, Velocity;
-    vec3  Color;
-    float Rotation;
-    bool  IsSolid;
-    bool  IsDestroyed;
+    vec2  m_Position, m_Size, m_Velocity;
+    vec3  m_Color;
+    float m_Rotation;
+    bool  m_IsSolid;
+    bool  m_IsDestroyed;
 
-    Texture2D Sprite;
+    Texture2D m_Sprite;
 };

@@ -1,6 +1,7 @@
 #include "game_level.h"
+
 #include "log.h"
-#include "render/game_object.h"
+#include "obj/game_object.h"
 #include "resource_manager/resource_manager.h"
 #include <cmath>
 #include <fstream>
@@ -50,7 +51,7 @@ void GameLevel::Load(const char *file, uint level_width, uint level_height)
 void GameLevel::Draw(SpriteRender &render)
 {
     for (auto &brick : Bricks) {
-        if (!brick.IsDestroyed) {
+        if (!brick.m_IsDestroyed) {
             brick.Draw(render);
             // LOG_DEBUG("brick's properties: size: {}, {},  location: {}, {}", brick.Size.x, brick.Size.y, brick.Position.x, brick.Position.y);
         }
@@ -60,7 +61,7 @@ void GameLevel::Draw(SpriteRender &render)
 bool GameLevel::IsCompleted()
 {
     for (auto &tile : this->Bricks) {
-        if (!tile.IsSolid && !tile.IsDestroyed) {
+        if (!tile.m_IsSolid && !tile.m_IsDestroyed) {
             return false;
         }
     }

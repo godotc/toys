@@ -1,6 +1,9 @@
 #include "game.h"
 #include "GLFW/glfw3.h"
+#include "obj/ball_object.h"
+#include "obj/game_object.h"
 #include "render/sprite_render.h"
+#include <cmath>
 #include <cstddef>
 #include <filesystem>
 #include <functional>
@@ -15,16 +18,27 @@
 #include <math.h>
 #include <mutex>
 #include <string_view>
-#include <vcruntime.h>
 #include <vector>
 
 #include <fmt/format.h>
 #include <log.h>
-#include <xerrc.h>
 
 
 
 static auto shader = "sprite";
+
+
+static bool CheckCollision(const GameObject &A, const GameObject &B)
+{
+    bool collisionX = A.m_Position.x + A.m_Size.x >= B.m_Position.x &&
+                      B.m_Position.x + B.m_Size.x >= A.m_Position.x;
+
+    bool collisionY = A.m_Position.y + A.m_Size.y >= B.m_Position.y &&
+                      B.m_Position.y + B.m_Size.y >= A.m_Position.y;
+
+    return collisionX && collisionY;
+}
+
 
 Game::Game(unsigned int width, unsigned int height) : m_State(GameState::GAME_ACTIVE), m_keys(), m_Width(width), m_Height(height) {}
 
@@ -97,34 +111,39 @@ void Game::Init()
 
 
     // load Levels
-    size_t level_count = 4;
-    m_Levels           = std::vector<GameLevel>(level_count);
-    const char *level_names[] =
-        {
-            "0_standard",
-            "1_a_few_small_gaps",
-            "2_space_invader",
-            "3_bounce_galore",
-        };
-    for (int i = 0; i < level_count; ++i)
     {
-        m_Levels[i].Load(fmt::format("../res/levels/{}", level_names[i]).c_str(),
-                         m_Width,
-                         m_Height / 2);
+        size_t level_count = 4;
+        m_Levels           = std::vector<GameLevel>(level_count);
+        const char *level_names[] =
+            {
+                "0_standard",
+                "1_a_few_small_gaps",
+                "2_space_invader",
+                "3_bounce_galore",
+            };
+        for (int i = 0; i < level_count; ++i)
+        {
+            m_Levels[i].Load(fmt::format("../res/levels/{}", level_names[i]).c_str(),
+                             m_Width,
+                             m_Height / 2);
+        }
+        m_LevelIndex = 0;
     }
-
-    m_LevelIndex = 0;
 
 
 
     // Player
-    glm::vec2 player_pos = glm::vec2(
-        m_Width / 2.f - PLAYER_SIZE.x / 2.f,
-        m_Height - PLAYER_SIZE.y);
+    glm::vec2 player_pos = glm::vec2(m_Width / 2.f - PLAYER_SIZE.x / 2.f,
+                                     m_Height - PLAYER_SIZE.y);
 
     m_Player = std::make_shared<GameObject>(player_pos, PLAYER_SIZE,
                                             ResourceManager::GetTextureRef("paddle"));
 
+    // Ball
+    auto ball_pos = player_pos + glm::vec2(PLAYER_SIZE.x / 2.f - BALL_RADIUS,
+                                           -BALL_RADIUS * 2.f);
+
+    m_Ball = std::make_shared<BallObject>(ball_pos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager::GetTextureRef("face"));
 
 
     GL_CHECK_HEALTH();
@@ -135,12 +154,17 @@ void Game::Update(float dt)
     static float time = 0;
     time += dt;
 
-    // LOG_DEBUG("{}", time);
-    // if (time > 2)
-    // {
-    //     time -= 2;
-    //     m_LevelIndex = (m_LevelIndex + 1) % m_Levels.size();
-    // }
+    /*
+         LOG_DEBUG("{}", time);
+         if (time > 2)
+         {
+             time -= 2;
+             m_LevelIndex = (m_LevelIndex + 1) % m_Levels.size();
+        }
+    */
+
+    m_Ball->Move(dt, m_Width);
+    Collision();
 }
 
 void Game::ProcessInput(float dt)
@@ -150,20 +174,35 @@ void Game::ProcessInput(float dt)
         float velocity = PLAYER_VELOCITY * dt;
 
         if (this->m_keys[GLFW_KEY_A]) {
-            if (m_Player->Position.x >= 0.f)
-                m_Player->Position.x -= velocity;
+            if (m_Player->m_Position.x >= 0.f) {
+                m_Player->m_Position.x -= velocity;
+
+                // give a start force to ball
+                if (m_Ball->m_Struck) {
+                    m_Ball->m_Position.x -= velocity;
+                }
+            }
         }
         if (this->m_keys[GLFW_KEY_D]) {
-            if (m_Player->Position.x <= m_Width - m_Player->Size.x)
-                m_Player->Position.x += velocity;
+            if (m_Player->m_Position.x <= m_Width - m_Player->m_Size.x)
+            {
+                m_Player->m_Position.x += velocity;
+
+                // give a start force to ball
+                if (m_Ball->m_Struck) {
+                    m_Ball->m_Position.x += velocity;
+                }
+            }
+        }
+
+        if (m_keys[GLFW_KEY_SPACE]) {
+            m_Ball->m_Struck = false;
         }
     }
 }
 
 void Game::Render()
 {
-
-
     if (this->m_State == GameState::GAME_ACTIVE) {
         // draw BG
         SpriteRenders[shader].DrawSprite(ResourceManager::GetTextureRef("background"),
@@ -172,13 +211,25 @@ void Game::Render()
                                          0.f);
         // draw level
         m_Levels[m_LevelIndex].Draw(SpriteRenders[shader]);
-
         m_Player->Draw(SpriteRenders[shader]);
+        m_Ball->Draw(SpriteRenders[shader]);
     }
 
     // debugDraw();
 }
 
+void Game::Collision()
+{
+    for (auto &box : m_Levels[m_LevelIndex].Bricks) {
+        if (!box.m_IsDestroyed) {
+            if (CheckCollision(*m_Ball, box)) {
+                if (!box.m_IsSolid) {
+                    box.m_IsDestroyed = true;
+                }
+            }
+        }
+    }
+}
 
 void Game::debugDraw()
 {
