@@ -43,7 +43,9 @@ void GameLevel::Load(const char *file, uint level_width, uint level_height)
     }
 
 
+
     if (tile_data.size() > 0) {
+        m_MapTileData = tile_data;
         init(tile_data, level_width, level_height);
     }
 }
@@ -71,6 +73,7 @@ bool GameLevel::IsCompleted()
 void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width, uint level_height)
 {
     using glm::vec2, glm::vec3;
+    Bricks.clear();
 
 
     auto sizeX = level_width / (float)tile_data[0].size();
@@ -124,4 +127,9 @@ void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width,
 
     LOG_DEBUG("Finnal pos: {} | {}", posX, posY);
     // exit(1);
+}
+
+void GameLevel::Reset(uint level_width, uint level_height)
+{
+    init(m_MapTileData, level_width, level_height);
 }

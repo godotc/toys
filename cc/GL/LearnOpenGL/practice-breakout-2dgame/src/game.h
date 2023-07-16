@@ -13,6 +13,15 @@ enum class GameState
     GAME_WIN,
 };
 
+enum Direction
+{
+    UP,
+    RIGHT,
+    DOWN,
+    LEFT
+};
+;
+
 
 inline const glm::vec2 PLAYER_SIZE{100.f, 20.f};
 inline const float     PLAYER_VELOCITY{500.f};
@@ -30,11 +39,14 @@ class Game
 
   public:
     void ProcessInput(float dt);
-    void Collision();
+    void DoCollisions();
     void Update(float dt);
     void Render();
+    void ResetLevel();
+    void ResetPlayer();
 
   private:
+
     void debugDraw();
 
   public:

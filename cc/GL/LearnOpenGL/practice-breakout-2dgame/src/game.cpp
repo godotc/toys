@@ -1,8 +1,11 @@
 #include "game.h"
 #include "GLFW/glfw3.h"
+#include "glm/common.hpp"
+#include "glm/geometric.hpp"
 #include "obj/ball_object.h"
 #include "obj/game_object.h"
 #include "render/sprite_render.h"
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <filesystem>
@@ -18,6 +21,7 @@
 #include <math.h>
 #include <mutex>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 #include <fmt/format.h>
@@ -27,8 +31,10 @@
 
 static auto shader = "sprite";
 
+template <class T>
+static auto clamp(T val, T min, T max) -> T { std::max(min, std::min(max, val)); }
 
-static bool CheckCollision(const GameObject &A, const GameObject &B)
+static bool AABBCheckCollision(const GameObject &A, const GameObject &B)
 {
     bool collisionX = A.m_Position.x + A.m_Size.x >= B.m_Position.x &&
                       B.m_Position.x + B.m_Size.x >= A.m_Position.x;
@@ -38,9 +44,61 @@ static bool CheckCollision(const GameObject &A, const GameObject &B)
 
     return collisionX && collisionY;
 }
+static Direction VectorDirection(glm::vec2 target)
+{
+    glm::vec2 compass[4] = {
+        { 0.f,  1.f},
+        { 1.f,  0.f},
+        { 0.f, -1.f},
+        {-1.f,  0.f},
+    };
+    float        max        = 0.f;
+    unsigned int best_match = -1;
+    for (int i = 0; i < 4; ++i) {
+        float dot_product = glm::dot(glm::normalize(target), compass[i]);
+        if (dot_product > max) {
+            max        = dot_product;
+            best_match = i;
+        }
+    }
+    return static_cast<Direction>(best_match);
+}
+
+static std::tuple<bool, Direction, glm::vec2> CheckCollision(const BallObject &A, const GameObject &B)
+{
+    using glm::vec2;
+
+    // get the center (from topleft or circle and rectangle)
+    vec2 center(A.m_Position + A.m_Radius);
+    vec2 aabb_half_extens(B.m_Size.x / 2.f, B.m_Size.y / 2.f);
+    vec2 aabb_center(B.m_Position.x + aabb_half_extens.x,
+                     B.m_Position.y + aabb_half_extens.y);
+
+    vec2 difference = center - aabb_center;
+
+    // it will let the x or y of vec from circle to rectangle
+    // which beyond the half rectangle's L or W
+    // clmaped to point to  the edge of rectangle (from rectangle center)
+    // so it is the cloest point from rectangle to the circle
+    vec2 clamped = clamp(difference, -aabb_half_extens, aabb_half_extens);
+    vec2 closeet = aabb_center + clamped;
+
+    // retrieve vec between center circle and closest point AABB
+    //  and check if  len < radius
+    difference = closeet - center;
+    if (glm::length(difference) <= A.m_Radius)
+        return {true, VectorDirection(difference), difference};
+    else
+        return {
+            false, UP, {0.f, 0.f}
+        };
+}
 
 
-Game::Game(unsigned int width, unsigned int height) : m_State(GameState::GAME_ACTIVE), m_keys(), m_Width(width), m_Height(height) {}
+
+Game::Game(unsigned int width, unsigned int height) : m_State(GameState::GAME_ACTIVE), m_keys(), m_Width(width), m_Height(height)
+{
+}
 
 Game::~Game() {}
 
@@ -108,8 +166,6 @@ void Game::Init()
 #endif
     }
 
-
-
     // load Levels
     {
         size_t level_count = 4;
@@ -129,8 +185,6 @@ void Game::Init()
         }
         m_LevelIndex = 0;
     }
-
-
 
     // Player
     glm::vec2 player_pos = glm::vec2(m_Width / 2.f - PLAYER_SIZE.x / 2.f,
@@ -164,7 +218,12 @@ void Game::Update(float dt)
     */
 
     m_Ball->Move(dt, m_Width);
-    Collision();
+    DoCollisions();
+
+    if (m_Ball->m_Position.y >= m_Height) {
+        ResetLevel();
+        ResetPlayer();
+    }
 }
 
 void Game::ProcessInput(float dt)
@@ -218,54 +277,80 @@ void Game::Render()
     // debugDraw();
 }
 
-void Game::Collision()
+void Game::DoCollisions()
 {
+    // Ball with bricks
     for (auto &box : m_Levels[m_LevelIndex].Bricks) {
-        if (!box.m_IsDestroyed) {
-            if (CheckCollision(*m_Ball, box)) {
-                if (!box.m_IsSolid) {
+        if (!box.m_IsDestroyed)
+        {
+            auto &&[collided, dir, diff] = CheckCollision(*m_Ball, box);
+            if (collided)
+            {
+                if (!box.m_IsSolid)
                     box.m_IsDestroyed = true;
+
+                if (dir == LEFT || dir == RIGHT) {
+                    m_Ball->m_Velocity.x = -m_Ball->m_Velocity.x;
+                    // reloacte
+                    float penetration = m_Ball->m_Radius - std::abs(diff.x);
+                    if (dir == LEFT)
+                        m_Ball->m_Position.x += penetration;
+                    else
+                        m_Ball->m_Position.x -= penetration;
+                }
+                else {
+                    m_Ball->m_Velocity.y = -m_Ball->m_Velocity.y;
+                    // reloacte
+                    float penetration = m_Ball->m_Radius - std::abs(diff.y);
+                    if (dir == LEFT)
+                        m_Ball->m_Position.y += penetration;
+                    else
+                        m_Ball->m_Position.y -= penetration;
                 }
             }
         }
     }
+
+    // Ball with player paddle
+    auto [colided, dir, diff] = CheckCollision(*m_Ball, *m_Player);
+    if (!m_Ball->m_Struck && colided) {
+        // if collided, we only need to caculate the hit point, and not the dir vec
+        float center_board = m_Player->m_Position.x + m_Player->m_Size.x / 2.f;
+        float distance     = (m_Ball->m_Position.x + m_Ball->m_Radius) - center_board;
+        float percentage   = distance / (m_Player->m_Size.x / 2.f);
+
+        float strength       = 2.f;
+        auto  old_velocity   = m_Ball->m_Velocity;
+        m_Ball->m_Velocity.x = INITIAL_BALL_VELOCITY.x * percentage * strength;
+
+        // make the ball not stick when just in the paddle
+        // m_Ball->m_Velocity.y = -m_Ball->m_Velocity.y;
+        m_Ball->m_Velocity.y = -1.f * abs(m_Ball->m_Velocity.y);
+
+        m_Ball->m_Velocity = glm::normalize(m_Ball->m_Velocity) * glm::length(old_velocity);
+    }
 }
 
-void Game::debugDraw()
+void Game::ResetLevel()
 {
-    SpriteRenders[shader].DrawSprite(ResourceManager::GetTextureRef("arch"),
-                                     glm::vec2(200, 0),
-                                     glm::vec2(200.f, 200.f),
-                                     45.f);
+    // I have preload this, will cause performance issue?
+    m_Levels[m_LevelIndex].Reset(m_Width, m_Height / 2.f);
 
-    SpriteRenders[shader].DrawSprite(ResourceManager::GetTextureRef("brick"),
-                                     glm::vec2(200.f, 200.f),
-                                     glm::vec2(200.f, 200.f));
+    // if (this->Level == 0)
+    //     this->Levels[0].Load("levels/one.lvl", this->Width, this->Height / 2);
+    // else if (this->Level == 1)
+    //     this->Levels[1].Load("levels/two.lvl", this->Width, this->Height / 2);
+    // else if (this->Level == 2)
+    //     this->Levels[2].Load("levels/three.lvl", this->Width, this->Height / 2);
+    // else if (this->Level == 3)
+    //     this->Levels[3].Load("levels/four.lvl", this->Width, this->Height / 2);
+}
 
-    SpriteRenders[shader].DrawSprite(ResourceManager::GetTextureRef("block_solid"),
-                                     glm::vec2(400.f, 400.f),
-                                     glm::vec2(200.f, 200.f));
-    SpriteRenders[shader].DrawSprite(ResourceManager::GetTextureRef("background"),
-                                     glm::vec2(0, 0),
-                                     glm::vec2(100, 100));
-    SpriteRenders[shader].DrawSprite(ResourceManager::GetTextureRef("block"),
-                                     glm::vec2(0.f, 200.f),
-                                     glm::vec2(200.f, 200.f));
-
-
-    // it will draw in the sprite
-    glPushMatrix();
-    {
-        glColor3f(1, 1, 1);
-        glBegin(GL_LINES);
-        {
-            glVertex2f(0, 800);
-            glVertex2f(800, 0);
-
-            glVertex2f(-1, -1);
-            glVertex2f(1, 1);
-        }
-        glEnd();
-    }
-    glPopMatrix();
+void Game::ResetPlayer()
+{
+    m_Player->m_Size     = PLAYER_SIZE;
+    m_Player->m_Position = glm::vec2(m_Width / 2.f - m_Player->m_Size.x / 2.f,
+                                     m_Height - PLAYER_SIZE.y);
+    m_Ball->Reset(m_Player->m_Position + glm::vec2(PLAYER_SIZE.x / 2.f - BALL_RADIUS, -(BALL_RADIUS * 2.f)),
+                  INITIAL_BALL_VELOCITY);
 }
