@@ -10,11 +10,11 @@ pub fn buble_sort(array: &mut [i32]) {
                 array.swap(i, j)
             }
         }
-        println!("Buble once: {:?}", array);
+        //println!("Buble once: {:?}", array);
     }
 }
 
-#[warn(dead_code)]
+#[allow(dead_code)]
 fn main() {
     let mut size = 10;
     if let Some(arg1) = env::args().nth(1) {

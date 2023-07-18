@@ -54,9 +54,10 @@ fn merge(array: &mut [i32]) {
     for i in 0..len {
         array[i] = arr[i]
     }
-    println!("Merged array: {:?}", array);
+    //println!("Merged array: {:?}", array);
 }
 
+#[allow(dead_code)]
 fn main() {
     let mut size = 10;
     if let Some(arg1) = env::args().nth(1) {

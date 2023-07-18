@@ -80,7 +80,7 @@ static std::unique_ptr<Game> Breakout;
         LOG_DEBUG("Bound GL debug callback successfully");
     }
     else {
-        LOG_WARN("glDebugMessageCallback is nullptr. Maye your driver not support this extionsion!");
+        LOG_WARN("glDebugMessageCallback is nullptr. Maybe your driver is not supportting this extionsion!");
     }
 
     return window;
@@ -88,14 +88,17 @@ static std::unique_ptr<Game> Breakout;
 
 int main(int argc, char **argv)
 {
-    // LOG_PURE_ERROR("hello world");
-    // LOG("hello world");
-    // TRACE("hello world");
-    // DEBUG("hello world");
-    // TRACE("hello world");
-    // WARN("hello world");
-    // LOG_ERROR("hello world");
-    // LOG_FATAL("hello world");
+    /* 
+	    LOG_PURE_ERROR("hello world");
+        LOG("hello world");
+        TRACE("hello world");
+        DEBUG("hello world");
+        TRACE("hello world");
+        WARN("hello world");
+        LOG_ERROR("hello world");
+        LOG_FATAL("hello world");
+     */
+
     __logcpp::SetLogLevel(__logcpp::LogLevel::L_DEBUG);
 
 

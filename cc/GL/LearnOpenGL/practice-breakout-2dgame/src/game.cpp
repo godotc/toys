@@ -44,6 +44,9 @@ static bool AABBCheckCollision(const GameObject &A, const GameObject &B)
 
     return collisionX && collisionY;
 }
+
+// from dot product get the projection of Vec to 4 diretions to get the longest vec,
+// which is the best_match direction
 static Direction VectorDirection(glm::vec2 target)
 {
     glm::vec2 compass[4] = {
@@ -54,6 +57,7 @@ static Direction VectorDirection(glm::vec2 target)
     };
     float        max        = 0.f;
     unsigned int best_match = -1;
+
     for (int i = 0; i < 4; ++i) {
         float dot_product = glm::dot(glm::normalize(target), compass[i]);
         if (dot_product > max) {
@@ -107,6 +111,7 @@ void Game::Init()
     LOG_LOG("W: {} | H: {}", m_Width, m_Height);
 
     ResourceManager::LoadShader("../res/shaders/a.vert", "../res/shaders/a.frag", nullptr, shader);
+    ResourceManager::LoadShader("../res/shaders/tail.vert", "../res/shaders/tail.frag", nullptr, "tail");
 
     // view projection to resolute the [-1,1]
     glm::mat4 projection = glm::ortho(0.0f, (float)this->m_Width,
