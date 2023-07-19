@@ -93,6 +93,7 @@ void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width,
             vec3 color = vec3(1.f);
             uint value = ui;
             vec2 pos(posX, posY);
+            bool bSolid = false;
 
             Texture2D texuture = ResourceManager::GetTexture("arch");
 
@@ -100,6 +101,7 @@ void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width,
                 if (value == 1) {
                     texuture = ResourceManager::GetTexture("block_solid");
                     color    = glm::vec3(0.8f, 0.8f, 0.7f);
+                    bSolid   = true;
                 }
                 else {
                     texuture = ResourceManager::GetTexture("block");
@@ -117,6 +119,7 @@ void GameLevel::init(std::vector<std::vector<uint>> tile_data, uint level_width,
                     }
                 }
                 GameObject obj(pos, size, texuture, color, vec2(0, 0));
+                obj.m_IsSolid = bSolid;
                 this->Bricks.push_back(obj);
             }
 

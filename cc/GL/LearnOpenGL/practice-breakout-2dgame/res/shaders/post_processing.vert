@@ -13,7 +13,7 @@ void main()
 {
 	gl_Position = vec4(vertex.xy, 0.f, 1.f);
 
-	vec4 texture = vertex.zw;
+	vec2 texture = vertex.zw;
 
 	if(chaos){
 		float strength = 0.3f;

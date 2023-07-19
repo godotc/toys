@@ -8,6 +8,11 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+
+class PostProcessor;
+
+
 enum class GameState
 {
     GAME_ACTIVE,
@@ -58,12 +63,15 @@ class Game
     bool         m_keys[1024];
     unsigned int m_Width, m_Height;
 
-
     SpriteRender                       m_SpriteRnder;
     std::shared_ptr<GameObject>        m_Player;
     std::shared_ptr<BallObject>        m_Ball;
     std::shared_ptr<ParticleGenerator> m_Particles;
+    std::shared_ptr<PostProcessor>     m_Effects;
 
     std::vector<GameLevel> m_Levels;
     size_t                 m_LevelIndex;
+
+  public:
+    float ShakeTime = 0.f;
 };

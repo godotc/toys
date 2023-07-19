@@ -5,6 +5,7 @@
 #include "obj/ball_object.h"
 #include "obj/game_object.h"
 #include "particle/particle_generator.h"
+#include "post_processing/post_processor.h"
 #include "render/sprite_render.h"
 #include <algorithm>
 #include <cmath>
@@ -12,6 +13,7 @@
 #include <filesystem>
 #include <functional>
 #include <gl_macros.h>
+
 
 #include "resource_manager/resource_manager.h"
 
@@ -116,6 +118,7 @@ void Game::Init()
     // loas shader
     ResourceManager::LoadShader("../res/shaders/a.vert", "../res/shaders/a.frag", nullptr, sprite_shader);
     ResourceManager::LoadShader("../res/shaders/particle.vert", "../res/shaders/particle.frag", nullptr, particle_shader);
+    ResourceManager::LoadShader("../res/shaders/post_processing.vert", "../res/shaders/post_processing.frag", nullptr, "post_processing");
 
     // view projection to resolute the [-1,1]
     glm::mat4 projection = glm::ortho(0.0f, (float)this->m_Width,
@@ -214,25 +217,26 @@ void Game::Init()
                                                       500);
 
 
+    // post processing
+    m_Effects = std::shared_ptr<PostProcessor>(new PostProcessor(
+        ResourceManager::GetShader("post_processing"),
+        m_Width, m_Height));
+
     GL_CHECK_HEALTH();
 }
 
 void Game::Update(float dt)
 {
-    static float time = 0;
-    time += dt;
+    if (ShakeTime > 0.f) {
+        ShakeTime -= dt;
+        if (ShakeTime < 0.f)
+            m_Effects->bShake = false;
+    }
 
-    /*
-         LOG_DEBUG("{}", time);
-         if (time > 2)
-         {
-             time -= 2;
-             m_LevelIndex = (m_LevelIndex + 1) % m_Levels.size();
-        }
-    */
 
     // ball with collisions
     m_Ball->Move(dt, m_Width);
+
     DoCollisions();
     if (m_Ball->m_Position.y >= m_Height) {
         ResetLevel();
@@ -279,17 +283,22 @@ void Game::ProcessInput(float dt)
 
 void Game::Render()
 {
-    if (this->m_State == GameState::GAME_ACTIVE) {
-
-        m_SpriteRnder.DrawSprite(ResourceManager::GetTextureRef("background"),
-                                 glm::vec2(0.f, 0.f),
-                                 glm::vec2(m_Width, m_Height),
-                                 0.f);
-        m_Levels[m_LevelIndex].Draw(m_SpriteRnder);
-        m_Player->Draw(m_SpriteRnder);
-        // render the particles before the ball, because it use ONE as blend
-        m_Particles->Draw();
-        m_Ball->Draw(m_SpriteRnder);
+    if (this->m_State == GameState::GAME_ACTIVE)
+    {
+        // m_Effects->BeginRender();
+        {
+            m_SpriteRnder.DrawSprite(ResourceManager::GetTextureRef("background"),
+                                     glm::vec2(0.f, 0.f),
+                                     glm::vec2(m_Width, m_Height),
+                                     0.f);
+            m_Levels[m_LevelIndex].Draw(m_SpriteRnder);
+            m_Player->Draw(m_SpriteRnder);
+            // render the particles before the ball, because it use ONE as blend
+            m_Particles->Draw();
+            m_Ball->Draw(m_SpriteRnder);
+        }
+        // m_Effects->EndRender();
+        // m_Effects->Render(glfwGetTime());
     }
 
     // debugDraw();
@@ -302,10 +311,17 @@ void Game::DoCollisions()
         if (!box.m_IsDestroyed)
         {
             auto &&[collided, dir, diff] = CheckCollision(*m_Ball, box);
+
             if (collided)
             {
-                if (!box.m_IsSolid)
+                if (!box.m_IsSolid) {
                     box.m_IsDestroyed = true;
+                }
+                // solid do shake
+                else {
+                    ShakeTime         = 0.05f;
+                    m_Effects->bShake = true;
+                }
 
                 if (dir == LEFT || dir == RIGHT) {
                     m_Ball->m_Velocity.x = -m_Ball->m_Velocity.x;

@@ -1,11 +1,11 @@
 #version 330 core
-#
+
 in vec2 TexCoords;
 out vec4 color;
 
 uniform bool chaos;
-unifrom bool confuse;
-unifrom bool shake;
+uniform bool confuse;
+uniform bool shake;
 
 uniform sampler2D 	scene;
 uniform vec2 	  	offsets[9];

@@ -17,20 +17,24 @@ PostProcessor::PostProcessor(Shader shader, unsigned int w, unsigned int h)
     glBindFramebuffer(GL_FRAMEBUFFER, MSFBO);
     {
         glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-        // allocate  storage for render
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB, m_Width, m_Height);
-        // attach MS render buffer objcet to framebuffer
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, RBO);
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOG_ERROR("POSTPROCESSOR: Failed to initialize MSFBD");
+        {
+            // allocate  storage for render
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB, m_Width, m_Height);
+
+            // attach MS render buffer objcet to framebuffer
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, RBO);
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+                LOG_ERROR("POSTPROCESSOR: Failed to initialize MSFBD");
+            }
         }
     }
 
+    // Initialze FBO and texture
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
     {
         this->Texture.Generate(m_Width, m_Height, NULL);
         // attach texture to frambuffer as its color attachment
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->Texture.ID, RBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->Texture.ID, 0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             LOG_ERROR("POSTPROCESSOR: Failed to initialize FBO");
         }
@@ -56,12 +60,54 @@ PostProcessor::PostProcessor(Shader shader, unsigned int w, unsigned int h)
     };
     glUniform2fv(glGetUniformLocation(this->PostProcessingShader.ID, "offsets"), 9, (float *)offsets);
 
+    int edge_kernel[9]{
+        -1, -1, -1,
+        -1, -8, -1,
+        -1, -1, -1};
+    glUniform1iv(glGetUniformLocation(PostProcessingShader.ID, "edge_kernel"), 9, edge_kernel);
 
+    float blur_kernel[9]{
+        1.f / 16.f, 2.f / 16.f, 1.f / 16.f,
+        1.f / 16.f, 4.f / 16.f, 2.f / 16.f,
+        1.f / 16.f, 2.f / 16.f, 1.f / 16.f};
+    glUniform1fv(glGetUniformLocation(PostProcessingShader.ID, "blur_kernel"), 9, blur_kernel);
 }
 
-void PostProcessor::BeginRender() {}
-void PostProcessor::EndRender() {}
-void PostProcessor::Render(float time) {}
+void PostProcessor::BeginRender()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, MSFBO);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void PostProcessor::EndRender()
+{
+    // resolve multisampled color-buffer object(MSFBO) into intermediate frame buffer object(FBO) to store as texture
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, MSFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
+    // blit == tranfer == memcpy
+    glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, m_Height, m_Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    // bind both read and wirete frame buffer to default frame buffer (reset to 0)
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void PostProcessor::Render(float time)
+{
+    PostProcessingShader.Use();
+    PostProcessingShader.SetFloat("time", time);
+    PostProcessingShader.SetInteger("confuse", bConfuse);
+    PostProcessingShader.SetInteger("chaos", bChaos);
+    PostProcessingShader.SetInteger("shake", bShake);
+
+    glActiveTexture(GL_TEXTURE0);
+    Texture.Bind();
+
+    glBindVertexArray(VAO);
+    {
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+    glBindVertexArray(0);
+}
 
 void PostProcessor::initRenderData()
 {
