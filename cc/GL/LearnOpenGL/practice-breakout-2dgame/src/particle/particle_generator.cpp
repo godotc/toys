@@ -1,4 +1,5 @@
 #include "particle_generator.h"
+#include "log.h"
 
 
 ParticleGenerator::ParticleGenerator(Shader shader, Texture2D texture, size_t amount)
@@ -20,17 +21,21 @@ void ParticleGenerator::init()
         1.0f, 1.0f, 1.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f};
 
-    glGenVertexArrays(1, &particle_VAO);
+    glGenVertexArrays(1, &this->particle_VAO);
     glGenBuffers(1, &VBO);
+
     glBindVertexArray(particle_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     {
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        // fil mesh buffer
         glBufferData(GL_ARRAY_BUFFER, sizeof(particle_quad), particle_quad, GL_STATIC_DRAW);
 
+        // set mesh attr
         glEnableVertexAttribArray(0);
-        // 2 posion 2 color
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0); // 2 posion 2 color
     }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
 
     for (size_t i = 0; i < m_Amount; ++i)
@@ -58,7 +63,7 @@ void ParticleGenerator::Update(float dt, GameObject &object, size_t nun_new_part
     }
 }
 
-void ParticleGenerator::Render()
+void ParticleGenerator::Draw()
 {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     {
@@ -67,7 +72,7 @@ void ParticleGenerator::Render()
             if (particle.Life > 0.f)
             {
                 particle_shader.SetVector2f("offset", particle.Position);
-                particle_shader.SetVector2f("color", particle.Color);
+                particle_shader.SetVector4f("color", particle.Color);
                 particle_texture.Bind();
 
                 glBindVertexArray(particle_VAO);
@@ -76,6 +81,7 @@ void ParticleGenerator::Render()
                 }
                 glBindVertexArray(0);
             }
+            // LOG_DEBUG("Draw one particle at : {}, {} ", particle.Position.x, particle.Position.y);
         }
     }
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -103,13 +109,17 @@ int ParticleGenerator::first_unused_particle()
 }
 
 
-void ParticleGenerator::respawn_particle(Particle &particle, GameObject object, glm::vec2 offset)
+void ParticleGenerator::respawn_particle(Particle &particle, GameObject &object, glm::vec2 offset)
 {
     float random = ((rand() % 100) - 50) / 10.f;
     float color  = 0.5f + (rand() % 100 / 100.f);
 
+    // LOG_DEBUG("color : {} ", color);
+
     particle.Position = object.m_Position + random + offset;
-    particle.Color    = glm::vec4(color, color, color, 1.f);
+    particle.Color    = glm::vec4(sin(color), cos(color), tan(color), 1.f);
     particle.Life     = 1.f;
     particle.Velocity = object.m_Velocity * 0.1f;
+
+    // LOG_DEBUG("Respawn one particle at {} {}", particle.Position.x, particle.Position.y);
 }

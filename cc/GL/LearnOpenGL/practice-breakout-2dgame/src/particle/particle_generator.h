@@ -3,7 +3,6 @@
 #include "../obj/game_object.h"
 #include "./particle.h"
 #include "glm/fwd.hpp"
-#include <vcruntime.h>
 #include <vector>
 
 
@@ -16,12 +15,12 @@ class ParticleGenerator
 
   public:
     void Update(float dt, GameObject &object, size_t nun_new_particles, glm::vec2 offset = glm::vec2(0.f, 0.f));
-    void Render();
+    void Draw();
 
   private:
     void init();
     int  first_unused_particle();
-    void respawn_particle(Particle &particle, GameObject object, glm::vec2 offset);
+    void respawn_particle(Particle &particle, GameObject &object, glm::vec2 offset);
 
   private:
     std::vector<Particle> m_Particles;

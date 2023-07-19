@@ -4,6 +4,7 @@
 #include "glm/geometric.hpp"
 #include "obj/ball_object.h"
 #include "obj/game_object.h"
+#include "particle/particle_generator.h"
 #include "render/sprite_render.h"
 #include <algorithm>
 #include <cmath>
@@ -19,6 +20,7 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/mat4x4.hpp>
 #include <math.h>
+#include <memory>
 #include <mutex>
 #include <string_view>
 #include <tuple>
@@ -29,7 +31,8 @@
 
 
 
-static auto shader = "sprite";
+static auto sprite_shader   = "sprite";
+static auto particle_shader = "particle";
 
 template <class T>
 static auto clamp(T val, T min, T max) -> T { std::max(min, std::min(max, val)); }
@@ -110,8 +113,9 @@ void Game::Init()
 {
     LOG_LOG("W: {} | H: {}", m_Width, m_Height);
 
-    ResourceManager::LoadShader("../res/shaders/a.vert", "../res/shaders/a.frag", nullptr, shader);
-    ResourceManager::LoadShader("../res/shaders/tail.vert", "../res/shaders/tail.frag", nullptr, "tail");
+    // loas shader
+    ResourceManager::LoadShader("../res/shaders/a.vert", "../res/shaders/a.frag", nullptr, sprite_shader);
+    ResourceManager::LoadShader("../res/shaders/particle.vert", "../res/shaders/particle.frag", nullptr, particle_shader);
 
     // view projection to resolute the [-1,1]
     glm::mat4 projection = glm::ortho(0.0f, (float)this->m_Width,
@@ -119,14 +123,16 @@ void Game::Init()
                                       1.0f, -1.0f);
 
     // NOTICE: Must use this program first
-    ResourceManager::GetShader(shader).Use();
-    ResourceManager::GetShader(shader).SetMatrix4("projection", projection);
+    ResourceManager::GetShader(sprite_shader).Use();
+    ResourceManager::GetShader(sprite_shader).SetMatrix4("projection", projection);
     // reset image
-    ResourceManager::GetShader(shader).SetInteger("image", 0);
-    ResourceManager::GetShader(shader).SetInteger("hasTexture", 1);
+    ResourceManager::GetShader(sprite_shader).SetInteger("image", 0);
+    ResourceManager::GetShader(sprite_shader).SetInteger("hasTexture", 1);
 
-    SpriteRenders[shader] = SpriteRender(ResourceManager::GetShader(shader));
+    m_SpriteRnder = SpriteRender(ResourceManager::GetShader(sprite_shader));
 
+    ResourceManager::GetShader(particle_shader).Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader(particle_shader).SetInteger("sprite", 0);
 
 
     // load texture
@@ -194,15 +200,18 @@ void Game::Init()
     // Player
     glm::vec2 player_pos = glm::vec2(m_Width / 2.f - PLAYER_SIZE.x / 2.f,
                                      m_Height - PLAYER_SIZE.y);
-
-    m_Player = std::make_shared<GameObject>(player_pos, PLAYER_SIZE,
+    m_Player             = std::make_shared<GameObject>(player_pos, PLAYER_SIZE,
                                             ResourceManager::GetTextureRef("paddle"));
 
     // Ball
     auto ball_pos = player_pos + glm::vec2(PLAYER_SIZE.x / 2.f - BALL_RADIUS,
                                            -BALL_RADIUS * 2.f);
+    m_Ball        = std::make_shared<BallObject>(ball_pos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager::GetTextureRef("face"));
 
-    m_Ball = std::make_shared<BallObject>(ball_pos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager::GetTextureRef("face"));
+    // Particles
+    m_Particles = std::make_shared<ParticleGenerator>(ResourceManager::GetShader(particle_shader),
+                                                      ResourceManager::GetTexture("arch"),
+                                                      500);
 
 
     GL_CHECK_HEALTH();
@@ -222,13 +231,16 @@ void Game::Update(float dt)
         }
     */
 
+    // ball with collisions
     m_Ball->Move(dt, m_Width);
     DoCollisions();
-
     if (m_Ball->m_Position.y >= m_Height) {
         ResetLevel();
         ResetPlayer();
     }
+
+    // particles
+    m_Particles->Update(dt, *m_Ball, 2, glm::vec2(m_Ball->m_Radius / 2.f));
 }
 
 void Game::ProcessInput(float dt)
@@ -268,15 +280,16 @@ void Game::ProcessInput(float dt)
 void Game::Render()
 {
     if (this->m_State == GameState::GAME_ACTIVE) {
-        // draw BG
-        SpriteRenders[shader].DrawSprite(ResourceManager::GetTextureRef("background"),
-                                         glm::vec2(0.f, 0.f),
-                                         glm::vec2(m_Width, m_Height),
-                                         0.f);
-        // draw level
-        m_Levels[m_LevelIndex].Draw(SpriteRenders[shader]);
-        m_Player->Draw(SpriteRenders[shader]);
-        m_Ball->Draw(SpriteRenders[shader]);
+
+        m_SpriteRnder.DrawSprite(ResourceManager::GetTextureRef("background"),
+                                 glm::vec2(0.f, 0.f),
+                                 glm::vec2(m_Width, m_Height),
+                                 0.f);
+        m_Levels[m_LevelIndex].Draw(m_SpriteRnder);
+        m_Player->Draw(m_SpriteRnder);
+        // render the particles before the ball, because it use ONE as blend
+        m_Particles->Draw();
+        m_Ball->Draw(m_SpriteRnder);
     }
 
     // debugDraw();
@@ -340,15 +353,6 @@ void Game::ResetLevel()
 {
     // I have preload this, will cause performance issue?
     m_Levels[m_LevelIndex].Reset(m_Width, m_Height / 2.f);
-
-    // if (this->Level == 0)
-    //     this->Levels[0].Load("levels/one.lvl", this->Width, this->Height / 2);
-    // else if (this->Level == 1)
-    //     this->Levels[1].Load("levels/two.lvl", this->Width, this->Height / 2);
-    // else if (this->Level == 2)
-    //     this->Levels[2].Load("levels/three.lvl", this->Width, this->Height / 2);
-    // else if (this->Level == 3)
-    //     this->Levels[3].Load("levels/four.lvl", this->Width, this->Height / 2);
 }
 
 void Game::ResetPlayer()

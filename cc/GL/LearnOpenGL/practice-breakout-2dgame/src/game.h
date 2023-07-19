@@ -3,7 +3,9 @@
 #include "game_level.h"
 #include "glm/fwd.hpp"
 #include "obj/ball_object.h"
+#include "particle/particle_generator.h"
 #include "render/sprite_render.h"
+#include <memory>
 #include <string>
 #include <unordered_map>
 enum class GameState
@@ -53,13 +55,15 @@ class Game
 
     GameState m_State;
 
-    std::unordered_map<std::string, SpriteRender> SpriteRenders;
-
     bool         m_keys[1024];
     unsigned int m_Width, m_Height;
 
-    std::shared_ptr<GameObject> m_Player;
-    std::shared_ptr<BallObject> m_Ball;
-    std::vector<GameLevel>      m_Levels;
-    size_t                      m_LevelIndex;
+
+    SpriteRender                       m_SpriteRnder;
+    std::shared_ptr<GameObject>        m_Player;
+    std::shared_ptr<BallObject>        m_Ball;
+    std::shared_ptr<ParticleGenerator> m_Particles;
+
+    std::vector<GameLevel> m_Levels;
+    size_t                 m_LevelIndex;
 };
