@@ -1,5 +1,5 @@
-#include "obj/game_object.h"
-#include "render/sprite_render.h"
+#include "../obj/game_object.h"
+#include "../render/sprite_render.h"
 #include <cstdint>
 #include <vector>
 

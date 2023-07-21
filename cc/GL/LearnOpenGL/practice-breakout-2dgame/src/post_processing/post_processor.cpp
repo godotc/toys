@@ -1,4 +1,5 @@
 #include "./post_processor.h"
+#include "gl_macros.h"
 
 PostProcessor::PostProcessor(Shader shader, unsigned int w, unsigned int h)
 {
@@ -71,24 +72,26 @@ PostProcessor::PostProcessor(Shader shader, unsigned int w, unsigned int h)
         1.f / 16.f, 4.f / 16.f, 2.f / 16.f,
         1.f / 16.f, 2.f / 16.f, 1.f / 16.f};
     glUniform1fv(glGetUniformLocation(PostProcessingShader.ID, "blur_kernel"), 9, blur_kernel);
+
+    GL_CHECK_HEALTH();
 }
 
 void PostProcessor::BeginRender()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, MSFBO);
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, MSFBO));
+    GL_CALL(glClearColor(0, 0, 0, 1));
+    GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 }
 
 void PostProcessor::EndRender()
 {
     // resolve multisampled color-buffer object(MSFBO) into intermediate frame buffer object(FBO) to store as texture
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, MSFBO);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
+    GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, MSFBO));
+    GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO));
     // blit == tranfer == memcpy
-    glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, m_Height, m_Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    GL_CALL(glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, m_Width, m_Height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
     // bind both read and wirete frame buffer to default frame buffer (reset to 0)
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
 void PostProcessor::Render(float time)
@@ -136,4 +139,6 @@ void PostProcessor::initRenderData()
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    GL_CHECK_HEALTH();
 }

@@ -4,18 +4,13 @@
 #include "glm/geometric.hpp"
 #include "obj/ball_object.h"
 #include "obj/game_object.h"
-#include "particle/particle_generator.h"
-#include "post_processing/post_processor.h"
-#include "render/sprite_render.h"
-#include <algorithm>
 #include <cmath>
-#include <cstddef>
 #include <filesystem>
 #include <functional>
 #include <gl_macros.h>
 
+#include "post_processing/post_processor.h"
 
-#include "resource_manager/resource_manager.h"
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/fwd.hpp>
@@ -24,6 +19,7 @@
 #include <math.h>
 #include <memory>
 #include <mutex>
+#include <stdlib.h>
 #include <string_view>
 #include <tuple>
 #include <vector>
@@ -37,71 +33,11 @@ static auto sprite_shader   = "sprite";
 static auto particle_shader = "particle";
 
 template <class T>
-static auto clamp(T val, T min, T max) -> T { std::max(min, std::min(max, val)); }
-
-static bool AABBCheckCollision(const GameObject &A, const GameObject &B)
-{
-    bool collisionX = A.m_Position.x + A.m_Size.x >= B.m_Position.x &&
-                      B.m_Position.x + B.m_Size.x >= A.m_Position.x;
-
-    bool collisionY = A.m_Position.y + A.m_Size.y >= B.m_Position.y &&
-                      B.m_Position.y + B.m_Size.y >= A.m_Position.y;
-
-    return collisionX && collisionY;
-}
-
-// from dot product get the projection of Vec to 4 diretions to get the longest vec,
-// which is the best_match direction
-static Direction VectorDirection(glm::vec2 target)
-{
-    glm::vec2 compass[4] = {
-        { 0.f,  1.f},
-        { 1.f,  0.f},
-        { 0.f, -1.f},
-        {-1.f,  0.f},
-    };
-    float        max        = 0.f;
-    unsigned int best_match = -1;
-
-    for (int i = 0; i < 4; ++i) {
-        float dot_product = glm::dot(glm::normalize(target), compass[i]);
-        if (dot_product > max) {
-            max        = dot_product;
-            best_match = i;
-        }
-    }
-    return static_cast<Direction>(best_match);
-}
-
-static std::tuple<bool, Direction, glm::vec2> CheckCollision(const BallObject &A, const GameObject &B)
-{
-    using glm::vec2;
-
-    // get the center (from topleft or circle and rectangle)
-    vec2 center(A.m_Position + A.m_Radius);
-    vec2 aabb_half_extens(B.m_Size.x / 2.f, B.m_Size.y / 2.f);
-    vec2 aabb_center(B.m_Position.x + aabb_half_extens.x,
-                     B.m_Position.y + aabb_half_extens.y);
-
-    vec2 difference = center - aabb_center;
-
-    // it will let the x or y of vec from circle to rectangle
-    // which beyond the half rectangle's L or W
-    // clmaped to point to  the edge of rectangle (from rectangle center)
-    // so it is the cloest point from rectangle to the circle
-    vec2 clamped = clamp(difference, -aabb_half_extens, aabb_half_extens);
-    vec2 closeet = aabb_center + clamped;
-
-    // retrieve vec between center circle and closest point AABB
-    //  and check if  len < radius
-    difference = closeet - center;
-    if (glm::length(difference) <= A.m_Radius)
-        return {true, VectorDirection(difference), difference};
-    else
-        return {
-            false, UP, {0.f, 0.f}
-        };
-}
+static auto                                   clamp(T val, T min, T max) -> T { std::max(min, std::min(max, val)); }
+static Direction                              VectorDirection(glm::vec2 target);
+static bool                                   AABBCheckCollision(const GameObject &A, const GameObject &B);
+static std::tuple<bool, Direction, glm::vec2> CheckCollision(const BallObject &A, const GameObject &B);
+static bool                                   ShouldSpawn(unsigned int change);
 
 
 
@@ -109,7 +45,9 @@ Game::Game(unsigned int width, unsigned int height) : m_State(GameState::GAME_AC
 {
 }
 
-Game::~Game() {}
+Game::~Game()
+{
+}
 
 void Game::Init()
 {
@@ -218,9 +156,8 @@ void Game::Init()
 
 
     // post processing
-    m_Effects = std::shared_ptr<PostProcessor>(new PostProcessor(
-        ResourceManager::GetShader("post_processing"),
-        m_Width, m_Height));
+    m_Effects = std::shared_ptr<PostProcessor>(new PostProcessor(ResourceManager::GetShader("post_processing"),
+                                                                 m_Width, m_Height));
 
     GL_CHECK_HEALTH();
 }
@@ -258,7 +195,7 @@ void Game::ProcessInput(float dt)
                 m_Player->m_Position.x -= velocity;
 
                 // give a start force to ball
-                if (m_Ball->m_Struck) {
+                if (m_Ball->bStuck) {
                     m_Ball->m_Position.x -= velocity;
                 }
             }
@@ -269,14 +206,14 @@ void Game::ProcessInput(float dt)
                 m_Player->m_Position.x += velocity;
 
                 // give a start force to ball
-                if (m_Ball->m_Struck) {
+                if (m_Ball->bStuck) {
                     m_Ball->m_Position.x += velocity;
                 }
             }
         }
 
         if (m_keys[GLFW_KEY_SPACE]) {
-            m_Ball->m_Struck = false;
+            m_Ball->bStuck = false;
         }
     }
 }
@@ -285,7 +222,7 @@ void Game::Render()
 {
     if (this->m_State == GameState::GAME_ACTIVE)
     {
-        // m_Effects->BeginRender();
+        m_Effects->BeginRender();
         {
             m_SpriteRnder.DrawSprite(ResourceManager::GetTextureRef("background"),
                                      glm::vec2(0.f, 0.f),
@@ -297,8 +234,8 @@ void Game::Render()
             m_Particles->Draw();
             m_Ball->Draw(m_SpriteRnder);
         }
-        // m_Effects->EndRender();
-        // m_Effects->Render(glfwGetTime());
+        m_Effects->EndRender();
+        m_Effects->Render(glfwGetTime());
     }
 
     // debugDraw();
@@ -308,20 +245,21 @@ void Game::DoCollisions()
 {
     // Ball with bricks
     for (auto &box : m_Levels[m_LevelIndex].Bricks) {
-        if (!box.m_IsDestroyed)
-        {
+        if (!box.m_IsDestroyed) {
             auto &&[collided, dir, diff] = CheckCollision(*m_Ball, box);
 
             if (collided)
             {
-                if (!box.m_IsSolid) {
-                    box.m_IsDestroyed = true;
-                }
                 // solid do shake
-                else {
+                if (box.m_IsSolid) {
                     ShakeTime         = 0.05f;
                     m_Effects->bShake = true;
                 }
+                else {
+                    box.m_IsDestroyed = true;
+                    this->SpawPowerUps(box);
+                }
+
 
                 if (dir == LEFT || dir == RIGHT) {
                     m_Ball->m_Velocity.x = -m_Ball->m_Velocity.x;
@@ -347,7 +285,9 @@ void Game::DoCollisions()
 
     // Ball with player paddle
     auto [colided, dir, diff] = CheckCollision(*m_Ball, *m_Player);
-    if (!m_Ball->m_Struck && colided) {
+    if (!m_Ball->bStuck && colided) {
+        m_Ball->bStuck = m_Ball->bSticky;
+
         // if collided, we only need to caculate the hit point, and not the dir vec
         float center_board = m_Player->m_Position.x + m_Player->m_Size.x / 2.f;
         float distance     = (m_Ball->m_Position.x + m_Ball->m_Radius) - center_board;
@@ -362,6 +302,20 @@ void Game::DoCollisions()
         m_Ball->m_Velocity.y = -1.f * abs(m_Ball->m_Velocity.y);
 
         m_Ball->m_Velocity = glm::normalize(m_Ball->m_Velocity) * glm::length(old_velocity);
+    }
+
+    // The generate powerups with ball
+    for (auto &power_up : m_PowerUps) {
+        if (!power_up.m_IsDestroyed) {
+            if (power_up.m_Position.y >= m_Height) {
+                power_up.m_IsDestroyed = true;
+            }
+            if (AABBCheckCollision(*m_Player, power_up)) {
+                ActivatePowerups(power_up);
+                power_up.m_IsDestroyed = true;
+                power_up.bActivated    = true;
+            }
+        }
     }
 }
 
@@ -378,4 +332,157 @@ void Game::ResetPlayer()
                                      m_Height - PLAYER_SIZE.y);
     m_Ball->Reset(m_Player->m_Position + glm::vec2(PLAYER_SIZE.x / 2.f - BALL_RADIUS, -(BALL_RADIUS * 2.f)),
                   INITIAL_BALL_VELOCITY);
+}
+
+
+
+void Game::SpawPowerUps(GameObject &block)
+{
+    static auto
+        tex_speed             = ResourceManager::GetTexture("powerup_speed"),
+        tex_stick             = ResourceManager::GetTexture("powerup_stick"),
+        tex_pass_through      = ResourceManager::GetTexture("powerup_passthough"),
+        tex_pad_size_increase = ResourceManager::GetTexture("powerup_increase"),
+        tex_confuse           = ResourceManager::GetTexture("powerup_confuse"),
+        tex_chaos             = ResourceManager::GetTexture("powerup_chaos");
+
+
+    if (ShouldSpawn(75)) {
+        m_PowerUps.push_back(PowerUp("speed", glm::vec3(0.5f, 0.5f, 1.0f),
+                                     0.f, block.m_Position, tex_speed));
+    };
+    if (ShouldSpawn(75)) {
+        m_PowerUps.push_back(PowerUp("stick", glm::vec3(1.0f, 0.5f, 1.0f),
+                                     20.f, block.m_Position, tex_stick));
+    };
+    if (ShouldSpawn(75)) {
+        m_PowerUps.push_back(PowerUp("pass_through", glm::vec3(0.5f, 1.0f, 0.5f),
+                                     10.f, block.m_Position, tex_pass_through));
+    };
+    if (ShouldSpawn(75)) {
+        m_PowerUps.push_back(PowerUp("pad_size_increse", glm::vec3(1.0f, 0.6f, 0.4f),
+                                     0.f, block.m_Position, tex_pad_size_increase));
+    }
+    if (ShouldSpawn(15)) {
+        m_PowerUps.push_back(PowerUp("confuse", glm::vec3(1, 0.3, 0.3),
+                                     15.f, block.m_Position, tex_confuse));
+    };
+    if (ShouldSpawn(15)) {
+        m_PowerUps.push_back(PowerUp("chaos", glm::vec3(0.9, 0.25, 0.25),
+                                     15.f, block.m_Position, tex_chaos));
+    }
+}
+
+void Game::UpdatePowers(float dt)
+{
+}
+
+void Game::debugDraw()
+{
+}
+
+void Game::ActivatePowerups(PowerUp &power_up)
+{
+    if (power_up.Type == "speed")
+    {
+        m_Ball->m_Velocity *= 1.2;
+    }
+    else if (power_up.Type == "sticky")
+    {
+        m_Ball->bSticky   = true;
+        m_Player->m_Color = glm::vec3(1.0f, 0.5f, 1.0f);
+    }
+    else if (power_up.Type == "pass_through")
+    {
+        m_Ball->bPassThrough = true;
+        m_Ball->m_Color      = glm::vec3(1.0f, 0.5f, 0.5f);
+    }
+    else if (power_up.Type == "pad_size_increase")
+    {
+        m_Player->m_Size.x += 50;
+    }
+    else if (power_up.Type == "confuse")
+    {
+        if (!m_Effects->bChaos)
+            m_Effects->bConfuse = true; // only activate if chaos wasn't already active
+    }
+    else if (power_up.Type == "chaos")
+    {
+        if (!m_Effects->bConfuse)
+            m_Effects->bChaos = true;
+    }
+}
+
+// -------------------------
+
+static bool AABBCheckCollision(const GameObject &A, const GameObject &B)
+{
+    bool collisionX = A.m_Position.x + A.m_Size.x >= B.m_Position.x &&
+                      B.m_Position.x + B.m_Size.x >= A.m_Position.x;
+
+    bool collisionY = A.m_Position.y + A.m_Size.y >= B.m_Position.y &&
+                      B.m_Position.y + B.m_Size.y >= A.m_Position.y;
+
+    return collisionX && collisionY;
+}
+
+// from dot product get the projection of Vec to 4 diretions to get the longest vec,
+// which is the best_match direction
+static Direction VectorDirection(glm::vec2 target)
+{
+    glm::vec2 compass[4] = {
+        { 0.f,  1.f},
+        { 1.f,  0.f},
+        { 0.f, -1.f},
+        {-1.f,  0.f},
+    };
+    float        max        = 0.f;
+    unsigned int best_match = -1;
+
+    for (int i = 0; i < 4; ++i) {
+        float dot_product = glm::dot(glm::normalize(target), compass[i]);
+        if (dot_product > max) {
+            max        = dot_product;
+            best_match = i;
+        }
+    }
+    return static_cast<Direction>(best_match);
+}
+
+static std::tuple<bool, Direction, glm::vec2> CheckCollision(const BallObject &A, const GameObject &B)
+{
+    using glm::vec2;
+
+    // get the center (from topleft or circle and rectangle)
+    vec2 center(A.m_Position + A.m_Radius);
+
+    vec2       aabb_center;
+    const vec2 aabb_half_extens(B.m_Size.x / 2.f, B.m_Size.y / 2.f);
+    aabb_center.x = B.m_Position.x + aabb_half_extens.x;
+    aabb_center.y = B.m_Position.y + aabb_half_extens.y;
+
+    vec2 difference = center - aabb_center;
+
+    // it will let the x or y of vec from circle to rectangle
+    // which beyond the half rectangle's L or W
+    // clmaped to point to  the edge of rectangle (from rectangle center)
+    // so it is the cloest point from rectangle to the circle
+    vec2 clamped = clamp(difference, -aabb_half_extens, aabb_half_extens);
+    vec2 closeet = aabb_center + clamped;
+
+    // retrieve vec between center circle and closest point AABB
+    //  and check if  len < radius
+    difference = closeet - center;
+
+    if (glm::length(difference) <= A.m_Radius * 1.f)
+        return {true, VectorDirection(difference), difference};
+    else
+        return {
+            false, UP, {0.f, 0.f}
+        };
+}
+
+static bool ShouldSpawn(unsigned int change)
+{
+    return rand() % change == 0;
 }

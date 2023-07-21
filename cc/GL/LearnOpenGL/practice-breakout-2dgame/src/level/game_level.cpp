@@ -1,14 +1,15 @@
 #include "game_level.h"
 
+#include "../obj/game_object.h"
+#include "../resource_manager/resource_manager.h"
 #include "log.h"
-#include "obj/game_object.h"
-#include "resource_manager/resource_manager.h"
 #include <cmath>
 #include <fstream>
 #include <glm/fwd.hpp>
 #include <math.h>
 #include <sstream>
 #include <string>
+
 
 
 void GameLevel::Load(const char *file, uint level_width, uint level_height)

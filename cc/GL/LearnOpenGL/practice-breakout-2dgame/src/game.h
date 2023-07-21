@@ -1,13 +1,16 @@
 #pragma once
 
-#include "game_level.h"
 #include "glm/fwd.hpp"
+#include "level/game_level.h"
 #include "obj/ball_object.h"
+#include "obj/power_up.h"
 #include "particle/particle_generator.h"
 #include "render/sprite_render.h"
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
 
 
 class PostProcessor;
@@ -49,8 +52,13 @@ class Game
     void DoCollisions();
     void Update(float dt);
     void Render();
+
+  public:
     void ResetLevel();
     void ResetPlayer();
+    void SpawPowerUps(GameObject &block);
+    void UpdatePowers(float dt);
+    void ActivatePowerups(PowerUp &power_up);
 
   private:
 
@@ -71,6 +79,8 @@ class Game
 
     std::vector<GameLevel> m_Levels;
     size_t                 m_LevelIndex;
+
+    std::vector<PowerUp> m_PowerUps;
 
   public:
     float ShakeTime = 0.f;

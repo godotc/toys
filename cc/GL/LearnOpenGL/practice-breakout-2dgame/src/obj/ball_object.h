@@ -15,5 +15,7 @@ class BallObject : public GameObject
 
   public:
     float m_Radius;
-    bool  m_Struck;
+    bool  bStuck;
+    bool  bSticky;
+    bool  bPassThrough;
 };

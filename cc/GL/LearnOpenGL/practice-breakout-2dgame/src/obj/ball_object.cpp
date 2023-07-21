@@ -7,18 +7,21 @@
 #include <math.h>
 
 
-BallObject::BallObject() {}
-BallObject::BallObject(glm::vec2 pos, float Radius, glm::vec2 velocity, Texture2D sprite)
-    : GameObject(pos, glm::vec2(Radius * 2, Radius * 2), sprite)
+
+BallObject::BallObject()
+    : GameObject(), m_Radius(12.5f), bStuck(true), bSticky(false), bPassThrough(false)
 {
-    m_Velocity = velocity;
-    m_Struck   = true;
-    m_Radius   = Radius;
+}
+
+BallObject::BallObject(glm::vec2 pos, float radius, glm::vec2 velocity, Texture2D sprite)
+    : GameObject(pos, glm::vec2(radius * 2.0f, radius * 2.0f), sprite, glm::vec3(1.0f), velocity),
+      m_Radius(radius), bStuck(true), bSticky(false), bPassThrough(false)
+{
 }
 
 glm::vec2 BallObject::Move(float dt, int window_width)
 {
-    if (!m_Struck) {
+    if (!bStuck) {
         m_Position += m_Velocity * dt;
 
         if (m_Position.x < 0.f) {
@@ -39,7 +42,9 @@ glm::vec2 BallObject::Move(float dt, int window_width)
 
 void BallObject::Reset(glm::vec2 pos, glm::vec2 velocity)
 {
-    m_Position     = pos;
-    m_Velocity     = velocity;
-    this->m_Struck = true;
+    m_Position   = pos;
+    m_Velocity   = velocity;
+    this->bStuck = true;
+    bSticky      = false;
+    bPassThrough = false;
 }
