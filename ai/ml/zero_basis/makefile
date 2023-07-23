@@ -1,5 +1,11 @@
+.PHONY: i pi
+
+ARGS := $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
+
 i:
-	python3 -m pip install  $(firstword $(filter-out $@,$(MAKECMDGOALS)))
+	python3 -m pip install $(ARGS)
 
 pi:
-	python3 -m pipenv install  $(firstword $(filter-out $@,$(MAKECMDGOALS)))
+	python -m pipenv install $(ARGS)
+		
+
