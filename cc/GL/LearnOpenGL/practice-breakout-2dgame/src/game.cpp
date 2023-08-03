@@ -35,8 +35,8 @@ static auto particle_shader = "particle";
 template <class T>
 static auto                                   clamp(T val, T min, T max) -> T { std::max(min, std::min(max, val)); }
 static Direction                              VectorDirection(glm::vec2 target);
-static bool                                   AABBCheckCollision(const GameObject &A, const GameObject &B);
-static std::tuple<bool, Direction, glm::vec2> CheckCollision(const BallObject &A, const GameObject &B);
+static bool                                   CollisionCheck_2Rect_AABB(const GameObject &A, const GameObject &B);
+static std::tuple<bool, Direction, glm::vec2> CollisionCheck_BallWithRect(const BallObject &A, const GameObject &B);
 static bool                                   ShouldSpawn(unsigned int change);
 
 
@@ -246,7 +246,7 @@ void Game::DoCollisions()
     // Ball with bricks
     for (auto &box : m_Levels[m_LevelIndex].Bricks) {
         if (!box.m_IsDestroyed) {
-            auto &&[collided, dir, diff] = CheckCollision(*m_Ball, box);
+            auto &&[collided, dir_to_ball, diff] = CollisionCheck_BallWithRect(*m_Ball, box);
 
             if (collided)
             {
@@ -261,20 +261,20 @@ void Game::DoCollisions()
                 }
 
 
-                if (dir == LEFT || dir == RIGHT) {
+                float penetration = m_Ball->m_Radius - std::abs(diff.x);
+
+                if (dir_to_ball == LEFT || dir_to_ball == RIGHT) {
                     m_Ball->m_Velocity.x = -m_Ball->m_Velocity.x;
                     // reloacte
-                    float penetration = m_Ball->m_Radius - std::abs(diff.x);
-                    if (dir == LEFT)
+                    if (dir_to_ball == LEFT)
                         m_Ball->m_Position.x += penetration;
                     else
                         m_Ball->m_Position.x -= penetration;
                 }
                 else {
                     m_Ball->m_Velocity.y = -m_Ball->m_Velocity.y;
-                    // reloacte
-                    float penetration = m_Ball->m_Radius - std::abs(diff.y);
-                    if (dir == LEFT)
+                    // reloacte on the
+                    if (dir_to_ball == DOWN)
                         m_Ball->m_Position.y += penetration;
                     else
                         m_Ball->m_Position.y -= penetration;
@@ -284,7 +284,7 @@ void Game::DoCollisions()
     }
 
     // Ball with player paddle
-    auto [colided, dir, diff] = CheckCollision(*m_Ball, *m_Player);
+    auto [colided, dir, diff] = CollisionCheck_BallWithRect(*m_Ball, *m_Player);
     if (!m_Ball->bStuck && colided) {
         m_Ball->bStuck = m_Ball->bSticky;
 
@@ -310,7 +310,7 @@ void Game::DoCollisions()
             if (power_up.m_Position.y >= m_Height) {
                 power_up.m_IsDestroyed = true;
             }
-            if (AABBCheckCollision(*m_Player, power_up)) {
+            if (CollisionCheck_2Rect_AABB(*m_Player, power_up)) {
                 ActivatePowerups(power_up);
                 power_up.m_IsDestroyed = true;
                 power_up.bActivated    = true;
@@ -415,7 +415,7 @@ void Game::ActivatePowerups(PowerUp &power_up)
 
 // -------------------------
 
-static bool AABBCheckCollision(const GameObject &A, const GameObject &B)
+static bool CollisionCheck_2Rect_AABB(const GameObject &A, const GameObject &B)
 {
     bool collisionX = A.m_Position.x + A.m_Size.x >= B.m_Position.x &&
                       B.m_Position.x + B.m_Size.x >= A.m_Position.x;
@@ -449,33 +449,32 @@ static Direction VectorDirection(glm::vec2 target)
     return static_cast<Direction>(best_match);
 }
 
-static std::tuple<bool, Direction, glm::vec2> CheckCollision(const BallObject &A, const GameObject &B)
+static std::tuple<bool, Direction, glm::vec2> CollisionCheck_BallWithRect(const BallObject &A, const GameObject &B)
 {
     using glm::vec2;
 
     // get the center (from topleft or circle and rectangle)
-    vec2 center(A.m_Position + A.m_Radius);
+    vec2 ball_center(A.m_Position + A.m_Radius);
 
-    vec2       aabb_center;
-    const vec2 aabb_half_extens(B.m_Size.x / 2.f, B.m_Size.y / 2.f);
-    aabb_center.x = B.m_Position.x + aabb_half_extens.x;
-    aabb_center.y = B.m_Position.y + aabb_half_extens.y;
+    vec2       rect_center{};
+    const vec2 rect_half_extens(B.m_Size.x / 2.f, B.m_Size.y / 2.f);
+    rect_center = B.m_Position + rect_half_extens;
 
-    vec2 difference = center - aabb_center;
+    vec2 diff = ball_center - rect_center;
 
     // it will let the x or y of vec from circle to rectangle
     // which beyond the half rectangle's L or W
     // clmaped to point to  the edge of rectangle (from rectangle center)
     // so it is the cloest point from rectangle to the circle
-    vec2 clamped = clamp(difference, -aabb_half_extens, aabb_half_extens);
-    vec2 closeet = aabb_center + clamped;
+    vec2 clamped       = clamp(diff, -rect_half_extens, rect_half_extens);
+    vec2 closeet_point = rect_center + clamped;
 
     // retrieve vec between center circle and closest point AABB
     //  and check if  len < radius
-    difference = closeet - center;
+    diff = closeet_point - ball_center;
 
-    if (glm::length(difference) <= A.m_Radius * 1.f)
-        return {true, VectorDirection(difference), difference};
+    if (glm::length(diff) <= A.m_Radius)
+        return {true, VectorDirection(diff), diff};
     else
         return {
             false, UP, {0.f, 0.f}
