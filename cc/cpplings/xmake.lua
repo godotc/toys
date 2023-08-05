@@ -3,6 +3,7 @@ add_rules("mode.debug", "mode.release")
 set_languages("c++20")
 -- add_cxflags("-stdlib=libc++")
 
+add_includedirs("./include")
 
 target("cpplings")
     set_kind("binary")

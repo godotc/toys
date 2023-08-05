@@ -12,17 +12,6 @@ default-run = "main"
 name = "main"
 path = "src/main.rs"
 
-[[bin]]
-name = "qs"
-path = "src/quick_sort.rs"
-
-[[bin]]
-name="ms"
-path = "src/merge_sort.rs"
-
-[[bin]]
-name="bs"
-path = "src/buble_sort.rs"
 
 
 [dependencies]

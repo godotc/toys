@@ -1,6 +1,4 @@
-mod buble_sort;
-mod merge_sort;
-mod quick_sort;
+//use algorithm::*;
 
 use crate::buble_sort::buble_sort;
 use crate::merge_sort::merge_sort;

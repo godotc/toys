@@ -1,6 +1,5 @@
-use std::env;
-
 use rand::{thread_rng, Rng};
+use std::env;
 
 pub fn buble_sort(array: &mut [i32]) {
     let len = array.len();
@@ -14,8 +13,8 @@ pub fn buble_sort(array: &mut [i32]) {
     }
 }
 
-#[allow(dead_code)]
-fn main() {
+#[test]
+fn test() {
     let mut size = 10;
     if let Some(arg1) = env::args().nth(1) {
         size = arg1.parse().unwrap_or(10);

@@ -8,11 +8,11 @@
 
 auto temp_file() -> std::string
 {
+    unsigned int thread_id = std::hash<std::thread::id>{}(std::this_thread::get_id());
 #ifdef _WIN32
-    unsigned int thread_id  = std::hash<std::thread::id>{}(std::this_thread::get_id());
-    auto         process_id = GetCurrentProcessId();
+    auto process_id = GetCurrentProcessId();
 #else
-    auto precess_id = getpid();
+    auto process_id = getpid();
 #endif
     return std::format("./temp_{}_{}", process_id, thread_id);
 }

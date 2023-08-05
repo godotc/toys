@@ -1,6 +1,6 @@
 use bracket_lib::prelude::*;
-mod base;
-mod constant;
+mod crate::base;
+mod crate::constant;
 
 use base::state::*;
 

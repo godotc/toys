@@ -7,6 +7,9 @@
 #include <vector>
 
 
+#include "platform.h"
+
+
 
 struct Command
 {
@@ -47,6 +50,9 @@ struct Command
 
     auto exec() -> Command &
     {
+
+
+
         // TODO: redirect the file into my outputs
         FILE *err_pipe = _popen(_cmd.c_str(), "rt");
         FILE *out_pipe = _popen((_cmd + " 2>&1").c_str(), "r");
@@ -54,7 +60,7 @@ struct Command
         if (out_pipe) {
             char buffer[128];
             while (fgets(buffer, sizeof(buffer), out_pipe)) {
-                stdout_ += buffer;
+                stdout_.get() buffer;
             }
             status.result = _pclose(out_pipe);
         }
@@ -71,8 +77,8 @@ struct Command
     Status status;
 
     // HELPME: when execute's relocate the command out to these 2 file/buffer, then I need to get them somewherer
-    std::string stdout_;
-    std::string stderr_;
+    type stdout_;
+    type stderr_;
 
   private:
     std::string _cmd;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "trait.h"
+#include "./trait.h"
 #include <type_traits>
 
 #ifdef _WIN32
