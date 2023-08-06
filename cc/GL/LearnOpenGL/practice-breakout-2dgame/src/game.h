@@ -1,14 +1,17 @@
 #pragma once
 
+#include "glm/detail/qualifier.hpp"
 #include "glm/fwd.hpp"
 #include "level/game_level.h"
 #include "obj/ball_object.h"
 #include "obj/power_up.h"
 #include "particle/particle_generator.h"
 #include "render/sprite_render.h"
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 
@@ -30,13 +33,29 @@ enum Direction
     DOWN,
     LEFT
 };
-;
+
+
+using OnObjectsCollied = std::function<void(GameObject *A, GameObject *B, std::tuple<bool, Direction, glm::vec2> *result)>;
 
 
 inline const glm::vec2 PLAYER_SIZE{100.f, 20.f};
 inline const float     PLAYER_VELOCITY{500.f};
 inline const float     BALL_RADIUS = 12.5f;
 inline const glm::vec2 INITIAL_BALL_VELOCITY(100.f, -350.f);
+
+
+// struct CollisonCheckPair
+// {
+//     using Key   = std::pair<std::any &, std::any &>;
+//     using Value = std::function<void(std::vector<std::any>)>;
+
+//     void RegisterPair(Key *k, Value v)
+//     {
+//         this->pairs.insert_or_assign(k, v);
+//     }
+
+//     std::unordered_map<Key *, Value &> pairs;
+// };
 
 class Game
 {
@@ -56,13 +75,22 @@ class Game
   public:
     void ResetLevel();
     void ResetPlayer();
-    void SpawPowerUps(GameObject &block);
-    void UpdatePowers(float dt);
+
     void ActivatePowerups(PowerUp &power_up);
+    void SpawPowerUps(GameObject &block);
+    void UpdatePowerups(float dt);
 
   private:
+    void initCallback();
 
     void debugDraw();
+    bool isOtherPoerUpActive(const std::string &type_name);
+
+  private:
+    using ColliedResult = std::tuple<bool, Direction, glm::vec2>;
+    void onCollied_BallWithPaddle_Handler(BallObject *ball, GameObject *paddle, ColliedResult *result);
+    void onCollied_BallWithBrick_Handler(BallObject *ball, GameObject *box, ColliedResult *result);
+    void onCollied_PaddleWithPowerup_Handler(GameObject *paddle, GameObject *power_up, ColliedResult *result);
 
   public:
 
@@ -84,4 +112,11 @@ class Game
 
   public:
     float ShakeTime = 0.f;
+
+    // CollisonCheckPair collisionCheckPairs;
+
+  private:
+    OnObjectsCollied onCollied_BallWithPaddle;
+    OnObjectsCollied onCollied_BallWithBrick;
+    OnObjectsCollied onCollied_PaddleWithPowerup;
 };

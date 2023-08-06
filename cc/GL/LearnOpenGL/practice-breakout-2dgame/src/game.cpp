@@ -4,6 +4,7 @@
 #include "glm/geometric.hpp"
 #include "obj/ball_object.h"
 #include "obj/game_object.h"
+#include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <functional>
@@ -33,16 +34,19 @@ static auto sprite_shader   = "sprite";
 static auto particle_shader = "particle";
 
 template <class T>
-static auto                                   clamp(T val, T min, T max) -> T { std::max(min, std::min(max, val)); }
+static auto clamp(T val, T min, T max) -> T { std::max(min, std::min(max, val)); }
+
 static Direction                              VectorDirection(glm::vec2 target);
 static bool                                   CollisionCheck_2Rect_AABB(const GameObject &A, const GameObject &B);
 static std::tuple<bool, Direction, glm::vec2> CollisionCheck_BallWithRect(const BallObject &A, const GameObject &B);
-static bool                                   ShouldSpawn(unsigned int change);
+
+static bool ShouldSpawn(unsigned int change);
 
 
 
 Game::Game(unsigned int width, unsigned int height) : m_State(GameState::GAME_ACTIVE), m_keys(), m_Width(width), m_Height(height)
 {
+    initCallback();
 }
 
 Game::~Game()
@@ -164,6 +168,16 @@ void Game::Init()
 
 void Game::Update(float dt)
 {
+    // ball with collisions
+    m_Ball->Move(dt, m_Width);
+    DoCollisions();
+
+    // particles
+    m_Particles->Update(dt, *m_Ball, 2, glm::vec2(m_Ball->m_Radius / 2.f));
+
+    // powerups
+    UpdatePowerups(dt);
+
     if (ShakeTime > 0.f) {
         ShakeTime -= dt;
         if (ShakeTime < 0.f)
@@ -171,17 +185,10 @@ void Game::Update(float dt)
     }
 
 
-    // ball with collisions
-    m_Ball->Move(dt, m_Width);
-
-    DoCollisions();
     if (m_Ball->m_Position.y >= m_Height) {
         ResetLevel();
         ResetPlayer();
     }
-
-    // particles
-    m_Particles->Update(dt, *m_Ball, 2, glm::vec2(m_Ball->m_Radius / 2.f));
 }
 
 void Game::ProcessInput(float dt)
@@ -231,6 +238,11 @@ void Game::Render()
             m_Levels[m_LevelIndex].Draw(m_SpriteRnder);
             m_Player->Draw(m_SpriteRnder);
             // render the particles before the ball, because it use ONE as blend
+            for (PowerUp &pu : m_PowerUps) {
+                if (!pu.m_IsDestroyed) {
+                    pu.Draw(m_SpriteRnder);
+                }
+            }
             m_Particles->Draw();
             m_Ball->Draw(m_SpriteRnder);
         }
@@ -245,75 +257,36 @@ void Game::DoCollisions()
 {
     // Ball with bricks
     for (auto &box : m_Levels[m_LevelIndex].Bricks) {
-        if (!box.m_IsDestroyed) {
-            auto &&[collided, dir_to_ball, diff] = CollisionCheck_BallWithRect(*m_Ball, box);
 
-            if (collided)
-            {
-                // solid do shake
-                if (box.m_IsSolid) {
-                    ShakeTime         = 0.05f;
-                    m_Effects->bShake = true;
-                }
-                else {
-                    box.m_IsDestroyed = true;
-                    this->SpawPowerUps(box);
-                }
-
-
-                float penetration = m_Ball->m_Radius - std::abs(diff.x);
-
-                if (dir_to_ball == LEFT || dir_to_ball == RIGHT) {
-                    m_Ball->m_Velocity.x = -m_Ball->m_Velocity.x;
-                    // reloacte
-                    if (dir_to_ball == LEFT)
-                        m_Ball->m_Position.x += penetration;
-                    else
-                        m_Ball->m_Position.x -= penetration;
-                }
-                else {
-                    m_Ball->m_Velocity.y = -m_Ball->m_Velocity.y;
-                    // reloacte on the
-                    if (dir_to_ball == DOWN)
-                        m_Ball->m_Position.y += penetration;
-                    else
-                        m_Ball->m_Position.y -= penetration;
-                }
+        if (!box.m_IsDestroyed)
+        {
+            auto &&result = CollisionCheck_BallWithRect(*m_Ball, box);
+            if (std::get<bool>(result)) {
+                this->onCollied_BallWithBrick(m_Ball.get(), &box, &result);
             }
         }
     }
 
     // Ball with player paddle
-    auto [colided, dir, diff] = CollisionCheck_BallWithRect(*m_Ball, *m_Player);
-    if (!m_Ball->bStuck && colided) {
-        m_Ball->bStuck = m_Ball->bSticky;
-
-        // if collided, we only need to caculate the hit point, and not the dir vec
-        float center_board = m_Player->m_Position.x + m_Player->m_Size.x / 2.f;
-        float distance     = (m_Ball->m_Position.x + m_Ball->m_Radius) - center_board;
-        float percentage   = distance / (m_Player->m_Size.x / 2.f);
-
-        float strength       = 2.f;
-        auto  old_velocity   = m_Ball->m_Velocity;
-        m_Ball->m_Velocity.x = INITIAL_BALL_VELOCITY.x * percentage * strength;
-
-        // make the ball not stick when just in the paddle
-        // m_Ball->m_Velocity.y = -m_Ball->m_Velocity.y;
-        m_Ball->m_Velocity.y = -1.f * abs(m_Ball->m_Velocity.y);
-
-        m_Ball->m_Velocity = glm::normalize(m_Ball->m_Velocity) * glm::length(old_velocity);
+    auto &&result = CollisionCheck_BallWithRect(*m_Ball, *m_Player);
+    if (std::get<bool>(result))
+    {
+        this->onCollied_BallWithPaddle(m_Ball.get(), m_Player.get(), &result);
     }
 
-    // The generate powerups with ball
-    for (auto &power_up : m_PowerUps) {
-        if (!power_up.m_IsDestroyed) {
+
+    //  Powerups that generated with ball
+    for (auto &power_up : m_PowerUps)
+    {
+        if (!power_up.m_IsDestroyed)
+        {
             if (power_up.m_Position.y >= m_Height) {
                 power_up.m_IsDestroyed = true;
+                continue;
             }
-            if (CollisionCheck_2Rect_AABB(*m_Player, power_up)) {
-                ActivatePowerups(power_up);
-                power_up.m_IsDestroyed = true;
-                power_up.bActivated    = true;
+            if (CollisionCheck_2Rect_AABB(*m_Player, power_up))
+            {
+                this->onCollied_PaddleWithPowerup(m_Player.get(), &power_up, nullptr);
             }
         }
     }
@@ -338,43 +311,85 @@ void Game::ResetPlayer()
 
 void Game::SpawPowerUps(GameObject &block)
 {
-    static auto
-        tex_speed             = ResourceManager::GetTexture("powerup_speed"),
-        tex_stick             = ResourceManager::GetTexture("powerup_stick"),
-        tex_pass_through      = ResourceManager::GetTexture("powerup_passthough"),
-        tex_pad_size_increase = ResourceManager::GetTexture("powerup_increase"),
-        tex_confuse           = ResourceManager::GetTexture("powerup_confuse"),
-        tex_chaos             = ResourceManager::GetTexture("powerup_chaos");
+
+    auto get_texture_name = [](auto name) { return "powerup_" + name; };
+
+    static const auto
+        tex_speed             = ResourceManager::GetTexture(get_texture_name(power_up::speed)),
+        tex_stick             = ResourceManager::GetTexture(get_texture_name(power_up::sticky)),
+        tex_pass_through      = ResourceManager::GetTexture(get_texture_name(power_up::pass_through)),
+        tex_pad_size_increase = ResourceManager::GetTexture(get_texture_name(power_up::pad_increase)),
+        tex_confuse           = ResourceManager::GetTexture(get_texture_name(power_up::confuse)),
+        tex_chaos             = ResourceManager::GetTexture(get_texture_name(power_up::chaos));
 
 
-    if (ShouldSpawn(75)) {
-        m_PowerUps.push_back(PowerUp("speed", glm::vec3(0.5f, 0.5f, 1.0f),
+    if (ShouldSpawn(100)) {
+        m_PowerUps.push_back(PowerUp(power_up::speed, glm::vec3(0.5f, 0.5f, 1.0f),
                                      0.f, block.m_Position, tex_speed));
     };
     if (ShouldSpawn(75)) {
-        m_PowerUps.push_back(PowerUp("stick", glm::vec3(1.0f, 0.5f, 1.0f),
+        m_PowerUps.push_back(PowerUp(power_up::sticky, glm::vec3(1.0f, 0.5f, 1.0f),
                                      20.f, block.m_Position, tex_stick));
     };
     if (ShouldSpawn(75)) {
-        m_PowerUps.push_back(PowerUp("pass_through", glm::vec3(0.5f, 1.0f, 0.5f),
+        m_PowerUps.push_back(PowerUp(power_up::pass_through, glm::vec3(0.5f, 1.0f, 0.5f),
                                      10.f, block.m_Position, tex_pass_through));
     };
     if (ShouldSpawn(75)) {
-        m_PowerUps.push_back(PowerUp("pad_size_increse", glm::vec3(1.0f, 0.6f, 0.4f),
+        m_PowerUps.push_back(PowerUp(power_up::pad_increase, glm::vec3(1.0f, 0.6f, 0.4f),
                                      0.f, block.m_Position, tex_pad_size_increase));
     }
     if (ShouldSpawn(15)) {
-        m_PowerUps.push_back(PowerUp("confuse", glm::vec3(1, 0.3, 0.3),
-                                     15.f, block.m_Position, tex_confuse));
+        m_PowerUps.push_back(PowerUp(power_up::confuse, glm::vec3(1, 0.3, 0.3),
+                                     5.f, block.m_Position, tex_confuse));
     };
     if (ShouldSpawn(15)) {
-        m_PowerUps.push_back(PowerUp("chaos", glm::vec3(0.9, 0.25, 0.25),
+        m_PowerUps.push_back(PowerUp(power_up::chaos, glm::vec3(0.9, 0.25, 0.25),
                                      15.f, block.m_Position, tex_chaos));
     }
 }
 
-void Game::UpdatePowers(float dt)
+void Game::UpdatePowerups(float dt)
 {
+    for (auto &power_up : m_PowerUps)
+    {
+        power_up.m_Position += power_up.m_Velocity * dt;
+
+        if (!power_up.bActivated)
+            continue;
+
+        power_up.Duration -= dt;
+
+        const auto type = power_up.Type;
+
+        if (power_up.Duration < 0.f)
+        {
+            auto one_more_powerup_exist = [&](auto &source_type, auto &expect_type) {
+                return (source_type == expect_type) && isOtherPoerUpActive(source_type);
+            };
+
+            if (one_more_powerup_exist(type, power_up::sticky)) {
+                m_Ball->bSticky   = false;
+                m_Player->m_Color = glm::vec3(1.f);
+            }
+            else if (one_more_powerup_exist(type, power_up::pass_through)) {
+                m_Ball->bPassThrough = false;
+                m_Player->m_Color    = glm::vec3(1.f);
+            }
+
+            else if (one_more_powerup_exist(type, power_up::confuse)) {
+                m_Effects->bConfuse = false;
+            }
+            else if (!one_more_powerup_exist(type, power_up::chaos)) {
+                m_Effects->bConfuse = false;
+            }
+        }
+    }
+
+    m_PowerUps.erase(std::remove_if(m_PowerUps.begin(), m_PowerUps.end(), [](const PowerUp &power_up) {
+                         return power_up.m_IsDestroyed && !power_up.bActivated;
+                     }),
+                     m_PowerUps.end());
 }
 
 void Game::debugDraw()
@@ -383,37 +398,146 @@ void Game::debugDraw()
 
 void Game::ActivatePowerups(PowerUp &power_up)
 {
-    if (power_up.Type == "speed")
+    if (power_up.Type == power_up::speed)
     {
         m_Ball->m_Velocity *= 1.2;
     }
-    else if (power_up.Type == "sticky")
+    else if (power_up.Type == power_up::sticky)
     {
         m_Ball->bSticky   = true;
         m_Player->m_Color = glm::vec3(1.0f, 0.5f, 1.0f);
     }
-    else if (power_up.Type == "pass_through")
+    else if (power_up.Type == power_up::pass_through)
     {
         m_Ball->bPassThrough = true;
         m_Ball->m_Color      = glm::vec3(1.0f, 0.5f, 0.5f);
     }
-    else if (power_up.Type == "pad_size_increase")
+    else if (power_up.Type == power_up::pad_increase)
     {
         m_Player->m_Size.x += 50;
     }
-    else if (power_up.Type == "confuse")
+    else if (power_up.Type == power_up::confuse)
     {
         if (!m_Effects->bChaos)
             m_Effects->bConfuse = true; // only activate if chaos wasn't already active
     }
-    else if (power_up.Type == "chaos")
+    else if (power_up.Type == power_up::chaos)
     {
         if (!m_Effects->bConfuse)
             m_Effects->bChaos = true;
     }
 }
 
+void Game::initCallback()
+{
+    // using namespace std::placeholders;
+    // Cannot bind on different function sig
+    // this->onCollied_BallWithPaddle = std::bind(&Game::onCollied_BallWithPaddleHandler, this, _1, _2, _3);
+    this->onCollied_BallWithPaddle = [&](GameObject *ball, GameObject *paddle, ColliedResult *result) {
+        onCollied_BallWithPaddle_Handler(static_cast<BallObject *>(ball), paddle, result);
+    };
+    this->onCollied_BallWithBrick = [&](GameObject *ball, GameObject *paddle, ColliedResult *result) {
+        onCollied_BallWithBrick_Handler(static_cast<BallObject *>(ball), paddle, result);
+    };
+    this->onCollied_PaddleWithPowerup = [&](GameObject *ball, GameObject *paddle, ColliedResult *result) {
+        onCollied_PaddleWithPowerup_Handler(ball, paddle, result);
+    };
+}
+
+void Game::onCollied_BallWithPaddle_Handler(BallObject *ball, GameObject *paddle, ColliedResult *result)
+{
+    if (!ball)
+        return;
+
+    auto &[_, dir, diff] = *result;
+    if (!ball->bStuck) {
+        ball->bStuck = ball->bSticky;
+
+        // if collided, we only need to caculate the hit point, and revert the dir vec
+        float center_board = m_Player->m_Position.x + m_Player->m_Size.x / 2.f;
+        float distance     = (ball->m_Position.x + ball->m_Radius) - center_board;
+        float percentage   = distance / (m_Player->m_Size.x / 2.f);
+
+        float strength     = 2.f;
+        auto  old_velocity = ball->m_Velocity;
+        ball->m_Velocity.x = INITIAL_BALL_VELOCITY.x * percentage * strength;
+
+        // make the ball not stick when just in the paddle
+        ball->m_Velocity.y = -1.f * abs(ball->m_Velocity.y);
+
+        // reverse
+        ball->m_Velocity = glm::normalize(ball->m_Velocity) * glm::length(old_velocity);
+    }
+}
+
+void Game::onCollied_BallWithBrick_Handler(BallObject *ball, GameObject *box, ColliedResult *result)
+{
+    if (!ball || !box)
+        return;
+
+
+    // solid  will do shake
+    if (box->m_IsSolid) {
+        ShakeTime         = 0.05f;
+        m_Effects->bShake = true;
+    }
+    // no-solid will destroy it
+    else {
+        box->m_IsDestroyed = true;
+        this->SpawPowerUps(*box);
+    }
+
+    // check if in pass-throuth status, can pass the non-solid brick
+    if (ball->bPassThrough && !box->m_IsSolid)
+        return;
+
+    auto &[_, dir_to_ball, diff] = *result;
+
+    if (dir_to_ball == LEFT || dir_to_ball == RIGHT) {
+        ball->m_Velocity.x = -ball->m_Velocity.x;
+        float penetration  = ball->m_Radius - std::abs(diff.x);
+        // reloacte
+        if (dir_to_ball == LEFT)
+            ball->m_Position.x += penetration;
+        else
+            ball->m_Position.x -= penetration;
+    }
+    else {
+        ball->m_Velocity.y = -ball->m_Velocity.y;
+        float penetration  = ball->m_Radius - std::abs(diff.y);
+        // reloacte on the
+        if (dir_to_ball == DOWN)
+            ball->m_Position.y += penetration;
+        else
+            ball->m_Position.y -= penetration;
+    }
+}
+
+void Game::onCollied_PaddleWithPowerup_Handler(GameObject *paddle, GameObject *power_up, ColliedResult *result)
+{
+    auto the_power_up = static_cast<PowerUp *>(power_up);
+    if (!paddle || !the_power_up)
+        return;
+
+    ActivatePowerups(*the_power_up);
+    the_power_up->m_IsDestroyed = true;
+    the_power_up->bActivated    = true;
+}
+
+
+bool Game::isOtherPoerUpActive(const std::string &type_name)
+{
+    for (const auto &pu : m_PowerUps) {
+        if (pu.bActivated && pu.Type == power_up::sticky) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // -------------------------
+
+
 
 static bool CollisionCheck_2Rect_AABB(const GameObject &A, const GameObject &B)
 {
