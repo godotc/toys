@@ -63,7 +63,7 @@ PostProcessor::PostProcessor(Shader shader, unsigned int w, unsigned int h)
 
     int edge_kernel[9]{
         -1, -1, -1,
-        -1, -8, -1,
+        -1, 8, -1,
         -1, -1, -1};
     glUniform1iv(glGetUniformLocation(PostProcessingShader.ID, "edge_kernel"), 9, edge_kernel);
 
