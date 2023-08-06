@@ -1,9 +1,7 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("glfw","glm","stb")
-add_requires("glad")
-add_requires("gtest")
-add_requires("fmt")
+add_requires("glfw","glm","stb","glad")
+add_requires("gtest","fmt")
 
 add_packages("glfw","glm","stb","glad","fmt")
 
@@ -12,8 +10,8 @@ set_languages("c++2a")
 
 add_defines('PROJECT_ROOT_DIR="$(projectdir)"')
 
-includes("m_log")
-add_includedirs("m_log")
+includes("./pkgs/m_log")
+add_includedirs("./pkgs/m_log")
 -- Add this to top_level xmake if msvc
 if is_os("windows") then
 	add_cxxflags("/Zc:preprocessor")
