@@ -77,8 +77,8 @@ struct Command
     Status status;
 
     // HELPME: when execute's relocate the command out to these 2 file/buffer, then I need to get them somewherer
-    type stdout_;
-    type stderr_;
+    typename int stdout_;
+    type         stderr_;
 
   private:
     std::string _cmd;
