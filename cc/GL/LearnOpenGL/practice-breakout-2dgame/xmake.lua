@@ -3,6 +3,9 @@ add_rules("mode.debug", "mode.release")
 add_requires("glfw","glm","stb","glad")
 add_requires("gtest","fmt")
 
+-- add_requires("openal-soft")
+-- add_requires("miniaudio")
+
 add_packages("glfw","glm","stb","glad","fmt")
 
 set_targetdir("bin")
@@ -21,8 +24,11 @@ target("breakout")
     set_kind("binary")
     add_files("src/**.cpp")
 	add_includedirs("include")
+
 	add_packages("glfw","glm","stb","glad")
 	add_packages("fmt")
+	-- add_packages("miniaudio")
+
 	add_deps("m_log")
 
 

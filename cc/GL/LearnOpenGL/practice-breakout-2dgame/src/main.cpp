@@ -17,7 +17,6 @@
 #include <memory>
 #include <stdexcept>
 
-#include "render/sprite_render.h"
 
 
 #include <GL/gl.h>
@@ -88,8 +87,8 @@ static std::unique_ptr<Game> Breakout;
 
 int main(int argc, char **argv)
 {
-    /* 
-	    LOG_PURE_ERROR("hello world");
+    /*
+        LOG_PURE_ERROR("hello world");
         LOG("hello world");
         TRACE("hello world");
         DEBUG("hello world");

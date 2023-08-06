@@ -1,5 +1,4 @@
 
-
 /*******************************************************************
 ** This code is part of Breakout.
 **
@@ -221,3 +220,25 @@ Texture2D ResourceManager::loadTextureFromFile(const char *file)
     stbi_image_free(data);
     return texture;
 }
+
+
+// auto GetAudio() -> Audio *
+// {
+//     auto audio = new Audio;
+//     return audio;
+// }
+// void ResourceManager::PlaySound(const char *name)
+// {
+//     GetAudio()->Play(name);
+// }
+
+// void ResourceManager::LoadSound(const char *file, std::string name)
+// {
+// #ifndef NDBUG
+//     if (Sounds.find(name) == Sounds.end()) {
+//         LOG_ERROR("Not such texture: {} ", name);
+//         return;
+//     }
+// #endif
+//     GetAudio()->Play(Sounds[name]);
+// }

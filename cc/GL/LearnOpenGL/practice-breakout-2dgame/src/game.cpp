@@ -36,6 +36,7 @@ static auto particle_shader = "particle";
 template <class T>
 static auto clamp(T val, T min, T max) -> T { std::max(min, std::min(max, val)); }
 
+
 static Direction                              VectorDirection(glm::vec2 target);
 static bool                                   CollisionCheck_2Rect_AABB(const GameObject &A, const GameObject &B);
 static std::tuple<bool, Direction, glm::vec2> CollisionCheck_BallWithRect(const BallObject &A, const GameObject &B);
@@ -57,90 +58,11 @@ void Game::Init()
 {
     LOG_LOG("W: {} | H: {}", m_Width, m_Height);
 
-    // loas shader
-    ResourceManager::LoadShader("../res/shaders/a.vert", "../res/shaders/a.frag", nullptr, sprite_shader);
-    ResourceManager::LoadShader("../res/shaders/particle.vert", "../res/shaders/particle.frag", nullptr, particle_shader);
-    ResourceManager::LoadShader("../res/shaders/post_processing.vert", "../res/shaders/post_processing.frag", nullptr, "post_processing");
+    initShaders();
+    initTextures();
+    initLevels();
+    initAudios();
 
-    // view projection to resolute the [-1,1]
-    glm::mat4 projection = glm::ortho(0.0f, (float)this->m_Width,
-                                      (float)this->m_Height, 0.0f,
-                                      1.0f, -1.0f);
-
-    // NOTICE: Must use this program first
-    ResourceManager::GetShader(sprite_shader).Use();
-    ResourceManager::GetShader(sprite_shader).SetMatrix4("projection", projection);
-    // reset image
-    ResourceManager::GetShader(sprite_shader).SetInteger("image", 0);
-    ResourceManager::GetShader(sprite_shader).SetInteger("hasTexture", 1);
-
-    m_SpriteRnder = SpriteRender(ResourceManager::GetShader(sprite_shader));
-
-    ResourceManager::GetShader(particle_shader).Use().SetMatrix4("projection", projection);
-    ResourceManager::GetShader(particle_shader).SetInteger("sprite", 0);
-
-
-    // load texture
-    {
-#if 1
-        auto GetFileNameWithoutExtension =
-            [](const std::string &path) {
-                size_t slash_pos = path.find_last_of("/\\");
-                size_t dot_pos   = path.find_last_of(".");
-
-                // DEBUG("{}, {}, {}", path, slash_pos, dot_pos);
-                auto filename = path.substr(slash_pos + 1, dot_pos - slash_pos - 1);
-                // LOG("{}", filename);
-                return filename;
-            };
-
-        std::vector<std::string> support_suffixs = {".jpg", ".png", ".bmp"};
-        LOG_WARN("Load texture with '{}', '{}', '{}'", support_suffixs[0], support_suffixs[1], support_suffixs[2]);
-
-        for (const auto texture : std::filesystem::directory_iterator("../res/textures/"))
-        {
-            const auto &file_path = texture.path().string();
-            // LOG_DEBUG("Trying to load texture from '{}'", file_path);
-
-            for (auto &suffx : support_suffixs)
-            {
-                if (file_path.ends_with(suffx))
-                {
-                    LOG_TRACE("Trying to load texture from '{}'", file_path);
-                    const std::string texture_name = GetFileNameWithoutExtension(std::ref(file_path));
-
-                    ResourceManager::LoadTexture(file_path.c_str(), texture_name);
-                }
-            }
-        }
-#else
-        ResourceManager::LoadTexture("../res/textures/arch.png", "arch");
-        ResourceManager::LoadTexture("../res/textures/brick.bmp", "brick");
-        ResourceManager::LoadTexture("../res/textures/block_solid.png", "block_solid");
-        ResourceManager::LoadTexture("../res/textures/block.png", "block");
-        ResourceManager::LoadTexture("../res/textures/background.jpg", "background");
-#endif
-    }
-
-    // load Levels
-    {
-        size_t level_count = 4;
-        m_Levels           = std::vector<GameLevel>(level_count);
-        const char *level_names[] =
-            {
-                "0_standard",
-                "1_a_few_small_gaps",
-                "2_space_invader",
-                "3_bounce_galore",
-            };
-        for (int i = 0; i < level_count; ++i)
-        {
-            m_Levels[i].Load(fmt::format("../res/levels/{}", level_names[i]).c_str(),
-                             m_Width,
-                             m_Height / 2);
-        }
-        m_LevelIndex = 0;
-    }
 
     // Player
     glm::vec2 player_pos = glm::vec2(m_Width / 2.f - PLAYER_SIZE.x / 2.f,
@@ -442,6 +364,102 @@ void Game::initCallback()
     this->onCollied_PaddleWithPowerup = [&](GameObject *ball, GameObject *paddle, ColliedResult *result) {
         onCollied_PaddleWithPowerup_Handler(ball, paddle, result);
     };
+}
+
+void Game::initShaders()
+{
+    // loas shader
+    ResourceManager::LoadShader("../res/shader/a.vert", "../res/shader/a.frag", nullptr, sprite_shader);
+    ResourceManager::LoadShader("../res/shader/particle.vert", "../res/shader/particle.frag", nullptr, particle_shader);
+    ResourceManager::LoadShader("../res/shader/post_processing.vert", "../res/shader/post_processing.frag", nullptr, "post_processing");
+
+    // view projection to resolute the [-1,1]
+    glm::mat4 projection = glm::ortho(0.0f, (float)this->m_Width,
+                                      (float)this->m_Height, 0.0f,
+                                      1.0f, -1.0f);
+
+    // NOTICE: Must use this program first
+    ResourceManager::GetShader(sprite_shader).Use();
+    ResourceManager::GetShader(sprite_shader).SetMatrix4("projection", projection);
+    // reset image
+    ResourceManager::GetShader(sprite_shader).SetInteger("image", 0);
+    ResourceManager::GetShader(sprite_shader).SetInteger("hasTexture", 1);
+
+    m_SpriteRnder = SpriteRender(ResourceManager::GetShader(sprite_shader));
+
+    ResourceManager::GetShader(particle_shader).Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader(particle_shader).SetInteger("sprite", 0);
+}
+
+void Game::initTextures()
+{ // load texture
+    {
+#if 1
+        auto GetFileNameWithoutExtension =
+            [](const std::string &path) {
+                size_t slash_pos = path.find_last_of("/\\");
+                size_t dot_pos   = path.find_last_of(".");
+
+                // DEBUG("{}, {}, {}", path, slash_pos, dot_pos);
+                auto filename = path.substr(slash_pos + 1, dot_pos - slash_pos - 1);
+                // LOG("{}", filename);
+                return filename;
+            };
+
+        std::vector<std::string> support_suffixs = {".jpg", ".png", ".bmp"};
+        LOG_WARN("Load texture with '{}', '{}', '{}'", support_suffixs[0], support_suffixs[1], support_suffixs[2]);
+
+        for (const auto texture : std::filesystem::directory_iterator("../res/texture/"))
+        {
+            const auto &file_path = texture.path().string();
+            // LOG_DEBUG("Trying to load texture from '{}'", file_path);
+
+            for (auto &suffx : support_suffixs)
+            {
+                if (file_path.ends_with(suffx))
+                {
+                    LOG_TRACE("Trying to load texture from '{}'", file_path);
+                    const std::string texture_name = GetFileNameWithoutExtension(std::ref(file_path));
+
+                    ResourceManager::LoadTexture(file_path.c_str(), texture_name);
+                }
+            }
+        }
+#else
+        ResourceManager::LoadTexture("../res/textures/arch.png", "arch");
+        ResourceManager::LoadTexture("../res/textures/brick.bmp", "brick");
+        ResourceManager::LoadTexture("../res/textures/block_solid.png", "block_solid");
+        ResourceManager::LoadTexture("../res/textures/block.png", "block");
+        ResourceManager::LoadTexture("../res/textures/background.jpg", "background");
+#endif
+    }
+}
+
+void Game::initLevels()
+{
+    // load Levels
+    {
+        size_t level_count = 4;
+        m_Levels           = std::vector<GameLevel>(level_count);
+        const char *level_names[] =
+            {
+                "0_standard",
+                "1_a_few_small_gaps",
+                "2_space_invader",
+                "3_bounce_galore",
+            };
+        for (int i = 0; i < level_count; ++i)
+        {
+            m_Levels[i].Load(fmt::format("../res/level/{}", level_names[i]).c_str(),
+                             m_Width,
+                             m_Height / 2);
+        }
+        m_LevelIndex = 0;
+    }
+}
+
+void Game::initAudios()
+{
 }
 
 void Game::onCollied_BallWithPaddle_Handler(BallObject *ball, GameObject *paddle, ColliedResult *result)

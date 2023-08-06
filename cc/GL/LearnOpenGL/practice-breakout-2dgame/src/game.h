@@ -1,6 +1,5 @@
 #pragma once
 
-#include "glm/detail/qualifier.hpp"
 #include "glm/fwd.hpp"
 #include "level/game_level.h"
 #include "obj/ball_object.h"
@@ -82,6 +81,10 @@ class Game
 
   private:
     void initCallback();
+    void initShaders();
+    void initTextures();
+    void initLevels();
+    void initAudios();
 
     void debugDraw();
     bool isOtherPoerUpActive(const std::string &type_name);
