@@ -29,7 +29,7 @@ struct Command
         return cmd;
     }
 
-    Command() = default;
+    Command() = delete;
     Command(const char *in_cmd) : _cmd(in_cmd) { space(); }
 
 
@@ -50,23 +50,10 @@ struct Command
 
     auto exec() -> Command &
     {
+        auto &&[code, output_] = platfrom::GetCommandOutput(_cmd);
+        output                 = output_;
+        status.result          = code;
 
-
-
-        // TODO: redirect the file into my outputs
-        FILE *err_pipe = _popen(_cmd.c_str(), "rt");
-        FILE *out_pipe = _popen((_cmd + " 2>&1").c_str(), "r");
-
-        if (out_pipe) {
-            char buffer[128];
-            while (fgets(buffer, sizeof(buffer), out_pipe)) {
-                stdout_.get() buffer;
-            }
-            status.result = _pclose(out_pipe);
-        }
-        else {
-            status.result = -1;
-        }
         return *this;
     }
 
@@ -74,11 +61,8 @@ struct Command
     auto space() -> void { _cmd.push_back(' '); }
 
   public:
-    Status status;
-
-    // HELPME: when execute's relocate the command out to these 2 file/buffer, then I need to get them somewherer
-    typename int stdout_;
-    type         stderr_;
+    Status      status;
+    std::string output;
 
   private:
     std::string _cmd;

@@ -1,6 +1,10 @@
 #pragma once
 
 
+#include <bits/types/FILE.h>
+#include <cstdio>
+#include <string>
+#include <tuple>
 using FD = int;
 
 #ifdef _WIN32
@@ -14,6 +18,43 @@ using FD = int;
 namespace platfrom {
 
 
+using status_code = int;
+using output      = std::string;
+auto GetCommandOutput(std::string &cmd) -> std::tuple<status_code, output>
+{
+    FILE *out_pipe =
+#ifdef _WIN32
+        _popen
+#else
+        popen
+#endif
+        ((cmd + " 2>&1").c_str(), "r");
+
+
+    std::string exec_output;
+    int         code;
+    if (out_pipe) {
+        char buffer[128];
+        while (fgets(buffer, sizeof(buffer), out_pipe)) {
+            exec_output += buffer;
+        }
+        code =
+#ifdef _WIN32
+            _popen
+#else
+            pclose
+#endif
+            (out_pipe);
+    }
+    else {
+        code = -1;
+    }
+
+    return {code, exec_output};
+}
+
+
+
 void _dup2(FD f1, FD f2)
 {
 #ifdef _WIN32
@@ -23,17 +64,4 @@ void _dup2(FD f1, FD f2)
     ::dup2(f1, fd);
 #endif
 }
-
-void popen()
-{
-
-
-    _eopen();
-#ifdef _WIN32
-
-
-#else
-#endif
-}
-
 }; // namespace platfrom

@@ -1,4 +1,4 @@
-#include "../../src/utils.h"
+#include "../../include/command.h"
 
 #include <stdio.h>
 
@@ -9,5 +9,5 @@ auto main() -> int
                    .args("-a")
                    .exec();
 
-    printf("%d\n", ret);
+    printf("%s\n %d\n", ret.output.c_str(), ret.status.success());
 }
