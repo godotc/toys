@@ -47,6 +47,7 @@ fn main() {
         //let _ = std::io::stdout().write_all(b"\x1b[8m");
 
         let start_time = Instant::now();
+        serial_print!("{}...\t", core::any::type_name::<T>());
 
         // TODO: disable print output in every sort... So that can the the proper message of
         // difference of every algorithm
