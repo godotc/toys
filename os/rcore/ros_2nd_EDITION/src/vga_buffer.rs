@@ -14,7 +14,7 @@ macro_rules! print {
 #[macro_export]
 macro_rules! println {
 	() => (print!("\n"));
-    ($fmt:expr) => (print!(concat!($fmt, "\n")));
+    ($fmt:expr) => ($crate::print!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => ($crate::print!(concat!($fmt, "\n"), $($arg)*));
 }
 
@@ -178,6 +178,7 @@ fn test_println_output() {
     println!("{}", s);
 
     for (i, c) in s.chars().enumerate() {
+        // get the reverse 2nd line(after println), to check println works
         let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
         assert_eq!(char::from(screen_char.ascii_character), c);
     }

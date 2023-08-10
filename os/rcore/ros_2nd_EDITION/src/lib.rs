@@ -1,7 +1,6 @@
 #![no_std]
-// conditionally enable no_main attribute in test
+// for test
 #![cfg_attr(test, no_main)]
-// customor test framework
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"] // because we has #![no_main] attribute
