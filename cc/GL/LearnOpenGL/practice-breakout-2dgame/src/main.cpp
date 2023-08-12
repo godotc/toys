@@ -35,8 +35,10 @@ static std::unique_ptr<Game> Breakout;
 
 
 
-[[nodiscard]] GLFWwindow *init_glfw()
+[[nodiscard]] GLFWwindow *
+init_glfw()
 {
+
     if (GLFW_FALSE == glfwInit()) {
         throw std::runtime_error("init GLFW failed!!");
     }
@@ -48,6 +50,7 @@ static std::unique_ptr<Game> Breakout;
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
+
     glfwWindowHint(GLFW_RESIZABLE, false);
 
     GLFWwindow *window = glfwCreateWindow(WIN_W, WIN_H, "Breakout", nullptr, nullptr);

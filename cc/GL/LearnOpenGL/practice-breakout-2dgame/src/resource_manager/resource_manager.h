@@ -22,7 +22,7 @@ struct ShaderProgramSource
 };
 
 
-class Audio;
+class SDL_AUDIO;
 
 class ResourceManager //: public utils::disable_copy_and_move
 {

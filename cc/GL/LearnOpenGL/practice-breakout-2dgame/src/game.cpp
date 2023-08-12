@@ -29,6 +29,9 @@
 #include <log.h>
 
 
+// TODO: more wrapper and intergrate into resource manager
+#include "audio/sdl_wrapper/sdl_backend.h"
+
 
 static auto sprite_shader   = "sprite";
 static auto particle_shader = "particle";
@@ -42,6 +45,8 @@ static bool                                   CollisionCheck_2Rect_AABB(const Ga
 static std::tuple<bool, Direction, glm::vec2> CollisionCheck_BallWithRect(const BallObject &A, const GameObject &B);
 
 static bool ShouldSpawn(unsigned int change);
+
+static void QuickPlaySoundEffect(const char *sound_name);
 
 
 
@@ -178,13 +183,13 @@ void Game::Render()
 void Game::DoCollisions()
 {
     // Ball with bricks
-    for (auto &box : m_Levels[m_LevelIndex].Bricks) {
+    for (auto &brick : m_Levels[m_LevelIndex].Bricks) {
 
-        if (!box.m_IsDestroyed)
+        if (!brick.m_IsDestroyed)
         {
-            auto &&result = CollisionCheck_BallWithRect(*m_Ball, box);
+            auto &&result = CollisionCheck_BallWithRect(*m_Ball, brick);
             if (std::get<bool>(result)) {
-                this->onCollied_BallWithBrick(m_Ball.get(), &box, &result);
+                this->onCollied_BallWithBrick(m_Ball.get(), &brick, &result);
             }
         }
     }
@@ -197,7 +202,7 @@ void Game::DoCollisions()
     }
 
 
-    //  Powerups that generated with ball
+    //  Powerups that generated with player paddle
     for (auto &power_up : m_PowerUps)
     {
         if (!power_up.m_IsDestroyed)
@@ -422,6 +427,7 @@ void Game::initTextures()
                     const std::string texture_name = GetFileNameWithoutExtension(std::ref(file_path));
 
                     ResourceManager::LoadTexture(file_path.c_str(), texture_name);
+                    break;
                 }
             }
         }
@@ -460,6 +466,39 @@ void Game::initLevels()
 
 void Game::initAudios()
 {
+    auto AudioPlayer = SDL_Player::Get();
+
+    auto GetFileNameWithoutExtension =
+        [](const std::string &path) {
+            size_t slash_pos = path.find_last_of("/\\");
+            size_t dot_pos   = path.find_last_of(".");
+
+            auto filename = path.substr(slash_pos + 1, dot_pos - slash_pos - 1);
+            return filename;
+        };
+
+    std::vector<std::string> support_suffixs = {".mp3", ".wav"};
+    LOG_WARN("Load audio that suffix with '{}', '{}'", support_suffixs[0], support_suffixs[1]);
+
+    for (const auto audio : std::filesystem::directory_iterator("../res/audio/"))
+    {
+        const auto &file_path = audio.path().string();
+
+        for (auto &suffx : support_suffixs)
+        {
+            if (file_path.ends_with(suffx))
+            {
+                LOG_TRACE("Trying to load audio from '{}'", file_path);
+                const std::string audio_name = GetFileNameWithoutExtension(std::ref(file_path));
+
+                AudioPlayer->LoadWave(file_path.c_str(), audio_name);
+                break;
+            }
+        }
+    }
+
+    // play the backgound music
+    AudioPlayer->Play("breakout", 128 / 3, true);
 }
 
 void Game::onCollied_BallWithPaddle_Handler(BallObject *ball, GameObject *paddle, ColliedResult *result)
@@ -467,8 +506,13 @@ void Game::onCollied_BallWithPaddle_Handler(BallObject *ball, GameObject *paddle
     if (!ball)
         return;
 
+    // when not stuck with player
+    if (!ball->bStuck)
+        QuickPlaySoundEffect("pong");
+
     auto &[_, dir, diff] = *result;
     if (!ball->bStuck) {
+
         ball->bStuck = ball->bSticky;
 
         // if collided, we only need to caculate the hit point, and revert the dir vec
@@ -493,6 +537,8 @@ void Game::onCollied_BallWithBrick_Handler(BallObject *ball, GameObject *box, Co
     if (!ball || !box)
         return;
 
+    if (!ball->bPassThrough)
+        QuickPlaySoundEffect(box->m_IsSolid ? "solid" : "ping");
 
     // solid  will do shake
     if (box->m_IsSolid) {
@@ -508,6 +554,7 @@ void Game::onCollied_BallWithBrick_Handler(BallObject *ball, GameObject *box, Co
     // check if in pass-throuth status, can pass the non-solid brick
     if (ball->bPassThrough && !box->m_IsSolid)
         return;
+
 
     auto &[_, dir_to_ball, diff] = *result;
 
@@ -536,6 +583,8 @@ void Game::onCollied_PaddleWithPowerup_Handler(GameObject *paddle, GameObject *p
     auto the_power_up = static_cast<PowerUp *>(power_up);
     if (!paddle || !the_power_up)
         return;
+
+    QuickPlaySoundEffect("powerup");
 
     ActivatePowerups(*the_power_up);
     the_power_up->m_IsDestroyed = true;
@@ -626,4 +675,10 @@ static std::tuple<bool, Direction, glm::vec2> CollisionCheck_BallWithRect(const 
 static bool ShouldSpawn(unsigned int change)
 {
     return rand() % change == 0;
+}
+
+static void QuickPlaySoundEffect(const char *sound_name)
+{
+    auto player = SDL_Player::Get();
+    player->Play(sound_name);
 }
