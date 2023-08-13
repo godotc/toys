@@ -7,7 +7,6 @@ import godot.xyz.AST.PrefixExpression
 import godot.xyz.Token.Token
 import godot.xyz.Token.TokenType
 import godot.xyz.lexer.Lexer
-import java.lang.RuntimeException
 import java.math.BigInteger
 
 class Parser(private final val lexer: Lexer) {
@@ -19,12 +18,10 @@ class Parser(private final val lexer: Lexer) {
     var peek = Token()
 
 
-    //    public interface InfixParseFn {
-//        fun parse(expression: Expression): Expression;
-//    }
     init {
-        prefix_parser_fn_map.put(TokenType.PLUS, ::parse_integer);
+        prefix_parser_fn_map.put(TokenType.NUM, ::parse_integer);
         prefix_parser_fn_map.put(TokenType.MINUS, ::parse_prefix_expr);
+        prefix_parser_fn_map.put(TokenType.PLUS, ::parse_prefix_expr);
         prefix_parser_fn_map.put(TokenType.LPAREN, ::parse_group_expr);
 
         infix_parser_fn_map.put(TokenType.PLUS, this::parse_infix_expr);
@@ -38,7 +35,11 @@ class Parser(private final val lexer: Lexer) {
         next_token()
     }
 
-    public fun ParseExpression(precedence: int): Expression {
+    public fun Parse(): Expression {
+        return parse_expression(Precedence.Priority.LOWEST);
+    }
+
+    fun parse_expression(precedence: Precedence.Priority): Expression {
         val prefix_parse_fn = prefix_parser_fn_map.get(cur.type);
         if (prefix_parse_fn == null) {
             throw RuntimeException("No prefix parse fn for " + cur.type)
@@ -60,7 +61,7 @@ class Parser(private final val lexer: Lexer) {
         val prefix_expr = PrefixExpression()
         prefix_expr.operator = cur.value;
         next_token()
-        prefix_expr.right = ParseExpression(Precidence.Priority.PREFIX)
+        prefix_expr.right = parse_expression(Precedence.Priority.PREFIX)
 
         return prefix_expr
     }
@@ -70,16 +71,16 @@ class Parser(private final val lexer: Lexer) {
         infix_expr.left = left
         infix_expr.operator = cur.value;
 
-        val precedence = Precidence.GetPrecedence(cur.type)
+        val precedence = Precedence.GetPrecedence(cur.type)!!
         next_token()
-        infix_expr.right = ParseExpression(precedence)
+        infix_expr.right = parse_expression(precedence)
 
         return infix_expr
     }
 
     fun parse_group_expr(): Expression {
         next_token();
-        val expr = ParseExpression(Precidence.Priority.LOWEST);
+        val expr = parse_expression(Precedence.Priority.LOWEST);
         next_token();
         return expr;
     }
@@ -96,16 +97,16 @@ class Parser(private final val lexer: Lexer) {
         peek = lexer.NextToken();
     }
 
-    private fun is_cur_token(type: TokenType): bool {
+    private fun is_cur_token(type: TokenType): Boolean {
         return cur.type == type
     }
 
-    private fun is_peek_token(type: TokenType): bool {
+    private fun is_peek_token(type: TokenType): Boolean {
         return peek.type == type
     }
 
-    private fun peek_precedence(): Precidence.Priority? {
-        return Precidence.GetPrecedence(peek.type)
+    private fun peek_precedence(): Precedence.Priority {
+        return Precedence.GetPrecedence(peek.type)!!
     }
 
 }

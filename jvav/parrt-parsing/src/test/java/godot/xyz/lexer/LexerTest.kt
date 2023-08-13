@@ -8,14 +8,17 @@ class LexerTest {
     @Test
     public fun test() {
         val code = "10+1 * 2";
-        val lexer = Lexer(code);
+        var lexer = Lexer(code);
         while (lexer.HasNext()) {
             println(lexer.NextToken());
         }
 
+        lexer = Lexer(code)
         val parser = Parser(lexer)
 
-        val expression = parser.ParseMain();
+
+        val expression = parser.Parse();
+        println(expression)
         println(Evaluator.eval(expression));
     }
 

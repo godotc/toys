@@ -8,11 +8,11 @@ class PrefixExpression : Expression() {
 
     override fun toString(): String {
         return StringBuilder()
-                .append('(')
-                .append(operator)
-                .append(right)
-                .append(')')
-                .append('\n')
-                .toString()
+            .append('(')
+            .append(operator)
+            .append(right)
+            .append(')')
+            .append('\n')
+            .toString()
     }
 }

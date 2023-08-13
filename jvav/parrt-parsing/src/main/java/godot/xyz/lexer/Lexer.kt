@@ -53,7 +53,7 @@ class Lexer(var input: String) {
         return peek_pos <= input.length;
     }
 
-    public fun ReadChar() {
+    fun ReadChar() {
         this.ch = if (peek_pos >= input.length) {
             0.toChar();
         } else {

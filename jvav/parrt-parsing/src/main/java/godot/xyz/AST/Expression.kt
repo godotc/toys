@@ -1,4 +1,3 @@
 package godot.xyz.AST
 
-open class Expression {
-}
+open class Expression : Node() {}
