@@ -9,6 +9,7 @@ set_languages("c++20")
 add_requires("glfw","glm","stb","glad")
 add_requires("gtest","fmt")
 add_requires("libsdl" ,"libsdl_mixer")
+add_requires("freetype")
 
 add_packages("glfw","glm","stb","glad","fmt")
 add_packages("libsdl" ,"libsdl_mixer")
@@ -16,7 +17,7 @@ add_packages("libsdl" ,"libsdl_mixer")
 add_includedirs("./pkgs/")
 
 
-audio_backend = "sdl";
+local audio_backend = "sdl";
 if(audio_backend == "sdl") then
 	add_files("pkgs/audio/sdl_wrapper/**.cc")
 end
@@ -37,6 +38,7 @@ target("breakout")
 	add_packages("glfw","glm","stb","glad")
 	add_packages("fmt")
 	-- add_packages("miniaudio")
+	add_packages("freetype")
 
 	add_deps("m_log")
 

@@ -2,15 +2,21 @@
 
 #include "glm/fwd.hpp"
 #include "level/game_level.h"
+
 #include "obj/ball_object.h"
 #include "obj/power_up.h"
+
 #include "particle/particle_generator.h"
+
 #include "render/sprite_render.h"
+#include "render/text_render.h"
+
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vcruntime.h>
 #include <vector>
 
 
@@ -71,7 +77,7 @@ class Game
     void Update(float dt);
     void Render();
 
-  public:
+  private:
     void ResetLevel();
     void ResetPlayer();
 
@@ -100,6 +106,7 @@ class Game
     GameState m_State;
 
     bool         m_keys[1024];
+    bool         m_KeyProcessed[1024];
     unsigned int m_Width, m_Height;
 
     SpriteRender                       m_SpriteRnder;
@@ -107,13 +114,17 @@ class Game
     std::shared_ptr<BallObject>        m_Ball;
     std::shared_ptr<ParticleGenerator> m_Particles;
     std::shared_ptr<PostProcessor>     m_Effects;
+    std::shared_ptr<TextRender>        m_TextRender;
 
     std::vector<GameLevel> m_Levels;
     size_t                 m_LevelIndex;
 
     std::vector<PowerUp> m_PowerUps;
 
-  public:
+  private: // about the gameoplay numerical value
+    size_t m_PlayerLives = {3};
+
+  private:
     float ShakeTime = 0.f;
 
     // CollisonCheckPair collisionCheckPairs;

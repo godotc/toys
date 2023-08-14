@@ -20,7 +20,33 @@ inline bool GLLogCall(const char *function, const char *file, int line)
 {
     while (GLenum error = glGetError())
     {
-        std::cerr << "[OpenGL Error] (" << error << ":" << GL_GETERROR_STRING(error) << ")"
+        std::string error_str;
+        switch (error)
+        {
+        case GL_INVALID_ENUM:
+            error_str = "INVALID_ENUM";
+            break;
+        case GL_INVALID_VALUE:
+            error_str = "INVALID_VALUE";
+            break;
+        case GL_INVALID_OPERATION:
+            error_str = "INVALID_OPERATION";
+            break;
+        case GL_STACK_OVERFLOW:
+            error_str = "STACK_OVERFLOW";
+            break;
+        case GL_STACK_UNDERFLOW:
+            error_str = "STACK_UNDERFLOW";
+            break;
+        case GL_OUT_OF_MEMORY:
+            error_str = "OUT_OF_MEMORY";
+            break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            error_str = "INVALID_FRAMEBUFFER_OPERATION";
+            break;
+        }
+
+        std::cerr << "[OpenGL Error] (" << error_str << ":" << GL_GETERROR_STRING(error) << ")"
                   << ": " << function << " " << file << ":" << line
                   << std::endl;
         return false;

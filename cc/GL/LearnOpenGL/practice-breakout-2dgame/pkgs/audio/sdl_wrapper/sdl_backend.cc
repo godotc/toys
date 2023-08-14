@@ -13,9 +13,7 @@
 void channel_complete_callback(int chan)
 {
     Mix_Chunk *done_chunk = Mix_GetChunk(chan);
-    LOG_TRACE("{} is done", chan);
-    LOG_TRACE(" Channel pointer is {} ", (void *)done_chunk);
-    // SDL_Player::Get();
+    LOG_DEBUG("{} is done,  Channel pointer is {} ", chan, (void*) done_chunk);
     GetChannelStates()[chan] = false;
 }
 
@@ -190,7 +188,7 @@ void SDL_Player::Play(const std::string &sound_name, int volume /*=128*/, bool b
 {
     int free_channel = consume_one_channel();
     if (free_channel == -1) {
-        LOG_WARN("Did not have valid channel for play");
+        LOG_WARN("Did not have valid channel for play {}", sound_name);
         return;
     }
 
@@ -206,7 +204,7 @@ void SDL_Player::Play(const std::string &sound_name, int volume /*=128*/, bool b
     // TODO: change the state by `chunk`'s property
     Mix_Volume(free_channel, volume);
 
-    LOG_DEBUG("[{}] Begin  Playing", sound_name);
+    LOG_DEBUG("Play sound [{}] ", sound_name);
     Mix_PlayChannel(free_channel, m_Chunks[sound_name].wave, bLoop);
 }
 

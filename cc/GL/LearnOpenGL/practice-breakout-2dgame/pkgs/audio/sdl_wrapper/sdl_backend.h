@@ -14,8 +14,8 @@
 
 static std::vector<bool> &GetChannelStates()
 {
-    using bOccuring = bool;
-    static std::vector<bOccuring> ChannelStates(Mix_AllocateChannels(-1), false);
+    using bOccurpying = bool;
+    static std::vector<bOccurpying> ChannelStates(Mix_AllocateChannels(-1), false);
     return ChannelStates;
 }
 

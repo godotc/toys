@@ -35,8 +35,7 @@ static std::unique_ptr<Game> Breakout;
 
 
 
-[[nodiscard]] GLFWwindow *
-init_glfw()
+[[nodiscard]] GLFWwindow *init_glfw()
 {
 
     if (GLFW_FALSE == glfwInit()) {
@@ -171,6 +170,7 @@ void framebuffer_resize_cb(auto *wndow, int w, int h)
 
 void key_cb(auto *window, int key, int scancode, int action, int mode)
 {
+
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
@@ -179,7 +179,8 @@ void key_cb(auto *window, int key, int scancode, int action, int mode)
             Breakout->m_keys[key] = true;
         }
         else if (action == GLFW_RELEASE) {
-            Breakout->m_keys[key] = false;
+            Breakout->m_keys[key]         = false;
+            Breakout->m_KeyProcessed[key] = false;
         }
     }
 }

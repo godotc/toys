@@ -1,5 +1,7 @@
 #include "game.h"
 #include "GLFW/glfw3.h"
+#include "SDL_mixer.h"
+#include "fmt/core.h"
 #include "glm/common.hpp"
 #include "glm/geometric.hpp"
 #include "obj/ball_object.h"
@@ -90,6 +92,11 @@ void Game::Init()
     m_Effects = std::shared_ptr<PostProcessor>(new PostProcessor(ResourceManager::GetShader("post_processing"),
                                                                  m_Width, m_Height));
 
+    // text render
+    m_TextRender = std::shared_ptr<TextRender>(new TextRender(m_Width, m_Height));
+    m_TextRender->Load("../res/font/Cascadia.ttf", 24);
+
+
     GL_CHECK_HEALTH();
 }
 
@@ -105,16 +112,37 @@ void Game::Update(float dt)
     // powerups
     UpdatePowerups(dt);
 
+    // shader relates
     if (ShakeTime > 0.f) {
         ShakeTime -= dt;
         if (ShakeTime < 0.f)
             m_Effects->bShake = false;
     }
 
-
+    // game logic
     if (m_Ball->m_Position.y >= m_Height) {
-        ResetLevel();
+        --m_PlayerLives;
+
+        if (m_PlayerLives == 0) {
+            ResetLevel();
+            m_State = GameState::GAME_MENU;
+        }
+
         ResetPlayer();
+    }
+
+    if (m_State == GameState::GAME_ACTIVE) {
+        if (m_Levels[m_LevelIndex].IsCompleted()) {
+            ResetLevel();
+            ResetPlayer();
+            m_Effects->bChaos = true;
+            m_State           = GameState::GAME_WIN;
+        }
+    }
+    if (m_State == GameState::GAME_MENU) {
+        // if (this->m_keys)
+    }
+    if (m_State == GameState::GAME_WIN) {
     }
 }
 
@@ -150,11 +178,43 @@ void Game::ProcessInput(float dt)
             m_Ball->bStuck = false;
         }
     }
+
+    auto begin_press = [this](int key) -> bool { return m_keys[key] && !m_KeyProcessed[key]; };
+    auto press_down  = [this](int key) { m_KeyProcessed[key] = true; };
+
+    if (m_State == GameState::GAME_MENU) {
+
+        if (begin_press(GLFW_KEY_ENTER))
+        {
+            m_State = GameState::GAME_ACTIVE;
+            press_down(GLFW_KEY_ENTER);
+        }
+        if (begin_press(GLFW_KEY_W)) {
+            this->m_LevelIndex = (m_LevelIndex + 1) % m_Levels.size();
+            press_down(GLFW_KEY_W);
+        }
+        if (begin_press(GLFW_KEY_S)) {
+            if (this->m_LevelIndex > 0) {
+                --m_LevelIndex;
+            }
+            else {
+                m_LevelIndex = m_Levels.size() - 1;
+            }
+            press_down(GLFW_KEY_S);
+        }
+    }
+    if (m_State == GameState::GAME_WIN) {
+        if (m_keys[GLFW_KEY_ENTER]) {
+            press_down(GLFW_KEY_ENTER);
+            m_Effects->bChaos = false;
+            m_State           = GameState::GAME_MENU;
+        }
+    }
 }
 
 void Game::Render()
 {
-    if (this->m_State == GameState::GAME_ACTIVE)
+    if (m_State == GameState::GAME_ACTIVE || m_State == GameState::GAME_MENU)
     {
         m_Effects->BeginRender();
         {
@@ -175,9 +235,25 @@ void Game::Render()
         }
         m_Effects->EndRender();
         m_Effects->Render(glfwGetTime());
+
+        // Draw text
+        m_TextRender->RenderText(fmt::format("Lives: {}", m_PlayerLives), 5.f, 5.f, 1.f);
     }
 
-    // debugDraw();
+    if (m_State == GameState::GAME_MENU) {
+        m_TextRender->RenderText("Press Enter to start", m_Width / 3.f, m_Height / 2.f, 1.f);
+        m_TextRender->RenderText("Press W/S to selct level", m_Width / 3.f, m_Height / 2.f + 30.f, 0.75f);
+        m_TextRender->RenderText(fmt::format("Current Level: {}", m_LevelIndex + 1), m_Width / 3.f, m_Height / 2.f + 50.f, 0.75f);
+    }
+
+    if (m_State == GameState::GAME_WIN) {
+        m_TextRender->RenderText("You WON!!!", m_Width / 2.5f, m_Height / 2.f - 30.f, 1.2f, {0, 1, 0});
+        m_TextRender->RenderText("Press Enter/ESC to retry/quit", m_Width / 2.5f, m_Height / 2.f + 50.f, 1.f, {1, 0, 0});
+    }
+
+
+
+    debugDraw();
 }
 
 void Game::DoCollisions()
@@ -223,6 +299,8 @@ void Game::ResetLevel()
 {
     // I have preload this, will cause performance issue?
     m_Levels[m_LevelIndex].Reset(m_Width, m_Height / 2.f);
+
+    m_PlayerLives = 3;
 }
 
 void Game::ResetPlayer()
@@ -252,7 +330,7 @@ void Game::SpawPowerUps(GameObject &block)
 
     if (ShouldSpawn(100)) {
         m_PowerUps.push_back(PowerUp(power_up::speed, glm::vec3(0.5f, 0.5f, 1.0f),
-                                     0.f, block.m_Position, tex_speed));
+                                     15.f, block.m_Position, tex_speed));
     };
     if (ShouldSpawn(75)) {
         m_PowerUps.push_back(PowerUp(power_up::sticky, glm::vec3(1.0f, 0.5f, 1.0f),
@@ -264,7 +342,7 @@ void Game::SpawPowerUps(GameObject &block)
     };
     if (ShouldSpawn(75)) {
         m_PowerUps.push_back(PowerUp(power_up::pad_increase, glm::vec3(1.0f, 0.6f, 0.4f),
-                                     0.f, block.m_Position, tex_pad_size_increase));
+                                     30.f, block.m_Position, tex_pad_size_increase));
     }
     if (ShouldSpawn(15)) {
         m_PowerUps.push_back(PowerUp(power_up::confuse, glm::vec3(1, 0.3, 0.3),
@@ -272,15 +350,17 @@ void Game::SpawPowerUps(GameObject &block)
     };
     if (ShouldSpawn(15)) {
         m_PowerUps.push_back(PowerUp(power_up::chaos, glm::vec3(0.9, 0.25, 0.25),
-                                     15.f, block.m_Position, tex_chaos));
+                                     5.f, block.m_Position, tex_chaos));
     }
 }
 
 void Game::UpdatePowerups(float dt)
 {
-    for (auto &power_up : m_PowerUps)
+    for (PowerUp &power_up : m_PowerUps)
     {
+
         power_up.m_Position += power_up.m_Velocity * dt;
+
 
         if (!power_up.bActivated)
             continue;
@@ -291,24 +371,34 @@ void Game::UpdatePowerups(float dt)
 
         if (power_up.Duration < 0.f)
         {
+            power_up.bActivated = false;
+
             auto one_more_powerup_exist = [&](auto &source_type, auto &expect_type) {
-                return (source_type == expect_type) && isOtherPoerUpActive(source_type);
+                return (source_type == expect_type) && isOtherPoerUpActive(expect_type);
             };
 
-            if (one_more_powerup_exist(type, power_up::sticky)) {
-                m_Ball->bSticky   = false;
-                m_Player->m_Color = glm::vec3(1.f);
+            if (type == power_up::sticky) {
+                if (!isOtherPoerUpActive(type)) {
+                    m_Ball->bSticky   = false;
+                    m_Player->m_Color = glm::vec3(1.f);
+                }
             }
-            else if (one_more_powerup_exist(type, power_up::pass_through)) {
-                m_Ball->bPassThrough = false;
-                m_Player->m_Color    = glm::vec3(1.f);
+            else if (type == power_up::pass_through) {
+                if (!isOtherPoerUpActive(type)) {
+                    m_Ball->bPassThrough = false;
+                    m_Player->m_Color    = glm::vec3(1.f);
+                }
             }
-
-            else if (one_more_powerup_exist(type, power_up::confuse)) {
-                m_Effects->bConfuse = false;
+            else if (type == power_up::confuse) {
+                if (!isOtherPoerUpActive(type)) {
+                    m_Effects->bConfuse = false;
+                }
             }
-            else if (!one_more_powerup_exist(type, power_up::chaos)) {
-                m_Effects->bConfuse = false;
+            else if (type == power_up::chaos) {
+                if (!isOtherPoerUpActive(type)) {
+                    LOG_DEBUG("{} | Duration < 0, but one more powerup activated", power_up::chaos);
+                    m_Effects->bChaos = false;
+                }
             }
         }
     }
@@ -377,6 +467,7 @@ void Game::initShaders()
     ResourceManager::LoadShader("../res/shader/a.vert", "../res/shader/a.frag", nullptr, sprite_shader);
     ResourceManager::LoadShader("../res/shader/particle.vert", "../res/shader/particle.frag", nullptr, particle_shader);
     ResourceManager::LoadShader("../res/shader/post_processing.vert", "../res/shader/post_processing.frag", nullptr, "post_processing");
+    ResourceManager::LoadShader("../res/shader/text_2d.vert", "../res/shader/text_2d.frag", nullptr, "text");
 
     // view projection to resolute the [-1,1]
     glm::mat4 projection = glm::ortho(0.0f, (float)this->m_Width,
@@ -595,7 +686,7 @@ void Game::onCollied_PaddleWithPowerup_Handler(GameObject *paddle, GameObject *p
 bool Game::isOtherPoerUpActive(const std::string &type_name)
 {
     for (const auto &pu : m_PowerUps) {
-        if (pu.bActivated && pu.Type == power_up::sticky) {
+        if (pu.bActivated && pu.Type == type_name) {
             return true;
         }
     }
