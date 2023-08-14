@@ -13,7 +13,7 @@
 void channel_complete_callback(int chan)
 {
     Mix_Chunk *done_chunk = Mix_GetChunk(chan);
-    LOG_DEBUG("{} is done,  Channel pointer is {} ", chan, (void*) done_chunk);
+    LOG_DEBUG("{} is done,  Channel pointer is {} ", chan, (void *)done_chunk);
     GetChannelStates()[chan] = false;
 }
 
@@ -294,6 +294,7 @@ void SDL_Player::do_panning_update()
     if (panning_ok && (SDL_GetTicks() >= next_panning_updtae))
     {
         panning_ok = Mix_SetPanning(0, left_vol, right_vol);
+
         if (!panning_ok)
         {
             LOG_WARN("mix_panning failed! | {}", SDL_GetError());

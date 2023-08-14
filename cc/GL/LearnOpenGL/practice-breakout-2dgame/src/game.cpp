@@ -590,6 +590,9 @@ void Game::initAudios()
 
     // play the backgound music
     AudioPlayer->Play("breakout", 128 / 3, true);
+    // AudioPlayer->bChangingDistance = true;
+    AudioPlayer->bChaningLocation = true;
+    AudioPlayer->bPanning         = true;
 }
 
 void Game::onCollied_BallWithPaddle_Handler(BallObject *ball, GameObject *paddle, ColliedResult *result)

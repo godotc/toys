@@ -36,9 +36,7 @@ class SDL_Chunk
         LoadWave(path);
     }
 
-
     void LoadWave(const char *path, bool bReverseSample = false);
-    void Play(const std::string &sound_name, bool bLoop = false);
 
     bool IsPlaying(int chan)
     {
