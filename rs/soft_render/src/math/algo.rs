@@ -1,6 +1,6 @@
-use std::ops::{Add, Mul, Sub};
-use super::vector::*;
 use super::matrix::*;
+use super::vector::*;
+use std::ops::{Add, Mul, Sub};
 
 #[rustfmt::skip]
 pub fn create_translate(offset: &Vec3) -> Mat4 {
@@ -72,11 +72,9 @@ pub fn rotate_by_axis_rodrigues(rotation: f32, v: &Vec3, axis: &Vec3) -> Vec3 {
     c * *v + axis.dot(v) * *axis * (1.0 - c) + s * axis.cross(v)
 }
 
-
 pub fn lerp<T, F>(a: T, b: T, f: F) -> T
-    where
-        T: Clone + Add<T, Output=T> + Sub<T, Output=T> + Mul<F, Output=T>,
+where
+    T: Clone + Add<T, Output = T> + Sub<T, Output = T> + Mul<F, Output = T>,
 {
     a.clone() + (b - a) * f
 }
-

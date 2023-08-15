@@ -1,9 +1,6 @@
-use std::char::MAX;
 use crate::math::algo;
-use crate::math::vector;
 use crate::math::vector::*;
-
-use std::concat;
+use crate::math::*;
 
 const MAX_ATTRIBUTES_NUM: usize = 4;
 
@@ -22,11 +19,15 @@ pub struct Vertex {
 }
 
 impl Attributes {
-    pub fn set_float(&mut self, location: usize, value: f32) { self.float[location] = value; }
+    pub fn set_float(&mut self, location: usize, value: f32) {
+        self.float[location] = value;
+    }
     pub fn set_vec2(&mut self, location: usize, value: vector::Vec2) {
         self.vec2[location] = value;
     }
-    pub fn set_vec3(&mut self, location: usize, value: vector::Vec3) { self.vec3[location] = value; }
+    pub fn set_vec3(&mut self, location: usize, value: vector::Vec3) {
+        self.vec3[location] = value;
+    }
     pub fn set_vec4(&mut self, location: usize, value: vector::Vec4) {
         self.vec4[location] = value;
     }
@@ -46,57 +47,72 @@ impl Default for Attributes {
 pub fn lerp_vertex(start: &Vertex, end: &Vertex, t: f32) -> Vertex {
     Vertex {
         position: start.position + (end.position + start.position) * t,
-        attributes: interp_attributes(&start.attributes, &end.attributes, algo::lerp, t),
+        attributes: interp_attributes_v0(&start.attributes, &end.attributes, algo::lerp, t),
     }
 }
 
-pub fn interp_attributes<F>(attr1: &Attributes, attr2: &Attributes, interp_fn: F, t: f32) -> Attributes
-    where
-        F: Fn(f32, f32, f32) -> f32,
+pub fn interp_attributes_v0<F>(
+    attr1: &Attributes,
+    attr2: &Attributes,
+    interp_fn: F,
+    t: f32,
+) -> Attributes
+where
+    F: Fn(f32, f32, f32) -> f32,
 {
     let mut attributes = Attributes::default();
 
+    let float = &mut attributes.float;
+    let vec2 = &mut attributes.vec2;
+    let vec3 = &mut attributes.vec3;
+    let vec4 = &mut attributes.vec4;
 
-    // maybe interp func not the lerp (e.g some regression...)
-    macro_rules! interp_attr {
-        ($interp_fn:expr, $attr1:expr, $attr2:expr, $t:expr, $index:tt, $($sub_attr:ident),+) => {
-            attributes.
-            (concat_idents!(vec, $index)) [$index] =
-                concat_idents!(Vec, $index)::new{
-                $(
-                    concat_idents!(vec,$index): $interp_fn(
-                        $attr1.concat_idents!($vec,$index) [$index].$sub_attr,
-                        $attr2.concat_idents!($vec,$index) [$index].$sub_attr,
-                        $t)
-                ),+
-            };
-        };
-    }
-
-    Attributes {
-        float: attr1.float.into_iter().map(|x|, attr2.float.)
-    }
-
-    // f32
     for i in 0..MAX_ATTRIBUTES_NUM {
-        attributes.
-    }
-
-    // vec2
-    for i in 0..MAX_ATTRIBUTES_NUM {
-        interp_attr!(interp_fn, attr1, attr2, t, i, x, y);
-    }
-
-    // vec3
-    for i in 0..MAX_ATTRIBUTES_NUM {
-        interp_attr!(interp_fn, attr1, attr2, t, i, x, y, z);
-    }
-
-    // vec4
-    for i in 0..MAX_ATTRIBUTES_NUM {
-        interp_attr!(interp_fn, attr1, attr2, t, i, x, y, z, w);
+        float[i] = interp_fn(attr1.float[i], attr2.float[i], t);
+        vec2[i].x = interp_fn(attr1.vec2[i].x, attr2.vec2[i].x, t);
+        vec2[i].y = interp_fn(attr1.vec2[i].y, attr2.vec2[i].y, t);
+        vec3[i].x = interp_fn(attr1.vec3[i].x, attr2.vec3[i].x, t);
+        vec3[i].y = interp_fn(attr1.vec3[i].y, attr2.vec3[i].y, t);
+        vec3[i].z = interp_fn(attr1.vec3[i].z, attr2.vec3[i].z, t);
+        vec4[i].x = interp_fn(attr1.vec4[i].x, attr2.vec4[i].x, t);
+        vec4[i].y = interp_fn(attr1.vec4[i].y, attr2.vec4[i].y, t);
+        vec4[i].z = interp_fn(attr1.vec4[i].z, attr2.vec4[i].z, t);
+        vec4[i].w = interp_fn(attr1.vec4[i].w, attr2.vec4[i].w, t);
     }
 
     attributes
 }
 
+// TODO: make it use map/iter/collect
+/*
+pub fn interp_attributes_v1<F>(
+    attr1: &Attributes,
+    attr2: &Attributes,
+    interp_fn: F,
+    t: f32,
+) -> Attributes
+where
+    F: Fn(f32, f32, f32) -> f32,
+{
+
+    let float = &mut attributes.float;
+    let vec2 = &mut attributes.vec2;
+    let vec3 = &mut attributes.vec3;
+    let vec4 = &mut attributes.vec4;
+
+    for i in 0..MAX_ATTRIBUTES_NUM {
+        float[i] = interp_fn(attr1.float[i], attr2.float[i], t);
+        vec2[i].x = interp_fn(attr1.vec2[i].x, attr2.vec2[i].x, t);
+        vec2[i].y = interp_fn(attr1.vec2[i].y, attr2.vec2[i].y, t);
+        vec3[i].x = interp_fn(attr1.vec3[i].x, attr2.vec3[i].x, t);
+        vec3[i].y = interp_fn(attr1.vec3[i].y, attr2.vec3[i].y, t);
+        vec3[i].z = interp_fn(attr1.vec3[i].z, attr2.vec3[i].z, t);
+        vec4[i].x = interp_fn(attr1.vec4[i].x, attr2.vec4[i].x, t);
+        vec4[i].y = interp_fn(attr1.vec4[i].y, attr2.vec4[i].y, t);
+        vec4[i].z = interp_fn(attr1.vec4[i].z, attr2.vec4[i].z, t);
+        vec4[i].w = interp_fn(attr1.vec4[i].w, attr2.vec4[i].w, t);
+    }
+
+    attributes
+}
+*/

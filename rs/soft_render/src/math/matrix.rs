@@ -1,5 +1,5 @@
 use super::vector::*;
-use std::ops::{Mul, Div, Add, Sub, Neg};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 macro_rules! declare_mat {
     ($name:ident, $dim:expr) => {
@@ -268,4 +268,3 @@ impl Mat4 {
         Some(result.transpose())
     }
 }
-
