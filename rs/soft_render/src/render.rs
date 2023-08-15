@@ -1,5 +1,5 @@
-use crate::{image::*, math, shader};
-use std::{array, mem::swap, ptr::null};
+use crate::{image::*};
+use crate::math::vector;
 
 use self::cohen_sutherland::cohen_sutherland_line_clip;
 
@@ -64,12 +64,12 @@ impl Render {
             front_face: todo!(),
         }
     }
-    pub fn draw_line(&mut self, p1: &math::Vec2, p2: &math::Vec2, color: &math::Vec4) {
+    pub fn draw_line(&mut self, p1: &vector::Vec2, p2: &vector::Vec2, color: &vector::Vec4) {
         let clip_result = cohen_sutherland_line_clip(
             p1,
             p2,
-            &math::Vec2::zero(),
-            &math::Vec2::new(
+            &vector::Vec2::zero(),
+            &vector::Vec2::new(
                 self.color_attachment.width() as f32 - 1.0,
                 self.color_attachment.width() as f32 - 1.0,
             ),
@@ -80,7 +80,7 @@ impl Render {
         }
     }
 
-    fn draw_line_without_clip(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, color: &math::Vec4) {
+    fn draw_line_without_clip(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, color: &vector::Vec4) {
         let mut dx: i32 = x1 - x0;
         let mut dy: i32 = y1 - y0;
         let mut sx = if x1 > x0 { 1 } else { -1 };
@@ -119,8 +119,7 @@ impl Render {
 }
 
 mod cohen_sutherland {
-
-    use super::math;
+    use super::vector;
 
     const INSIDE: u8 = 0b000;
     const LEFT: u8 = 0b001;
@@ -129,11 +128,11 @@ mod cohen_sutherland {
     const TOP: u8 = 0b0100;
 
     pub fn cohen_sutherland_line_clip(
-        p1: &math::Vec2,
-        p2: &math::Vec2,
-        rect_min: &math::Vec2,
-        rect_max: &math::Vec2,
-    ) -> Option<(math::Vec2, math::Vec2)> {
+        p1: &vector::Vec2,
+        p2: &vector::Vec2,
+        rect_min: &vector::Vec2,
+        rect_max: &vector::Vec2,
+    ) -> Option<(vector::Vec2, vector::Vec2)> {
         let mut pt1 = *p1;
         let mut pt2 = *p2;
 
@@ -148,7 +147,7 @@ mod cohen_sutherland {
                 return Some((pt1, pt2));
             }
 
-            let mut p = math::Vec2::zero();
+            let mut p = vector::Vec2::zero();
 
             let outcode = if outcode2 > outcode1 {
                 outcode2
@@ -181,7 +180,7 @@ mod cohen_sutherland {
         }
     }
 
-    fn compute_outcode(p: &math::Vec2, rect_min: &math::Vec2, rect_max: &math::Vec2) -> u8 {
+    fn compute_outcode(p: &vector::Vec2, rect_min: &vector::Vec2, rect_max: &vector::Vec2) -> u8 {
         if p.x < rect_min.x {
             LEFT
         } else if p.x > rect_max.x {
