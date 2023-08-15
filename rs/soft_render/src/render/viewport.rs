@@ -1,5 +1,5 @@
-use crate::{image::*};
-use crate::math::vector;
+use crate::image::*;
+use crate::math;
 
 use self::cohen_sutherland::cohen_sutherland_line_clip;
 
