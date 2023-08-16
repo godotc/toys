@@ -241,6 +241,7 @@ void Game::Render()
     }
 
     if (m_State == GameState::GAME_MENU) {
+        m_Effects->bChaos = true;
         m_TextRender->RenderText("Press Enter to start", m_Width / 3.f, m_Height / 2.f, 1.f);
         m_TextRender->RenderText("Press W/S to selct level", m_Width / 3.f, m_Height / 2.f + 30.f, 0.75f);
         m_TextRender->RenderText(fmt::format("Current Level: {}", m_LevelIndex + 1), m_Width / 3.f, m_Height / 2.f + 50.f, 0.75f);

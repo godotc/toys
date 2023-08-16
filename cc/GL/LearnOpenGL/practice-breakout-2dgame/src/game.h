@@ -16,7 +16,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <vcruntime.h>
 #include <vector>
 
 
