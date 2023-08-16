@@ -13,6 +13,3 @@
 [submodule "vm/py/packages/m_log"]
 	path = vm/py/packages/m_log
 	url = git@github.com:godotc/m_log.git
-[submodule "cc/GL/LearnOpenGL/practice-breakout-2dgame/pkgs/m_log"]
-	path = cc/GL/LearnOpenGL/practice-breakout-2dgame/pkgs/m_log
-	url = git@github.com:godotc/m_log.git
