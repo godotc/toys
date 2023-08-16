@@ -261,6 +261,22 @@ pub fn reflect(in_vec: &Vec3, normal: &Vec3) -> Vec3 {
     2.0 * (in_vec.dot(&normal)) * (*normal) - (*in_vec)
 }
 
+impl From<(f32, f32)> for Vec2 {
+    fn from((x, y): (f32, f32)) -> Self {
+        Self { x, y }
+    }
+}
+impl From<(f32, f32, f32)> for Vec3 {
+    fn from((x, y, z): (f32, f32, f32)) -> Self {
+        Self { x, y, z }
+    }
+}
+impl From<(f32, f32, f32, f32)> for Vec4 {
+    fn from((x, y, z, w): (f32, f32, f32, f32)) -> Self {
+        Self { x, y, z, w }
+    }
+}
+
 impl From<Vec2> for (f32, f32) {
     fn from(vec: Vec2) -> Self {
         (vec.x, vec.y)

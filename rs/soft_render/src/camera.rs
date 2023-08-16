@@ -1,4 +1,4 @@
-use crate::math;
+use crate::math::{self, Vec3};
 
 pub struct Frustum {
     near: f32,
@@ -64,6 +64,12 @@ impl Frustum {
         let half_h = self.near * self.fov.tan() / self.aspect;
         let h_fov_cos = self.fov.cos();
         let h_fov_sin = self.fov.sin();
+
+        !(
+            math::Vec3::new( h_fov_cos, 0.0f32, h_fov_sin ).dot(pt) >=0.0 || //  right plane
+            math::Vec3::new( 0.0, self.near, half_h ).dot(pt) >=0.0 
+          )
+        //(h_fov_sin, 0.0, h_fov_sin).into::<math::Vec3>()
 
     }
 
