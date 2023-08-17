@@ -2,6 +2,7 @@ use super::viewport::*;
 use crate::shader::shader::*;
 use crate::shader::uniform::*;
 use crate::{math, shader::vertex::Vertex, texture::TextureManager};
+use crate::camera::Camera;
 
 pub trait RenderInterface {
     fn clear(&mut self, color: &math::Vec4);

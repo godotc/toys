@@ -9,3 +9,4 @@ pub use matrix::*;
 pub use plane::*;
 pub use quaternion::*;
 pub use vector::*;
+pub use algo::*;
