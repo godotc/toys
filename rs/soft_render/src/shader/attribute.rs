@@ -36,14 +36,25 @@ impl Default for Attributes {
     }
 }
 
-pub fn interp_attributes_v0<F>(
+pub fn interp_attributes<F>(
+    attr1: &Attributes,
+    attr2: &Attributes,
+    interp_fn: F,
+    t: f32,
+)
+    -> Attributes
+    where
+        F: Fn(f32, f32, f32) -> f32,
+{ interp_attributes_v0(&attr1, &attr2, interp_fn, t) }
+
+fn interp_attributes_v0<F>(
     attr1: &Attributes,
     attr2: &Attributes,
     interp_fn: F,
     t: f32,
 ) -> Attributes
-where
-    F: Fn(f32, f32, f32) -> f32,
+    where
+        F: Fn(f32, f32, f32) -> f32,
 {
     let mut attributes = Attributes::default();
 
@@ -103,8 +114,8 @@ TODO: make it use map/iter/collect
 */
 
 pub fn attributes_foreach<F>(attr: &mut Attributes, func: F)
-where
-    F: Fn(f32) -> f32,
+    where
+        F: Fn(f32) -> f32,
 {
     attr.float.iter_mut().for_each(|f| *f = func(*f));
 

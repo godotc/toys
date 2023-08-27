@@ -8,8 +8,8 @@ pub trait RenderInterface {
     fn clear(&mut self, color: &math::Vec4);
     fn clear_depth(&mut self);
 
-    fn get_canvas_width(&mut self) -> i32;
-    fn get_canvas_height(&mut self) -> i32;
+    fn get_canvas_width(&mut self) -> u32;
+    fn get_canvas_height(&mut self) -> u32;
 
     fn draw_triangle(
         &mut self,

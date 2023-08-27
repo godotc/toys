@@ -19,7 +19,7 @@ impl Vertex {
 pub fn lerp_vertex(start: &Vertex, end: &Vertex, t: f32) -> Vertex {
     Vertex {
         position: start.position + (end.position + start.position) * t,
-        attributes: interp_attributes_v0(&start.attributes, &end.attributes, math::algo::lerp, t),
+        attributes: interp_attributes(&start.attributes, &end.attributes, math::algo::lerp, t),
     }
 }
 

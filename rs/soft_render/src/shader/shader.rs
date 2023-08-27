@@ -14,7 +14,7 @@ pub struct Shader {
     pub on_vertex_changed: OnVertexChanged,
     pub on_pixel_shaded: OnPixelShaded,
 
-    pub unifrom: Uniforms,
+    pub uniform: Uniforms,
 }
 
 impl Shader {
@@ -44,7 +44,7 @@ impl Default for Shader {
         Self {
             on_vertex_changed: Box::new(|vertex, _, _| *vertex),
             on_pixel_shaded: Box::new(|_, _, _| Vec4::new(0.0, 0.0, 0.0, 1.0)),
-            unifrom: Uniforms::default(),
+            uniform: Uniforms::default(),
         }
     }
 }

@@ -4,7 +4,7 @@ pub struct Frustum {
     near: f32,
     far: f32,
     aspect: f32,
-    fov: f32,
+    fovy: f32,
 
     mat: math::Mat4,
 }
@@ -20,21 +20,22 @@ pub struct Camera {
 
 impl Frustum {
     #[rustfmt::skip]
-    pub fn new(near: f32, far: f32, aspect: f32, fov: f32) -> Self {
+    pub fn new(near: f32, far: f32, aspect: f32, fovyy: f32) -> Self {
         let mat =
             // without far plane, clamp [x,y] into [-1,1]. z = near
             if cfg!(feature = "cpu") {
-                let a = 1.0 / (near * fov.tan());
-                math::Mat4::from_row(
-                    &[a, 0.0, 0.0, 0.0,
-                        0.0, aspect * a, 0.0, 0.0,
-                        0.0, 0.0, 1.0, 0.0,
-                        0.0, 0.0, -1.0 / near, 0.0, ]
+                //
+                let a = 1.0 / (near * fovyy.tan());
+                math::Mat4::from_row(&[
+                    a,   0.0,        0.0,           0.0,
+                    0.0, aspect * a, 0.0,           0.0,
+                    0.0, 0.0,        1.0,           0.0,
+                    0.0, 0.0,        -1.0 / near,   0.0, ]
                 )
             }
             // use opengl matrix, with far plane and clamp [x,y,z] into [--1, 1]]
             else {
-                let half_w = near * fov.tan();
+                let half_w = near * fovyy.tan();
                 let half_h = half_w / aspect;
                 let near = near.abs();
                 let far = far.abs();
@@ -53,7 +54,7 @@ impl Frustum {
                 )
             };
 
-        Self { near, far, aspect, fov, mat }
+        Self { near, far, aspect, fovy: fovyy, mat }
     }
 
 
@@ -68,13 +69,13 @@ impl Frustum {
 
     // check a pt \in a frustum
     pub fn contain(&self, pt: &math::Vec3) -> bool {
-        let half_h = self.near * self.fov.tan() / self.aspect;
-        let h_fov_cos = self.fov.cos();
-        let h_fov_sin = self.fov.sin();
+        let half_h = self.near * self.fovy.tan() / self.aspect;
+        let h_fovy_cos = self.fovy.cos();
+        let h_fovy_sin = self.fovy.sin();
 
         !(
-            math::Vec3::new(h_fov_cos, 0.0, h_fov_sin).dot(pt) >= 0.0 || //  right plane
-                math::Vec3::new(-h_fov_cos, 0.0, h_fov_sin).dot(pt) >= 0.0 || // left
+            math::Vec3::new(h_fovy_cos, 0.0, h_fovy_sin).dot(pt) >= 0.0 || //  right plane
+                math::Vec3::new(-h_fovy_cos, 0.0, h_fovy_sin).dot(pt) >= 0.0 || // left
 
                 math::Vec3::new(0.0, self.near, half_h).dot(pt) >= 0.0 || // top
                 math::Vec3::new(0.0, -self.near, half_h).dot(pt) >= 0.0 || // bottom
@@ -87,9 +88,9 @@ impl Frustum {
 
 
 impl Camera {
-    pub fn new(near: f32, far: f32, aspect: f32, fov: f32) -> Self {
+    pub fn new(near: f32, far: f32, aspect: f32, fovy: f32) -> Self {
         Self {
-            frustum: Frustum::new(near, far, aspect, fov),
+            frustum: Frustum::new(near, far, aspect, fovy),
             position: math::Vec3::new(0.0, 0.0, 0.0),
             rotation: math::Vec3::zero(),
             view_mat: math::Mat4::identity(),
@@ -121,18 +122,18 @@ impl Camera {
         let up = back.cross(&right).normalize();
 
         self.view_mat = math::Mat4::from_row(&[
-            right.x, right.y,    right.z,    -right.dot(&self.position),
-            up.x,    up.y,       up.z,       -up.dot(&self.position),
-            back.x,  back.y,     back.z,     -back.dot(&self.position),
-            0.0,     0.0,        0.0,         1.0,
+            right.x, right.y, right.z, -right.dot(&self.position),
+            up.x, up.y, up.z, -up.dot(&self.position),
+            back.x, back.y, back.z, -back.dot(&self.position),
+            0.0, 0.0, 0.0, 1.0,
         ]);
 
-        let dir = target -self.position;
-        let x = math::Vec3::y_axis().dot(&math::Vec3::new(0.0,dir.y,dir.z).normalize()).acos();
-        let y = math::Vec3::z_axis().dot(&math::Vec3::new(dir.x,0.0,dir.z).normalize()).acos();
-        let z = math::Vec3::x_axis().dot(&math::Vec3::new(dir.x,dir.y,0.0).normalize()).acos();
+        let dir = target - self.position;
+        let x = math::Vec3::y_axis().dot(&math::Vec3::new(0.0, dir.y, dir.z).normalize()).acos();
+        let y = math::Vec3::z_axis().dot(&math::Vec3::new(dir.x, 0.0, dir.z).normalize()).acos();
+        let z = math::Vec3::x_axis().dot(&math::Vec3::new(dir.x, dir.y, 0.0).normalize()).acos();
         self.view_dir = -back;
-        self.rotation = math::Vec3::new(x,y,z);
+        self.rotation = math::Vec3::new(x, y, z);
     }
 
     pub fn get_frustum(&self) -> &Frustum {
