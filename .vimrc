@@ -138,10 +138,10 @@ nmap <F1> :Commands<CR>
 
 
 
-def FloatTerm()
+function FloatTerm()
 	:w
 	:FloatermToggle  
-enddef
+endfunction
 
 " when open floatterm run in vim (useless)
 "autocmd User FloatermOpen  tmux

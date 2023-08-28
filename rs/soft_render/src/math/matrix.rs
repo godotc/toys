@@ -1,5 +1,6 @@
 use super::vector::*;
-use std::ops::{Mul, Div, Add, Sub, Neg};
+use std::ops::{Add, Div, Mul, Neg, Sub};
+use fltk::output::Output;
 
 macro_rules! declare_mat {
     ($name:ident, $dim:expr) => {
@@ -142,7 +143,7 @@ impl Mul<Vec3> for Mat3 {
 impl Mul<Vec4> for Mat4 {
     type Output = Vec4;
 
-    fn mul(self, rhs: Vec4) -> Self::Output {
+    fn mul(self, rhs: Vec4) -> Vec4 {
         Vec4::new(
             self.get(0, 0) * rhs.x
                 + self.get(1, 0) * rhs.y
@@ -268,4 +269,3 @@ impl Mat4 {
         Some(result.transpose())
     }
 }
-

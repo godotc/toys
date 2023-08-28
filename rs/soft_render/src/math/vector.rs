@@ -30,7 +30,6 @@ macro_rules! declare_vec_op {
     };
 }
 
-
 /**
 self.x += other.x
 self.y += other.y
@@ -50,7 +49,7 @@ macro_rules! declare_vec_op_assign {
 }
 
 macro_rules! declare_vec {
-    ($name:ident, $($attr:ident),+) => {
+    ($name:ident,  $($attr:ident),+) => {
         #[derive(Debug, PartialEq, Copy, Clone, Default)]
         pub struct $name {
             $(
@@ -92,6 +91,7 @@ macro_rules! declare_vec {
                 )+
                 0.0
             }
+
         }
 
         declare_vec_op!($name, Add, add, + $(,$attr)+);
@@ -177,6 +177,7 @@ macro_rules! declare_vec {
                 )+
             }
         }
+
     };
 }
 
@@ -258,4 +259,51 @@ impl Vec4 {
 // calculates the reflected vec from (in_vec and normal_vec)
 pub fn reflect(in_vec: &Vec3, normal: &Vec3) -> Vec3 {
     2.0 * (in_vec.dot(&normal)) * (*normal) - (*in_vec)
+}
+
+impl From<(f32, f32)> for Vec2 {
+    fn from((x, y): (f32, f32)) -> Self {
+        Self { x, y }
+    }
+}
+impl From<(f32, f32, f32)> for Vec3 {
+    fn from((x, y, z): (f32, f32, f32)) -> Self {
+        Self { x, y, z }
+    }
+}
+impl From<(f32, f32, f32, f32)> for Vec4 {
+    fn from((x, y, z, w): (f32, f32, f32, f32)) -> Self {
+        Self { x, y, z, w }
+    }
+}
+
+impl From<Vec2> for (f32, f32) {
+    fn from(vec: Vec2) -> Self {
+        (vec.x, vec.y)
+    }
+}
+impl From<Vec3> for (f32, f32, f32) {
+    fn from(vec: Vec3) -> Self {
+        (vec.x, vec.y, vec.z)
+    }
+}
+impl From<Vec4> for (f32, f32, f32, f32) {
+    fn from(vec: Vec4) -> Self {
+        (vec.x, vec.y, vec.z, vec.w)
+    }
+}
+impl<'a> From<&'a Vec2> for (f32, f32) {
+    fn from(vec: &'a Vec2) -> Self {
+        (vec.x.clone(), vec.y.clone())
+    }
+}
+impl<'a> From<&'a Vec3> for (f32, f32, f32) {
+    fn from(vec: &'a Vec3) -> Self {
+        (vec.x.clone(), vec.y.clone(), vec.z.clone())
+    }
+}
+impl<'a> From<&'a Vec4> for (f32, f32, f32, f32) {
+    fn from(vec: &'a Vec4) -> Self {
+        (vec.x.clone(), vec.y.clone(), vec.z.clone(), vec.w.clone())
+    }
 }

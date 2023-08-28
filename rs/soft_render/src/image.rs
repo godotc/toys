@@ -1,5 +1,4 @@
-use std::vec;
-use crate::math::vector;
+use crate::math;
 
 pub struct PureElemImage<T> {
     data: Vec<T>,
@@ -33,7 +32,7 @@ impl PureElemImage<u8> {
             h,
         }
     }
-    pub fn clear(&mut self, color: &vector::Vec4) {
+    pub fn clear(&mut self, color: &math::Vec4) {
         for x in 0..self.w {
             for y in 0..self.h {
                 self.set(x, y, color);
@@ -41,7 +40,7 @@ impl PureElemImage<u8> {
         }
     }
 
-    pub fn set(&mut self, x: u32, y: u32, color: &vector::Vec4) {
+    pub fn set(&mut self, x: u32, y: u32, color: &math::Vec4) {
         self.data[(x + y * self.w) as usize * 3] = (color.x * 255.0) as u8;
         self.data[(x + y * self.w) as usize * 3 + 1] = (color.y * 255.0) as u8;
         self.data[(x + y * self.w) as usize * 3 + 2] = (color.z * 255.0) as u8;
