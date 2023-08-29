@@ -1,119 +1,78 @@
+import { CellRender } from "./cell_render.js";
+
+
 const panic = (msg) => { alert(msg); throw new Error(msg); }
 
 
-// initialize
+
 const canvas = document.querySelector("canvas");
-if (!navigator.gpu) {
-    panic("WebGPU not supported on this browser.");
-}
-const adapter = await navigator.gpu.requestAdapter();
-if (!adapter) {
-    panic("request adapter failed!");
-}
-const device = await adapter.requestDevice();
-const context = canvas.getContext("webgpu")
-const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
-context.configure({
-    device: device,
-    format: canvasFormat,
-})
+let gpu = new class WebGPU {
+    device;
+    context;
+    canvasFormat;
 
+    async init(canvas) {
+        if (!navigator.gpu) {
+            panic("WebGPU not supported on this browser.");
+        }
+        const adapter = await navigator.gpu.requestAdapter();
+        if (!adapter) {
+            panic("request adapter failed!");
+        }
 
-const [cellPipeline, cellVertexBuffer, cellVertices] = (() => {
-    const vertices = new Float32Array([
-        //   X,    Y,
-        -0.8, -0.8, // Triangle 1 (Blue)
-        0.8, -0.8,
-        0.8, 0.8,
+        this.device = await adapter.requestDevice();
+        this.context = canvas.getContext("webgpu")
+        this.canvasFormat = navigator.gpu.getPreferredCanvasFormat();
 
-        -0.8, -0.8, // Triangle 2 (Red)
-        0.8, 0.8,
-        -0.8, 0.8,
-    ]);
+        this.context.configure({
+            device: this.device,
+            format: this.canvasFormat,
+        })
+    }
+}()
+await gpu.init(canvas)
+console.log(gpu.device)
 
-    const vertexBuffer = device.createBuffer({
-        label: "Cell vertices",
-        size: vertices.byteLength,
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    })
+let cellRender = CellRender(gpu.device, gpu.canvasFormat)
 
-    device.queue.writeBuffer(vertexBuffer, 0, vertices);
+class Game {
 
-    const vertexBufferLayout = {
-        arrayStride: 8,
-        attributes: [{
-            format: "float32x2",
-            offset: 0,
-            shaderLocation: 0,
-        }]
+    run() {
+        this.rende(0)
     }
 
-    const cellShaderModule = device.createShaderModule({
-        label: "Cell shader",
-        code: `
-            @vertex
-            fn vertexMain(
-                @location(0) pos: vec2f
-            ) -> @builtin(position) vec4f {
-                return vec4f(pos, 0, 1);
-            }
+    rende = (dt) => {
+        const encoder = gpu.device.createCommandEncoder();
 
-            @fragment
-            fn fragmentMain() -> @location(0) vec4f{
-                //let red = rand();
-                return vec4f(0.4, 0.8,  0 , 1);
-            }
-        `
-    });
+        const pass = encoder.beginRenderPass({
+            colorAttachments: [
+                {
+                    view: gpu.context.getCurrentTexture().createView(),
+                    loadOp: "clear",
+                    clearValue: [0, 0, 0.4, 1],
+                    storeOp: "store",
+                }]
+        });
 
-    const pipeline = device.createRenderPipeline({
-        label: "Cell pipelinie",
-        layout: "auto",
-        vertex: {
-            module: cellShaderModule,
-            entryPoint: "vertexMain",
-            buffers: [vertexBufferLayout]
-        },
-        fragment: {
-            module: cellShaderModule,
-            entryPoint: "fragmentMain",
-            targets: [{
-                format: canvasFormat
-            }]
-        },
-    })
+        pass.setPipeline(cellRender.Pipeline);
+        pass.setVertexBuffer(0, cellRender.VertexBuffer)
 
-    return [pipeline, vertexBuffer, vertices]
-})();
+        pass.setBindGroup(0, cellRender.BindGroup)
+
+        pass.draw(cellRender.Vertices.length / 2, cellRender.GridSize * cellRender.GridSize);
+
+        pass.end(); // finish before create commandbuffer
+
+
+        //const commandBuffer = encoder.finish();
+        //device.queue.submit([commandBuffer]);
+        gpu.device.queue.submit([encoder.finish()]);
+    };
+
+}
 
 
 
-const rende = (dt) => {
-
-    const encoder = device.createCommandEncoder();
-
-    const pass = encoder.beginRenderPass({
-        colorAttachments: [
-            {
-                view: context.getCurrentTexture().createView(),
-                loadOp: "clear",
-                clearValue: [0, 0, 0.4, 1],
-                storeOp: "store",
-            }]
-    });
-
-    pass.setPipeline(cellPipeline);
-    pass.setVertexBuffer(0, cellVertexBuffer)
-    pass.draw(cellVertices.length / 2);
-
-    pass.end(); // finish before create commandbuffer
-
-
-    //const commandBuffer = encoder.finish();
-    //device.queue.submit([commandBuffer]);
-    device.queue.submit([encoder.finish()]);
-};
-
-
-rende(0);
+let game = new Game()
+game.run()
 
