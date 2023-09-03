@@ -9,7 +9,6 @@ Plug 'vim-scripts/a.vim'
 Plug 'vim-scripts/DoxygenToolkit.vim'
 Plug 'voldikss/vim-floaterm'
 
-
 Plug 'octol/vim-cpp-enhanced-highlight'
 
 Plug 'itchyny/lightline.vim' "status line
@@ -22,6 +21,8 @@ Plug 'rakr/vim-one'
 " FZF.vim
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
+
+Plug 'pboettch/vim-cmake-syntax'
 
 " All of your Plugins must be added before the following line
 call plug#end()            " required
@@ -81,6 +82,8 @@ set path^=/usr/include
 set list
 set listchars=tab:→\ ,eol:↓
 
+set timeoutlen=100
+
 filetype indent on
 
 " Command Line View
@@ -107,7 +110,9 @@ nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
-nmap <leader> rn <Plug>(coc-rename)
+nmap <silent> <F2> <Plug>(coc-rename)
+
+vmap <C-c> "+y
 
 
 " hover show detail or 'K'

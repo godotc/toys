@@ -16,7 +16,7 @@
 			],
 			"args": [
 				// "--completion-style=bundled", // bundled 补全打包为一个建议, 相反为 detailed
-				"-j=3",
+				"-j=4",
 				"--background-index", // 后台自动分析文件(compile_commands)
 				"--clang-tidy",
 				"--pretty", // 美化输出的json
