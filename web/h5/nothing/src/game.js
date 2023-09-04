@@ -1,8 +1,9 @@
 import { CellRender } from "./cell_render.js";
 
 const panic = (msg) => { alert(msg); throw new Error(msg); }
+const print = (msg) => console.log(msg)
 
-export class WebGPU {
+class WebGPU {
     device;
     context;
     canvasFormat;
@@ -28,16 +29,31 @@ export class WebGPU {
 }
 
 const canvas = document.querySelector("canvas");
-let gpu = new WebGPU()
+const gpu = new WebGPU()
 await gpu.init(canvas)
 console.log(gpu.device)
 
 
 
 export class Game {
+    tickInterval = 200;
+    step = 0;
+    cellRender = undefined;
+    bLoop = true;
 
-    constructor() {
+    constructor(Config) {
+        // NOTICE this!
+        {
+            this.loop = this.loop.bind(this);
+            this.update = this.update.bind(this);
+            this.render = this.render.bind(this);
+        }
+
+        this.bLoop = Config.bLoop;
+        this.tickInterval = Config.tick_interval;
+
         this.cellRender = CellRender(gpu.device, gpu.canvasFormat)
+        print(this.cellRender)
     }
 
     init() {
@@ -45,10 +61,21 @@ export class Game {
     }
 
     run() {
-        this.rende(0)
+        print(this.cellRender)
+        print(this.tickInterval)
+
+        const interval = this.tickInterval;
+
+        this.loop()
+        if (this.bLoop)
+            setInterval(this.loop, interval);
+        else
+            setTimeout(this.loop, interval);
     }
 
-    rende = (dt) => {
+    loop() {
+        ++this.step;
+
         const encoder = gpu.device.createCommandEncoder();
 
         const pass = encoder.beginRenderPass({
@@ -58,22 +85,28 @@ export class Game {
                     loadOp: "clear",
                     clearValue: [0, 0, 0.4, 1],
                     storeOp: "store",
-                }]
+                }
+            ]
         });
 
-        pass.setPipeline(this.cellRender.Pipeline);
-        pass.setVertexBuffer(0, this.cellRender.VertexBuffer)
+        this.cellRender.Draw(pass, this.step)
 
-        pass.setBindGroup(0, this.cellRender.BindGroup)
-
-        pass.draw(this.cellRender.Vertices.length / 2, this.cellRender.GridSize * this.cellRender.GridSize);
 
         pass.end(); // finish before create commandbuffer
-
 
         //const commandBuffer = encoder.finish();
         //device.queue.submit([commandBuffer]);
         gpu.device.queue.submit([encoder.finish()]);
+
+    }
+
+    update = (dt) => {
+
+
+    }
+
+    render = (dt) => {
+
     };
 
 }
