@@ -14,14 +14,11 @@ export const CellRender = (device, canvasFormat) => {
         0.8, 0.8,
         -0.8, 0.8,
     ]);
-
-
     const vertexBuffer = device.createBuffer({
         label: "Cell Vertices",
         size: vertices.byteLength,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     })
-
     device.queue.writeBuffer(vertexBuffer, 0, vertices);
     const vertexBufferLayout = {
         arrayStride: 8,
@@ -34,15 +31,28 @@ export const CellRender = (device, canvasFormat) => {
 
     // cell state
     const cellStateArrray = new Uint32Array(GRID_SIZE * GRID_SIZE);
-    const cellStateStorage = device.createBuffer({
-        label: "Cell State",
-        size: cellStateArrray.byteLength,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    })
+    const cellStateStorage = [
+        device.createBuffer({
+            label: "Cell State A",
+            size: cellStateArrray.byteLength,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        }),
+        device.createBuffer({
+            label: "Cell State B",
+            size: cellStateArrray.byteLength,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        })
+    ];
     for (let i = 0; i < cellStateArrray.length; i += 3) {
         cellStateArrray[i] = 1;
     }
-    device.queue.writeBuffer(cellStateStorage, 0, cellStateArrray)
+    device.queue.writeBuffer(cellStateStorage[0], 0, cellStateArrray)
+
+    for (let i = 0; i < cellStateArrray.length; i += 3) {
+        cellStateArrray[i] = i % 2;
+    }
+    device.queue.writeBuffer(cellStateStorage[1], 0, cellStateArrray)
+
 
 
 
@@ -71,7 +81,7 @@ export const CellRender = (device, canvasFormat) => {
 
                 let i = f32(input.instance);
 
-                let cell = vec2f( i % grid.x, floor(i/ grid.y));
+                let cell = vec2f( i % grid.x, floor(i/ grid.x));
                 let state =f32(cellState[input.instance]);
 
                 let cellOffset = cell/ grid * 2;
@@ -123,27 +133,53 @@ export const CellRender = (device, canvasFormat) => {
 
 
     // binding
-    const bindGroup = device.createBindGroup({
-        label: "Cell renderer bind group",
-        layout: pipeline.getBindGroupLayout(0),
-        entries: [
-            {
-                binding: 0,
-                resource: { buffer: uniformBuffer }
-            },
-            {
-                binding: 1,
-                resource: { buffer: cellStateStorage }
-            }
-        ],
-    });
+    const bindGroup = [
+        device.createBindGroup({
+            label: "Cell renderer bind group A",
+            layout: pipeline.getBindGroupLayout(0),
+            entries: [
+                {
+                    binding: 0,
+                    resource: { buffer: uniformBuffer }
+                },
+                {
+                    binding: 1,
+                    resource: { buffer: cellStateStorage[0] }
+                }
+            ],
+        }),
+        device.createBindGroup({
+            label: "Cell renderer bind group B",
+            layout: pipeline.getBindGroupLayout(0),
+            entries: [
+                {
+                    binding: 0,
+                    resource: { buffer: uniformBuffer }
+                },
+                {
+                    binding: 1,
+                    resource: { buffer: cellStateStorage[1] }
+                }
+            ],
+        })]
 
 
-    return {
-        Pipeline: pipeline,
-        Vertices: vertices,
-        VertexBuffer: vertexBuffer,
-        BindGroup: bindGroup,
-        GridSize: GRID_SIZE
+    return new class {
+        Pipeline = pipeline
+        Vertices = vertices
+        VertexBuffer = vertexBuffer
+        BindGroup = bindGroup
+        GridSize = GRID_SIZE
+
+        Draw = (pass, step) => {
+
+            pass.setPipeline(this.Pipeline);
+            pass.setBindGroup(0, this.BindGroup[step % 2]);
+
+            pass.setVertexBuffer(0, this.VertexBuffer)
+
+            pass.draw(this.Vertices.length / 2, this.GridSize * this.GridSize);
+
+        }
     }
 };
