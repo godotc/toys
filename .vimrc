@@ -23,6 +23,7 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
 Plug 'pboettch/vim-cmake-syntax'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
 " All of your Plugins must be added before the following line
 call plug#end()            " required
@@ -79,10 +80,11 @@ set incsearch
 
 set path^=/usr/include
 
+
 set list
 set listchars=tab:→\ ,eol:↓
 
-set timeoutlen=100
+set timeoutlen=500
 
 filetype indent on
 
@@ -137,7 +139,7 @@ noremap <C-t> :call FloatTerm()<CR>
 tnoremap   <silent>   <C-t>   <C-\><C-n>:FloatermToggle<CR>
 
 nmap <Space>f :Files<CR>
-nmap <Space>b :Buffers<CR>
+nmap <silent> <Space>b :Buffers<CR>
 nmap <F1> :Commands<CR>
 
 

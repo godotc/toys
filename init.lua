@@ -24,5 +24,3 @@ function util_function_map(key)
 end
 
 vim.keymap.set('n', '<F5>', ':lua util_function_map("run")<CR>')
-
-
