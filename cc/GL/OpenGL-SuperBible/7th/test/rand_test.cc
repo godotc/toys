@@ -30,6 +30,6 @@ TEST(TestRandFunc, should_be_differenet_on_every_call)
     }
 
     for (auto f : ns) {
-        LOG("{}", f);
+        LOG_DEBUG("{}", f);
     }
 }

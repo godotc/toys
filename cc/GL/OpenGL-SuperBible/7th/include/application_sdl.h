@@ -27,14 +27,22 @@ inline void ShowSDLError()
 }
 }; // namespace
 
-class Application
+class App
 {
   public:
-    Application() : Application("App", 800, 600, 0)
+    App() : App("App", 800, 600, 0)
     {
     }
 
-    Application(auto name, auto w, auto h, auto window_flags)
+  protected:
+
+    virtual void init(){};
+    virtual void update(float dt){};
+    virtual void render(float dt){};
+
+  public:
+
+    App(auto name, auto w, auto h, auto window_flags)
     {
         if (0 != SDL_Init(SDL_INIT_VIDEO)) {
             throw std::runtime_error("Failed to init SDL Layer");
@@ -77,28 +85,24 @@ class Application
         m_GL_Ctx = gl_ctx;
 
         glViewport(0, 0, m_Width, m_Height);
-
-        Construct();
     }
 
-    virtual ~Application() = default;
+    virtual ~App() = default;
 
   public:
     void Run()
     {
-        BeginPlay();
-
-        static size_t last_frame = SDL_GetTicks();
-
+        init();
 
         while (m_IsRunning) {
-            size_t cur_frame = SDL_GetTicks();
-            size_t dleta     = cur_frame - last_frame;
-            last_frame       = cur_frame;
+            current_frame = SDL_GetTicks();
+            size_t dt     = current_frame - last_frame;
+            last_frame    = current_frame;
 
-            OnEvent();
+            on_event();
 
-            Tick(dleta);
+            update(dt);
+            render(dt);
 
             SDL_GL_SwapWindow(m_Window);
         }
@@ -115,22 +119,8 @@ class Application
 
   protected:
 
-    virtual void Construct()
-    {
-        LOG("Base Construct..");
-    }
 
-    virtual void BeginPlay()
-    {
-        LOG("Base BeginPlay..");
-    }
-
-    virtual void Tick(uint32_t DeltaT)
-    {
-        // LOG("Base Tick..");
-    }
-
-    virtual void OnEvent()
+    void on_event()
     {
         // LOG("Base OnEvent..");
         SDL_Event ev;
@@ -146,16 +136,16 @@ class Application
     }
 
 
-
   public:
     int m_Width{0}, m_Height{0};
 
+    size_t        current_frame, last_frame;
     SDL_Window   *m_Window;
     SDL_GLContext m_GL_Ctx;
 
 
   protected:
-    using Super          = Application;
+    using Super          = App;
     size_t tick_interval = 1;
 
   private:

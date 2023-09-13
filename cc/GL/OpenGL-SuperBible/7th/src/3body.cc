@@ -25,7 +25,6 @@
 
 
 #include <time.h>
-#include <vcruntime.h>
 
 static void debug_pts()
 {
@@ -40,8 +39,7 @@ struct Celestial;
 
 static const float G = 9.8f;
 
-struct Celestial
-{
+struct Celestial {
     float     Quality = 1.f;
     glm::vec3 Location;
     glm::vec3 Velocity;
@@ -76,13 +74,13 @@ struct Celestial
         Velocity.y = get_random_float(-0.001, 0.001);
         Velocity.z = 0.f;
 #endif
-        LOG("Initial Location: [{}, {}, {}]", Location.x, Location.y, Location.z);
-        LOG("Initial Velocity: [{}, {}, {}]", Velocity.x, Velocity.y, Velocity.z);
+        LOG_DEBUG("Initial Location: [{}, {}, {}]", Location.x, Location.y, Location.z);
+        LOG_DEBUG("Initial Velocity: [{}, {}, {}]", Velocity.x, Velocity.y, Velocity.z);
     }
 
     auto UpdateVelocity(Celestial &other, float dt, bool all_the_same = true)
     {
-        DEBUG("Velocity: [{}, {}, {}]", Velocity.x, Velocity.y, Velocity.z);
+        LOG_DEBUG("Velocity: [{}, {}, {}]", Velocity.x, Velocity.y, Velocity.z);
 
         auto v12 = other.Location - Location;
         // Get gravity between both celetial
@@ -132,7 +130,7 @@ std::ostream &operator<<(std::ostream &out, Celestial &c)
     return out;
 }
 
-class TriBody_Intermediate : public Application
+class TriBody_Intermediate : public App
 {
   public:
     static const int N = 3;
@@ -180,7 +178,7 @@ class TriBody_Intermediate : public Application
 
                 draw();
 
-                DEBUG("Current energy: {}", enegry());
+                LOG_DEBUG("Current energy: {}", enegry());
             }
         }
     }
@@ -232,7 +230,7 @@ class TriBody_Intermediate : public Application
 };
 
 
-class TriBody : public Application
+class TriBody : public App
 {
   public:
     GLuint           VAO, VBO;
@@ -240,7 +238,7 @@ class TriBody : public Application
     void             Construct() override
     {
         Super::Construct();
-        LOG("3Body contract...");
+        LOG_DEBUG("3Body contract...");
     }
 
     void BeginPlay() override
@@ -272,8 +270,6 @@ class TriBody : public Application
         GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
         GL_CALL(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * sizeof(float), vertices, GL_STATIC_DRAW));
 
-        LOG("hello");
-        TRACE("dd");
         GL_CALL(glEnableVertexAttribArray(0));
         // GL_CALL(glVertexAttribPointer(0, sizeof(vertices), GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0)); // 1281 INVALID_ARGUMENT
         GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0)); // vec3
@@ -306,7 +302,7 @@ int main(int argc, char **argv)
 #endif
     __logcpp::SetLogLevel(__logcpp::LogLevel::L_DEBUG);
 
-    LOG("Hello World!");
+    LOG_DEBUG("Hello World!");
     TriBody_Intermediate t;
     // TriBody t;
     t.Run();

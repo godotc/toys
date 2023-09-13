@@ -23,14 +23,14 @@ inline void ShowSDLError()
 }
 }; // namespace
 
-class Application
+class App
 {
   public:
-    Application() : Application("App", 800, 600, 0)
+    App() : App("App", 800, 600, 0)
     {
     }
 
-    Application(auto name, auto w, auto h, auto window_flags)
+    App(auto name, auto w, auto h, auto window_flags)
     {
         if (GLFW_TRUE != glfwInit()) {
             throw std::runtime_error("Failed to init glfw");
@@ -69,7 +69,7 @@ class Application
         glfwSetKeyCallback(m_Window, OnKeyEvent);
     }
 
-    virtual ~Application() = default;
+    virtual ~App() = default;
 
   public:
     void Run()
@@ -97,15 +97,14 @@ class Application
 
 
   protected:
-
     virtual void Construct()
     {
-        LOG("Base Construct..");
+        LOG_DEBUG("Base Construct..");
     }
 
     virtual void BeginPlay()
     {
-        LOG("Base BeginPlay..");
+        LOG_DEBUG("Base BeginPlay..");
     }
 
     virtual void Tick(uint32_t DeltaT)
@@ -128,7 +127,7 @@ class Application
 
 
   protected:
-    using Super = Application;
+    using Super = App;
 
   private:
     bool m_IsRunning{true};
