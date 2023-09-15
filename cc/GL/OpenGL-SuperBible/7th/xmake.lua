@@ -1,15 +1,20 @@
-
 add_rules("mode.debug", "mode.release")
 
-add_requires("glfw","glad","glm","fmt")
-add_packages("glfw","glad","glm","fmt")
-add_requires("gtest")
+add_packages(
+	"glfw", "glad", "libsdl",
+	"glm", "fmt", "gtest",
+	"stb")
+add_requires(
+	"glfw", "glad", "libsdl",
+	"glm", "fmt", "gtest",
+	"stb")
+
 
 set_languages("c++20")
 set_targetdir("bin")
 
-includes("gltk")
-includes("m_log")
+includes("pkgs/gltk","pkgs/m_log")
+includes("src","test")
 
 
 if is_os("windows") then
@@ -17,32 +22,7 @@ if is_os("windows") then
 end
 
 
-add_includedirs("include","gltk")
-add_includedirs("m_log")
+add_includedirs("include")
+add_includedirs("pkgs/m_log", "pkgs/gltk")
 
-
--- add_requires("libsdl")
--- target("0")
---     set_kind("binary")
---     add_files("src/triangle.cpp")
--- 	add_packages("libsdl","glad")
--- 	add_deps("gltk")
--- 	add_deps("m_log")
-
-target("3bd")
-    set_kind("binary")
-    add_files("src/3body.cc")
-	add_packages("libsdl","glad")
-	add_deps("gltk")
-	add_deps("m_log")
-
-
-
-
-target("test")
-	set_kind("binary")
-	add_files("test/*.cc")
-	add_packages("gtest")
-	add_deps("m_log")
-	
 

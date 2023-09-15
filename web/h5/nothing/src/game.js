@@ -56,7 +56,7 @@ export class Game {
         print(this.cellRender)
     }
 
-    init() {
+    async init() {
 
     }
 

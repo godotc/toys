@@ -25,6 +25,8 @@ Plug 'junegunn/fzf.vim'
 Plug 'pboettch/vim-cmake-syntax'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
+"Plug 'puremourning/vimspector'
+
 " All of your Plugins must be added before the following line
 call plug#end()            " required
 
