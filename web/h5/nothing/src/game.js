@@ -74,26 +74,37 @@ export class Game {
     }
 
     loop() {
-        ++this.step;
-
         const encoder = gpu.device.createCommandEncoder();
+        {
+            {
+                const compute_pass = encoder.beginComputePass();
 
-        const pass = encoder.beginRenderPass({
-            colorAttachments: [
-                {
-                    view: gpu.context.getCurrentTexture().createView(),
-                    loadOp: "clear",
-                    clearValue: [0, 0, 0.4, 1],
-                    storeOp: "store",
-                }
-            ]
-        });
-
-        this.cellRender.Draw(pass, this.step)
+                this.cellRender.Compute(compute_pass, this.step);
 
 
-        pass.end(); // finish before create commandbuffer
+                compute_pass.end();
+            }
 
+            ++this.step;
+
+            {
+                const render_pass = encoder.beginRenderPass({
+                    colorAttachments: [
+                        {
+                            view: gpu.context.getCurrentTexture().createView(),
+                            loadOp: "clear",
+                            clearValue: [0, 0, 0.4, 1],
+                            storeOp: "store",
+                        }
+                    ]
+                });
+
+                this.cellRender.Draw(render_pass, this.step)
+
+                render_pass.end(); // finish before create commandbuffer
+            }
+
+        }
         //const commandBuffer = encoder.finish();
         //device.queue.submit([commandBuffer]);
         gpu.device.queue.submit([encoder.finish()]);
