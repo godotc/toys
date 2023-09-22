@@ -1,4 +1,6 @@
+#[cfg(test)]
 use rand::{thread_rng, Rng};
+#[cfg(test)]
 use std::env;
 
 pub fn buble_sort(array: &mut [i32]) {
