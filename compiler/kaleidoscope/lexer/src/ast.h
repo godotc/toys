@@ -46,9 +46,6 @@ class CallExprAST : public ExprAST
     CallExprAST(const std::string &Callee, std::vector<std::unique_ptr<ExprAST>> Args) : Callee(Callee), Args(std::move(Args)) {}
 };
 
-/// PrototypeAST - This class represents the "prototype" for a function,
-/// which captures its name, and its argument names (thus implicitly the number
-/// of arguments the function takes).
 class PrototypeAST
 {
     std::string              Name;

@@ -1,4 +1,3 @@
-
 #include "resource_manager/resource_manager.h"
 #include "utils/path.h"
 #include <iostream>
@@ -17,7 +16,6 @@
 #include <GLFW/glfw3.h>
 
 #include <functional>
-#include <glm/common.hpp>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -26,6 +24,8 @@
 
 #include "gl_macros.h"
 
+#include <glm/common.hpp>
+#include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 void            framebuffer_resize_cb(GLFWwindow *wndow, int w, int h);
@@ -46,18 +46,79 @@ class App
   public:
     App()
     {
+    }
+
+    ~App() {}
+
+    void Init()
+    {
+        init_cube_vertex();
+
+        ResourceManager::LoadShader(FPath("res/shader/cube.glsl"), "cube");
+
+        ResourceManager::LoadTexture(FPath("res/texture/arch.png"), "arch");
+        glActiveTexture(GL_TEXTURE0);
+
+        glm::mat4 model_mat(1.f);
+        //        model_mat= glm::scale(glm::mat4(1.f), {0.5, 0.5, 0.5});                  // world scale
+        model_mat = glm::rotate(model_mat, glm::radians(-55.f), {1.f, 0.f, 0.f}); // world rotation
+        glm::mat4 view_mat(1.f);
+        view_mat = glm::translate(view_mat, {0, 0, -3.f});
+        //        viewmodel_mat = glm::scale(glm::mat4(1.0), {100, 100, 100});
+        viewmodel_mat = view_mat * model_mat;
+
+        project_mat = glm::perspective(glm::radians(45.f), WIN_H / (float)WIN_H, 0.1f, 100.f);
+    }
+
+    void OnRenderer()
+    {
+        auto Texture = ResourceManager::GetTexture("arch");
+
+        Texture.Bind();
+        ResourceManager::GetShader("cube")
+            .Use()
+            .SetInteger("u_Texure", Texture.ID)
+            .SetMatrix4("viewmodel", viewmodel_mat)
+            .SetMatrix4("projection", project_mat)
+            .SetVector4f("color", {1, 1, 1, 1});
+
+
+        glPointSize(20.f);
+        glBegin(GL_POINTS);
+        glVertex3f(0, 1, 0);
+        glVertex3f(1, 0, 0);
+        glVertex3f(-1, 0, 0);
+        glVertex3f(0, -1, 0);
+        glEnd();
+
+
+        glBindVertexArray(cube_va);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+    }
+    void OnUpdate(float dt)
+    {
+    }
+
+    void ProcessInput(float dt)
+    {
+    }
+
+    void init_cube_vertex()
+    {
         GLfloat vertices[] = {
             // Front face
-            -0.5f, -0.5f, 0.5f, // 0
-            0.5f, -0.5f, 0.5f,  // 1
-            0.5f, 0.5f, 0.5f,   // 2
-            -0.5f, 0.5f, 0.5f,  // 3
+            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // 0
+            0.5f, -0.5f, 0.5f, 1.0f, 0.0f,  // 1
+            0.5f, 0.5f, 0.5f, 1.0f, 1.0f,   // 2
+            -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,  // 3
+
             // Back face
-            -0.5f, -0.5f, -0.5f, // 4
-            0.5f, -0.5f, -0.5f,  // 5
-            0.5f, 0.5f, -0.5f,   // 6
-            -0.5f, 0.5f, -0.5f,  // 7
+            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // 4
+            0.5f, -0.5f, -0.5f, 1.0f, 0.0f,  // 5
+            0.5f, 0.5f, -0.5f, 1.0f, 1.0f,   // 6
+            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f   // 7
         };
+
 
         GLuint indices[] = {
             0, 1, 2, 0, 2, 3, // Front face
@@ -79,42 +140,21 @@ class App
             glNamedBufferData(vbo, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
             glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)nullptr);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)nullptr);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)(sizeof(float) * 3));
+
+            GL_CALL(glGenBuffers(1, &cube_ib));
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cube_ib);
+            GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
+
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
         glBindVertexArray(0);
         GL_CHECK_HEALTH();
 
-        GL_CALL(glGenBuffers(1, &cube_ib));
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cube_ib);
-        GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
 
         GL_CHECK_HEALTH();
-
-        ResourceManager::LoadShader(FPath("res/shader/cube.glsl"), "cube");
-
-        ResourceManager::LoadTexture(FPath("res/texture/arch.png"), "arch");
-        auto Texture = ResourceManager::GetTexture("arch");
-    }
-
-    ~App() {}
-
-    void OnRenderer()
-    {
-        glm::mat4 viewmodel = glm::scale(glm::mat4(1.0), {100, 100, 100});
-
-        ResourceManager::GetShader("cube").Use().SetMatrix4("viewmodel", viewmodel);
-
-        glBindVertexArray(cube_va);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cube_ib);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
-    }
-    void OnUpdate(float dt)
-    {
-    }
-
-    void ProcessInput(float dt)
-    {
     }
 
     Camera camera = {
@@ -124,6 +164,9 @@ class App
     };
 
     GLuint cube_va, cube_ib;
+
+    glm::mat4 project_mat{1.f};
+    glm::mat4 viewmodel_mat{1.f};
 };
 
 
@@ -131,34 +174,39 @@ class App
 int main(int argc, char **argv)
 {
     __logcpp::SetLogLevel(__logcpp::LogLevel::L_DEBUG);
-    auto window = init_glfw();
+    GLFWwindow *window = init_glfw();
     LOG_LOG("GLFW has initialize successfully");
 
 
+    // OpenGL configuration
+    glViewport(0, 0, WIN_W, WIN_H);
+    glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
     App *app = new App();
-
-
+    app->Init();
 
     float dt         = 0.f;
     float last_frame = 0.f;
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
+        glClearColor(0.2, 0.4, 0.3, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        float current_frame = glfwGetTime();
-        dt                  = current_frame - last_frame;
-        last_frame          = current_frame;
+        double current_frame = glfwGetTime();
+        dt                   = current_frame - last_frame;
+        last_frame           = current_frame;
         // LOG_DEBUG("dt: {}", dt);
 
         app->OnRenderer();
         app->ProcessInput(dt);
         app->OnUpdate(dt);
 
-        glClearColor(0, 0.4, 0.3, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
 
         //        Breakout->Render();
-
 
         glfwSwapBuffers(window);
     }
@@ -209,10 +257,10 @@ void key_cb(GLFWwindow *window, int key, int scancode, int action, int mode)
     if (GLFW_FALSE == glfwInit()) {
         throw std::runtime_error("init GLFW failed!!");
     }
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    //    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    //    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+    //    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -233,10 +281,6 @@ void key_cb(GLFWwindow *window, int key, int scancode, int action, int mode)
     glfwSetFramebufferSizeCallback(window, framebuffer_resize_cb);
     glfwSetKeyCallback(window, key_cb);
 
-    // OpenGL configuration
-    glViewport(0, 0, WIN_W, WIN_H);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     const GLubyte *renderer    = glGetString(GL_RENDERER);
     const GLubyte *vendor      = glGetString(GL_VENDOR);

@@ -61,11 +61,12 @@ void Shader::SetFloat(const char *name, float value, bool useShader)
         this->Use();
     GL_CALL(glUniform1f((glGetUniformLocation(this->ID, name)), value));
 }
-void Shader::SetInteger(const char *name, int value, bool useShader)
+Shader &Shader::SetInteger(const char *name, int value, bool useShader)
 {
     if (useShader)
         this->Use();
     GL_CALL(glUniform1i(glGetUniformLocation(this->ID, name), value));
+    return *this;
 }
 void Shader::SetVector2f(const char *name, float x, float y, bool useShader)
 {
@@ -103,11 +104,12 @@ void Shader::SetVector4f(const char *name, const glm::vec4 &value, bool useShade
         this->Use();
     GL_CALL(glUniform4f(glGetUniformLocation(this->ID, name), value.x, value.y, value.z, value.w));
 }
-void Shader::SetMatrix4(const char *name, const glm::mat4 &matrix, bool useShader)
+Shader &Shader::SetMatrix4(const char *name, const glm::mat4 &matrix, bool useShader)
 {
     if (useShader)
         this->Use();
     GL_CALL(glUniformMatrix4fv(glGetUniformLocation(this->ID, name), 1, false, glm::value_ptr(matrix)));
+    return *this;
 }
 
 

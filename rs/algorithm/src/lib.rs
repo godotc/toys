@@ -1,4 +1,4 @@
-mod buble_sort;
-mod heap_sort;
-mod merge_sort;
-mod quick_sort;
+pub mod buble_sort;
+pub mod heap_sort;
+pub mod merge_sort;
+pub mod quick_sort;
