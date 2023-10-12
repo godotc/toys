@@ -1,5 +1,6 @@
 .PHONY: i pi
 
+
 ARGS := $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
 
 i:

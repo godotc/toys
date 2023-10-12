@@ -1,0 +1,1 @@
+python3.10 -m pip install pandas numpy scikit-learn scipy matplotlib keras tensorflow seaborn mpl_toolkits

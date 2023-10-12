@@ -86,5 +86,6 @@
 			}
 		}
 	},
-	"@ignored/coc-solidity.telemetry": true
+  "@ignored/coc-solidity.telemetry": true,
+  "@blockchainian/coc-solidity.telemetry": true
 }
