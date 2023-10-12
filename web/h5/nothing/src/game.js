@@ -81,7 +81,6 @@ export class Game {
 
                 this.cellRender.Compute(compute_pass, this.step);
 
-
                 compute_pass.end();
             }
 
