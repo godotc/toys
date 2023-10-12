@@ -1,17 +1,15 @@
-import {Game} from "./src/game.js";
+import { Game } from "./src/game.js";
 
 const Config = {
-	tick_interval: 200,
-	bLoop: false
+    tick_interval: 200,
+    bLoop: true
 }
 
-
-
-export const main = async () => {
-	let game = new Game(Config)
-	console.log(game)
-	await game.init()
-	game.run()
+const main = async () => {
+    let game = new Game(Config)
+    console.log(game)
+    await game.init()
+    game.run()
 }
 
 

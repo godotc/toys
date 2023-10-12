@@ -1,7 +1,8 @@
-import {StatusBar} from 'expo-status-bar';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
-import {RecoredPage} from './src/recored_page';
-import {Linking} from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Button } from 'react-native-web';
+import { RecoredPage } from './src/recored_page';
+import { LostsOffGreetings } from './src/greetings';
 
 export default function App() {
 
