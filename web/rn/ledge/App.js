@@ -1,10 +1,18 @@
-import { StatusBar } from 'expo-status-bar';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button } from 'react-native-web';
-import { RecoredPage } from './src/recored_page';
-import { LostsOffGreetings } from './src/greetings';
+import {StatusBar} from 'expo-status-bar';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {Button} from 'react-native-web';
+import {RecoredPage} from './src/recored_page';
+import {Greeting} from './src/greetings';
+import {useState} from 'react';
 
 export default function App() {
+
+	const [firstIn, setFirstIn] = useState(true)
+
+
+	if (firstIn) {
+		return <Greeting />
+	}
 
 	return (
 		<View style={styles.container}>

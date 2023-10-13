@@ -16,14 +16,14 @@ export const RecoredPage = () => {
 
 			<TextInput
 				style={styles.RecorederInput}
-				onChangeText={(msg) => {print(msg); setContent(msg);}}
+				onChangeText={(msg) => {print(msg.length == 0 ? "Handle text change failed" : msg); setContent(msg);}}
 			/>
 
 			<br />
 
 			<Pressable
 				style={[styles.SubmitButton, {backgroundColor: btnColor}]}
-				onPress={() => print(content + "bbb")}
+				onPress={() => print(content)}
 				onHoverIn={() => {setBtnColor("#333");}}
 				onHoverOut={() => {setBtnColor(default_color);}}
 
@@ -44,7 +44,6 @@ const styles = StyleSheet.create({
 		backgroundColor: "#445",
 		width: 120,
 		borderRadius: 3,
-
 	},
 	SubmitButton: {
 		width: 70,
