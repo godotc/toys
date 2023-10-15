@@ -47,7 +47,7 @@ pub fn interp_attributes<F>(
         F: Fn(f32, f32, f32) -> f32,
 { interp_attributes_v0(&attr1, &attr2, interp_fn, t) }
 
-fn interp_attributes_v0<F>(
+pub(crate) fn interp_attributes_v0<F>(
     attr1: &Attributes,
     attr2: &Attributes,
     interp_fn: F,

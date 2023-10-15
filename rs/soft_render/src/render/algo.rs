@@ -18,8 +18,8 @@ pub fn texture_sample(texture: &Texture, texcoord: &math::Vec2) -> math::Vec4 {
 pub(crate) fn should_cull(
     positions: &[math::Vec3; 3],
     view_dir: &math::Vec3,
-    face: FrontFace,
-    cull: FaceCull,
+    face: &FrontFace,
+    cull: &FaceCull,
 ) -> bool {
     if cull == FaceCull::None { return false; }
 

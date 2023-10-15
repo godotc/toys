@@ -134,12 +134,12 @@ impl Renderer {
         texture_storage: &TextureManager,
     ) -> RasterizeResult
     {
-        // change vertex positon
+        // change vertex position
         for v in &mut vertices {
             *v = self.shader.call_vertex_change(v, &self.uniforms, texture_storage);
         }
 
-        // model transf
+        // model transform
         for v in &mut vertices {
             v.position = *model * v.position;
         }
@@ -148,17 +148,16 @@ impl Renderer {
         if should_cull(
             &vertices.map(|v| v.position.truncated_to_vec3()),
             self.camera.view_dir(),
-            self.front_face,
-            self.cull,
+            &self.front_face,
+            &self.cull,
         ) {
             return RasterizeResult::Discard;
         }
 
-        // view transf
+        // view transform
         for v in &mut vertices {
             v.position = *self.get_camera().view_mat() * v.position;
         }
-
 
         // frustum clip
         if vertices.iter().all(|v| {

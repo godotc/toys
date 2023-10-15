@@ -15,9 +15,7 @@ impl<T> PureElemImage<T> {
         self.h
     }
 
-    pub fn in_box(&self, x: i32, y: i32) -> bool {
-        x >= 0 && x < self.w.try_into().unwrap() && y >= 0 && y < self.h.try_into().unwrap()
-    }
+    pub fn in_box(&self, x: i32, y: i32) -> bool { x >= 0 && x < self.w.try_into().unwrap() && y >= 0 && y < self.h.try_into().unwrap() }
 
     pub fn data(&self) -> &Vec<T> {
         &self.data
