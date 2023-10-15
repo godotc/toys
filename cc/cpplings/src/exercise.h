@@ -4,8 +4,8 @@
 #include <type_traits>
 
 #ifdef _WIN32
-#include <vcruntime.h>
-#include <windows.h>
+    #include <vcruntime.h>
+    #include <windows.h>
 #endif
 
 #include <filesystem>
@@ -35,23 +35,19 @@ enum class Mode
     Tidy,
 };
 
-struct ExerciseOutput
-{
-    ExerciseOutput(std::string stdout_, std::string stderr_) : _stdout(std::move(stdout_)), _stderr(std::move(stderr_)) {}
+struct ExerciseOutput {
+    ExerciseOutput(std::string stdout_) : _stdout(std::move(stdout_)) {}
     std::string _stdout;
-    std::string _stderr;
 };
 
 
-struct ExerciseList
-{
+struct ExerciseList {
     std::vector<Exercise> exercises;
 };
 
 
 
-struct ContextLine
-{
+struct ContextLine {
     std::string line;
     size_t      number;
     bool        important;
@@ -65,8 +61,7 @@ enum class State
 };
 
 
-struct FileHandle : mtd::Drop<FileHandle>
-{
+struct FileHandle : mtd::Drop<FileHandle> {
     auto drop() -> void override
     {
         clean();
@@ -75,8 +70,7 @@ struct FileHandle : mtd::Drop<FileHandle>
 
 
 
-struct CompiledExercise : mtd::Runable<CompiledExercise>
-{
+struct CompiledExercise : mtd::Runable<CompiledExercise> {
     CompiledExercise(Exercise *exercise, FileHandle handle) : exercise(exercise), handle(std::move(handle)) {}
     Exercise  *exercise;
     FileHandle handle;
@@ -85,8 +79,7 @@ struct CompiledExercise : mtd::Runable<CompiledExercise>
 };
 
 
-struct Exercise : mtd::Runable<Exercise>
-{
+struct Exercise : mtd::Runable<Exercise> {
     std::string name;
     std::string path;
     Mode        mode;

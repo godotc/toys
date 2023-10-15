@@ -19,14 +19,14 @@ const config: HardhatUserConfig = {
 	},
 
 	networks: {
-		local: {
-			url: "http://0.0.0.0:8545",
-			accounts: [process.env.PK as string, process.env.PK1 as string]
-		},
-		sepolia: {
-			url: "https://sepolia.infura.io/v3/19cd45d3b29b4b558bb0c86031515a54",
-			accounts: [process.env.PK as string]
-		}
+		//local: {
+		//	url: "http://0.0.0.0:8545",
+		//	accounts: [process.env.PK as string, process.env.PK1 as string]
+		//},
+		//sepolia: {
+		//	url: "https://sepolia.infura.io/v3/19cd45d3b29b4b558bb0c86031515a54",
+		//	accounts: [process.env.PK as string]
+		//}
 
 	},
 	etherscan: {

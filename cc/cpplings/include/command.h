@@ -11,11 +11,9 @@
 
 
 
-struct Command
-{
+struct Command {
 
-    struct Status
-    {
+    struct Status {
         friend Command;
         auto success() -> bool { return result == 0; }
 
@@ -29,7 +27,7 @@ struct Command
         return cmd;
     }
 
-    Command() = delete;
+    Command();
     Command(const char *in_cmd) : _cmd(in_cmd) { space(); }
 
 

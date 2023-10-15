@@ -1,43 +1,63 @@
 #pragma once
 #include <any>
 #include <optional>
+#include <stdexcept>
+#include <variant>
 
 namespace mtd {
 
-const bool Ok  = true;
-const bool Err = false;
 
 template <class T>
-struct Runable
-{
+struct Runable {
     virtual auto run() -> std::any = 0;
 };
 
 template <class T>
-struct Drop
-{
+struct Drop {
     virtual auto drop() -> void = 0;
 };
 
-template <class Ok, class Err>
-struct Result
-{
+template <class __Ok, class __Err>
+struct Result {
 
   public:
-    Result(Ok &&value) : _value(value), _isError(true) {}
-    Result(Err &&error) : _error(error), _isError(false) {}
-    auto is_ok() -> bool const { return !_isError; }
-    auto ok_value() const -> const Ok & { return _value; }
-    auto err_value() const -> const Err & { return _error; }
-    auto unwarp() const -> const auto & { return _isError ? _error : _value; }
+    Result(__Ok &&value) : var(value) {}
+    Result(__Err &&error) : var(error) {}
+
+    auto is_ok() -> bool const { return std::holds_alternative<__Ok>(var); }
+    auto ok_value() const -> const __Ok & { return std::get<__Ok>(var); }
+    auto err_value() const -> const __Err & { return std::get<__Err>(var); }
+    auto unwarp() const -> __Ok &
+    {
+        if (!is_ok())
+            throw std::runtime_error("Get a Result by error");
+        return var;
+    }
+    auto unwarp_or(__Ok &&candidate) const -> const __Ok &
+    {
+        if (!is_ok())
+            return candidate;
+        return var;
+    }
+    auto unwarp_or_error(std::string &&msg) const -> const auto &
+    {
+        if (!is_ok())
+            throw std::runtime_error(msg);
+        return var;
+    }
 
 
   private:
-    Ok   _value;
-    Err  _error;
-    bool _isError;
+    std::variant<__Ok, __Err> var;
 };
 
+template <class __Ok, class __Err, class __Result = Result<__Ok, __Err>>
+struct Ok {
+
+    Ok(__Result res) : var(__Result){]};
+
+    std::variant<__Ok, __Err> var;
+};
 
 
 }; // namespace mtd

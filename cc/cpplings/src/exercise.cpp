@@ -6,7 +6,6 @@
 
 
 
-
 auto temp_file() -> std::string
 {
     unsigned int thread_id = std::hash<std::thread::id>{}(std::this_thread::get_id());
@@ -44,9 +43,7 @@ auto Exercise::compile() -> mtd::Result<CompiledExercise, ExerciseOutput>
         return {CompiledExercise(this, {})};
     }
     else {
-        return {ExerciseOutput(
-            cmd.stdout_,
-            cmd.stderr_)};
+        return {ExerciseOutput(cmd.output)};
     }
 }
 
