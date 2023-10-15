@@ -5,6 +5,9 @@
 #include <utility>
 #include <vector>
 
+
+std::unordered_map<int, int> BinopPrecdence;
+
 std::unique_ptr<ExprAST> LogError(const char *str)
 {
     fprintf(stderr, "Error: %s\n", str);

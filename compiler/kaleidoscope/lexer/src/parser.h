@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,7 @@ template <class T, class Dp = std::default_delete<T>>
 using Uni = std::unique_ptr<T, Dp>;
 
 // BinopPrecdence
-static std::map<char, int> BinopPrecdence;
+extern std::unordered_map<int, int> BinopPrecdence;
 
 static int CurTok;
 static int get_next_token()
