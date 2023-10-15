@@ -141,7 +141,8 @@ Uni<ExprAST> ParseBinOpRHS(int ExprPrec, Uni<ExprAST> lhs)
         if (!rhs)
             return nullptr;
 
-        int NextPrec = gettok();
+        int NextPrec = GetTokenPrecedence();
+        // will pack the b+1 as rhs in a+b+1 (as example, here 2 '+' are same level, will run the #161? line
         if (TokPrec < NextPrec) {
             rhs = ParseBinOpRHS(TokPrec + 1, std::move(rhs));
 
