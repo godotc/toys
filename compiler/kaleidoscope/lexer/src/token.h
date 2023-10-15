@@ -17,33 +17,44 @@ enum EToken
     tok_number     = -5,
 };
 
-static std::string IdentifierStr;
-static double      NumVal;
+struct Token {
+    EToken type;
 
-static int gettok()
+    std::string IdentifierStr;
+    double      NumVal;
+};
+
+static Token cur_token;
+
+
+static int read_token()
 {
-    static int last_char = ' ';
+    static char last_char = ' ';
 
+    // clear spaces
     while (std::isspace(last_char)) {
+
         last_char = getchar();
     }
 
+    // string
     if (std::isalpha(last_char)) {
-        IdentifierStr = last_char;
+        cur_token.IdentifierStr.clear();
+        cur_token.IdentifierStr.push_back(last_char);
         while (std::isalnum(last_char = getchar())) {
-            IdentifierStr += last_char;
+            cur_token.IdentifierStr.push_back(last_char);
         }
 
-        if (IdentifierStr == "def") {
+        if (cur_token.IdentifierStr == "def") {
             return tok_def;
         }
-        if (IdentifierStr == "extern") {
+        if (cur_token.IdentifierStr == "extern") {
             return tok_extern;
         }
-
         return tok_identifier;
     }
 
+    // number
     if (std::isdigit(last_char) || last_char == '.') {
         std::string num_str;
         do {
@@ -51,18 +62,19 @@ static int gettok()
             last_char = getchar();
         } while (std::isdigit(last_char) || last_char == '.');
 
-        NumVal = strtof(num_str.c_str(), 0);
+        cur_token.NumVal = strtof(num_str.c_str(), nullptr);
         return tok_number;
     }
 
+    // Comment
     if (last_char == '#') {
-        // Comment until end of line.
         do {
             last_char = getchar();
         } while (last_char != EOF && last_char != '\n' && last_char != '\r');
 
+        // read next line
         if (last_char != EOF) {
-            return gettok();
+            return read_token();
         }
     }
 

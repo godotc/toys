@@ -18,12 +18,12 @@ using Uni = std::unique_ptr<T, Dp>;
 // BinopPrecdence
 extern std::unordered_map<int, int> BinopPrecdence;
 
-static int CurTok;
-static int get_next_token()
+static EToken get_next_token()
 {
-    return CurTok = gettok();
+    cur_token.type = (EToken)read_token();
+    cur_token;
+    return cur_token.type;
 }
-
 
 std::unique_ptr<ExprAST>      LogError(const char *str);
 std::unique_ptr<PrototypeAST> LogError_Prototype(const char *str);
@@ -47,10 +47,14 @@ Uni<ExprAST>      ParseIdentifierExpr();
 
 static int GetTokenPrecedence()
 {
-    if (!isascii(CurTok)) {
+    if (!isascii(cur_token.type)) {
         return -1;
     }
 
-    int TokPrec = BinopPrecdence[CurTok];
+    int TokPrec = BinopPrecdence[cur_token.type];
+    //    fprintf(stderr, "Size: %d\n", BinopPrecdence.size());
+    //    for (auto &[_, v] : BinopPrecdence) {
+    //        fprintf(stderr, "%d\n", v);
+    //    }
     return TokPrec <= 0 ? -1 : TokPrec;
 }

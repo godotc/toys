@@ -10,7 +10,8 @@ class ExprAST
     virtual ~ExprAST() = default;
 };
 
-class NumberExprAST : public ExprAST
+class NumberExprAST
+    : public ExprAST
 {
     double Val;
 
@@ -18,7 +19,8 @@ class NumberExprAST : public ExprAST
     NumberExprAST(double val) : Val(val) {}
 };
 
-class VariableExprAST : public ExprAST
+class VariableExprAST
+    : public ExprAST
 {
     std::string Name;
 
@@ -27,7 +29,8 @@ class VariableExprAST : public ExprAST
 };
 
 // BinaryExprAST - Expression class for a binary operator.
-class BinaryExprAST : public ExprAST
+class BinaryExprAST
+    : public ExprAST
 {
     char                     Op;
     std::unique_ptr<ExprAST> LHS, RHS;
@@ -37,7 +40,8 @@ class BinaryExprAST : public ExprAST
 };
 
 // CallExprAST - Expression class for function calls.
-class CallExprAST : public ExprAST
+class CallExprAST
+    : public ExprAST
 {
     std::string                           Callee;
     std::vector<std::unique_ptr<ExprAST>> Args;

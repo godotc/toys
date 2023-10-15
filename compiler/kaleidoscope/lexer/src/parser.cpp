@@ -23,7 +23,7 @@ std::unique_ptr<PrototypeAST> LogError_Prototype(const char *str)
 // parenexpr ::= number
 Uni<ExprAST> ParseNumberExpr()
 {
-    auto res = std::make_unique<NumberExprAST>(NumVal);
+    auto res = std::make_unique<NumberExprAST>(cur_token.NumVal);
 
     get_next_token();
     return res;
@@ -34,10 +34,14 @@ Uni<ExprAST> ParseNumberExpr()
 // parenexpr ::= expression
 Uni<ExprAST> ParseExpression()
 {
+    // if def a (b c) b+c+1
+
+    // will get a  variable_epr of 'b'
     auto lhs = ParsePrimary();
     if (!lhs)
         return nullptr;
 
+    // then continue parse bin op
     return ParseBinOpRHS(0, std::move(lhs));
 }
 
@@ -48,7 +52,7 @@ Uni<ExprAST> ParseParenExpr()
     auto v = ParseExpression();
     if (!v)
         return nullptr;
-    if (CurTok != ')') {
+    if (cur_token.type != ')') {
         return LogError("expect ')' ");
     }
     get_next_token(); // eat )
@@ -60,20 +64,19 @@ Uni<ExprAST> ParseParenExpr()
 // 	::= identifer ( expression )
 Uni<ExprAST> ParseIdentifierExpr()
 {
-    std::string IdentName = IdentifierStr;
+    std::string IdentName = cur_token.IdentifierStr;
 
     get_next_token(); // eat identifer
 
-    if (CurTok != ('(')) {
+    if (cur_token.type != ('(')) {
         return std::make_unique<VariableExprAST>(IdentName);
     }
 
     get_next_token(); // eat (
 
-
     std::vector<Uni<ExprAST>> Args;
 
-    if (CurTok != ')') {
+    if (cur_token.type != ')') {
         while (1) {
             if (auto arg = ParseExpression()) {
                 Args.push_back(std::move(arg));
@@ -82,10 +85,10 @@ Uni<ExprAST> ParseIdentifierExpr()
                 return nullptr;
             }
 
-            if (CurTok == ')') {
+            if (cur_token.type == ')') {
                 break;
             }
-            if (CurTok != ',') {
+            if (cur_token.type != ',') {
                 return LogError("Expect ')' or ',' in argument list");
             }
 
@@ -105,7 +108,7 @@ Uni<ExprAST> ParseIdentifierExpr()
 // 	::= parenexpr
 Uni<ExprAST> ParsePrimary()
 {
-    switch ((EToken)CurTok) {
+    switch ((EToken)cur_token.type) {
     // case tok_eof:
     // case tok_def:
     // case tok_extern:
@@ -128,18 +131,21 @@ Uni<ExprAST> ParsePrimary()
 Uni<ExprAST> ParseBinOpRHS(int ExprPrec, Uni<ExprAST> lhs)
 {
     while (1) {
+        // if def a(b c) b+c+1; will return the precedence of '+'
         int TokPrec = GetTokenPrecedence();
 
-        //
-        if (TokPrec < ExprPrec)
+        // asif here is  precedenc['+'] < 0 is wrong, when meet no operation that we set will return
+        if (TokPrec < ExprPrec) {
             return lhs;
+        }
 
-        int BinOp = CurTok;
-        get_next_token();
+        int BinOp = cur_token.type;
+        get_next_token(); // eat binop -> just to set cur_token as next token
 
         auto rhs = ParsePrimary();
-        if (!rhs)
+        if (!rhs) {
             return nullptr;
+        }
 
         int NextPrec = GetTokenPrecedence();
         // will pack the b+1 as rhs in a+b+1 (as example, here 2 '+' are same level, will run the #161? line
@@ -151,6 +157,7 @@ Uni<ExprAST> ParseBinOpRHS(int ExprPrec, Uni<ExprAST> lhs)
             }
         }
 
+        // a recursive operation ((lhs, rhs), rhs) rhs
         // merge lhs rght
         lhs = std::make_unique<BinaryExprAST>(BinOp, std::move(lhs), std::move(rhs));
     }
@@ -162,22 +169,22 @@ Uni<ExprAST> ParseBinOpRHS(int ExprPrec, Uni<ExprAST> lhs)
 Uni<PrototypeAST> ParsePrototype()
 {
 
-    if (CurTok != tok_identifier) {
+    if (cur_token.type != tok_identifier) {
         return LogError_Prototype("Expected function name in prototype");
     }
 std:;
-    std::string func_name = IdentifierStr;
-    get_next_token();
+    std::string func_name = cur_token.IdentifierStr;
+    get_next_token(); // eat (
 
-    if (CurTok != '(') {
+    if (cur_token.type != '(') {
         return LogError_Prototype("Expected '(' in prototype");
     }
 
     std::vector<std::string> ArgNames;
     while (get_next_token() == tok_identifier) {
-        ArgNames.push_back(IdentifierStr);
+        ArgNames.push_back(cur_token.IdentifierStr);
     }
-    if (CurTok != ')') {
+    if (cur_token.type != ')') {
         return LogError_Prototype("Expected ')' in prototype");
     }
 
@@ -190,13 +197,15 @@ std:;
 // definition ::= 'def' prototype expression
 Uni<FunctionAST> ParseDefinition()
 {
+    // def a (b c) b+c+1
     get_next_token(); // eat def
 
-    auto proto = ParsePrototype();
+    auto proto = ParsePrototype(); // def a (b c)
     if (!proto) {
         return nullptr;
     }
 
+    //  a+b+1
     if (auto expr = ParseExpression()) {
         return std::make_unique<FunctionAST>(std::move(proto), std::move(expr));
     }
