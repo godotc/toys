@@ -9,7 +9,6 @@ static void HandleDefinition();
 // top ::== definition | external | expression | ';'
 static void MainLoop();
 
-
 int main(int argc, char **argv)
 {
     // Install standard binary operators.
@@ -19,9 +18,8 @@ int main(int argc, char **argv)
     BinopPrecdence['-'] = 20;
     BinopPrecdence['*'] = 40; // highest.
 
-    fprintf(stderr, "ready> ");
     get_next_token();
-
+    fprintf(stderr, "ready> ");
     MainLoop();
 
     return 0;
@@ -32,21 +30,24 @@ int main(int argc, char **argv)
 static void MainLoop()
 {
     while (true) {
-        fprintf(stderr, "ready> ");
+        auto type = token_str_mapping[cur_token.type];
+        printf("%s\n", type.c_str());
 
+        // def foo(x y) x+y y;
         switch (cur_token.type) {
         case tok_eof:
             return;
         case ';':
-            get_next_token();
             break;
         case tok_def:
+            // def foo(x y) x+y
             HandleDefinition();
             break;
         case tok_extern:
             HandleExtern();
             break;
-        default:
+        default: // tok_identifier or other
+            // y;
             HandleTopLevelExpression();
             return;
         }
@@ -54,18 +55,14 @@ static void MainLoop()
 }
 
 static void HandleDefinition()
-
 {
-    if (ParseDefinition()) {
+    if (auto FuncExpr = ParseDefinition()) {
         fprintf(stderr, "Parsed a function definition.\n");
+        fprintf(stderr, "%s\n", FuncExpr->to_string().c_str());
         fflush(stderr);
     }
-    else {
-        // Skip cur_token for error recovery.
-        // if previous is def, did not update, will go this way to read next token
-        // But one line from stdin in done, so it will block here
+    else
         get_next_token();
-    }
 }
 
 static void HandleExtern()
@@ -74,21 +71,18 @@ static void HandleExtern()
         fprintf(stderr, "Parsed an extern\n");
         fflush(stderr);
     }
-    else {
-        // Skip cur_token for error recovery.
+    else
         get_next_token();
-    }
 }
 
 static void HandleTopLevelExpression()
 {
     // Evaluate a top-level expression into an anonymous function.
-    if (ParseTopLevelExpr()) {
+    if (auto FuncExpr = ParseTopLevelExpr()) {
         fprintf(stderr, "Parsed a top-level expr\n");
+
         fflush(stderr);
     }
-    else {
-        // Skip cur_token for error recovery.
+    else
         get_next_token();
-    }
 }

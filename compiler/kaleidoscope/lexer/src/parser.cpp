@@ -1,6 +1,8 @@
 #include "parser.h"
 #include "ast.h"
+#include "token.h"
 #include <algorithm>
+#include <cstdio>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -50,8 +52,9 @@ Uni<ExprAST> ParseParenExpr()
 {
     get_next_token(); // eat (
     auto v = ParseExpression();
-    if (!v)
+    if (!v) {
         return nullptr;
+    }
     if (cur_token.type != ')') {
         return LogError("expect ')' ");
     }
@@ -59,21 +62,44 @@ Uni<ExprAST> ParseParenExpr()
     return v;
 }
 
+// primary
+// 	::= identifierexpr
+// 	::= nubmerexpr
+// 	::= parenexpr
+Uni<ExprAST> ParsePrimary()
+{
+    switch ((EToken)cur_token.type) {
+    // case tok_eof:
+    // case tok_def:
+    // case tok_extern:
+    case tok_identifier:
+        return ParseIdentifierExpr();
+    case tok_number:
+        return ParseNumberExpr();
+    case '(':
+        return ParseParenExpr();
+
+    default:
+        return LogError("unknown token when expecting an expression");
+    }
+}
+
+
 // identifierexpr
 // 	::= identifer
 // 	::= identifer ( expression )
 Uni<ExprAST> ParseIdentifierExpr()
 {
-    std::string IdentName = cur_token.IdentifierStr;
+    std::string IdentName = cur_token.IdentifierStr; // y
 
     get_next_token(); // eat identifer
 
-    if (cur_token.type != ('(')) {
+    if (cur_token.type != '(') {
         return std::make_unique<VariableExprAST>(IdentName);
     }
 
+    // or a call
     get_next_token(); // eat (
-
     std::vector<Uni<ExprAST>> Args;
 
     if (cur_token.type != ')') {
@@ -99,29 +125,6 @@ Uni<ExprAST> ParseIdentifierExpr()
     get_next_token(); // eat )
 
     return std::make_unique<CallExprAST>(IdentName, std::move(Args));
-}
-
-
-// primary
-// 	::= identifierexpr
-// 	::= nubmerexpr
-// 	::= parenexpr
-Uni<ExprAST> ParsePrimary()
-{
-    switch ((EToken)cur_token.type) {
-    // case tok_eof:
-    // case tok_def:
-    // case tok_extern:
-    case tok_identifier:
-        return ParseIdentifierExpr();
-    case tok_number:
-        return ParseNumberExpr();
-    case '(':
-        return ParseParenExpr();
-
-    default:
-        return LogError("unknown token when expecting an expression");
-    }
 }
 
 
@@ -168,13 +171,14 @@ Uni<ExprAST> ParseBinOpRHS(int ExprPrec, Uni<ExprAST> lhs)
 // 	::= id '(' id* ')'
 Uni<PrototypeAST> ParsePrototype()
 {
-
+    // a(b c) b+c c;
     if (cur_token.type != tok_identifier) {
+        fprintf(stderr, "%s", cur_token.to_string().c_str());
         return LogError_Prototype("Expected function name in prototype");
     }
-std:;
-    std::string func_name = cur_token.IdentifierStr;
-    get_next_token(); // eat (
+
+    std::string func_name = cur_token.IdentifierStr; // a
+    get_next_token();                                // eat (
 
     if (cur_token.type != '(') {
         return LogError_Prototype("Expected '(' in prototype");
@@ -224,8 +228,9 @@ Uni<PrototypeAST> ParseExtern()
 Uni<FunctionAST> ParseTopLevelExpr()
 {
     if (auto expr = ParseExpression()) {
-        // make an anoymous proto
-        auto proto = std::make_unique<PrototypeAST>("", std::vector<std::string>{});
+        // fprintf(stderr, "%s\n", expr->to_string().c_str());
+        //  make an anoymous proto
+        auto proto = std::make_unique<PrototypeAST>("__anon_expr", std::vector<std::string>());
         return std::make_unique<FunctionAST>(std::move(proto), std::move(expr));
     }
     return nullptr;
