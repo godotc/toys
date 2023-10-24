@@ -1,7 +1,7 @@
-import {useState} from "react";
-import {Pressable, StyleSheet, TextInput} from "react-native";
-import {Text} from "react-native";
-import {FetchResult} from "react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet, TextInput } from "react-native";
+import { Text } from "react-native";
+import { FetchResult } from "react-native";
 
 const print = msg => console.log(msg)
 
@@ -16,18 +16,17 @@ export const RecoredPage = () => {
 
 			<TextInput
 				style={styles.RecorederInput}
-				onChangeText={(msg) => {print(msg.length == 0 ? "Handle text change failed" : msg); setContent(msg);}}
+				onChangeText={(msg) => { print(msg.length == 0 ? "Handle text change failed" : msg); setContent(msg); }}
 			/>
 
 			<br />
 
 			<Pressable
-				style={[styles.SubmitButton, {backgroundColor: btnColor}]}
+				style={[styles.SubmitButton, { backgroundColor: btnColor }]}
 				onPress={() => print(content)}
-				onHoverIn={() => {setBtnColor("#333");}}
-				onHoverOut={() => {setBtnColor(default_color);}}
+				onHoverIn={() => { setBtnColor("#333"); }}
+				onHoverOut={() => { setBtnColor(default_color); }}
 
-				children={<Text children="Submit" />}
 			/>
 		</div>
 	);

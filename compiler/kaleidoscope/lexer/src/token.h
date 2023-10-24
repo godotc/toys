@@ -4,7 +4,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 #include <string>
 #include <unordered_map>
 
@@ -32,8 +32,13 @@ inline auto token_str_mapping = std::unordered_map<EToken, std::string>{
 struct Token {
     EToken type;
 
-    std::string IdentifierStr;
-    double      NumVal;
+    std::string val;
+
+    double number()
+    {
+            strtof()
+    }
+
 
     std::string to_string()
     {
