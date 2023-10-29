@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "incremental": true,
+        // gen
+        "declaration": true, // gen d.ts
+        "declarationMap": true, // source map for d.ts
+        // "emitDeclarationOnly": true,
+        "skipLibCheck": true,
+        // esmododle and  commonjs compat
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        //
+        "resolveJsonModule": true,
+        "strict": true
+    }
+}
