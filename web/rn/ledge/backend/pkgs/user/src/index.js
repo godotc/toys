@@ -1,17 +1,23 @@
+import express from 'express'
+
+const app = express()
 
 import { user } from '@ledge/db';
 
-const newUserProps = {
-    name: 'John Doe',
-    email: 'john@example.com',
-    password: 'securepassword',
-};
 
 
-user.createUser(newUserProps)
-    .then((createdUser) => {
-        console.log('User created:', createdUser);
+app.post('/user/add', (req, resp) => {
+
+
+    /**@type('user').newUserProps */
+    const data = req.body;
+
+    const createdUser = user.createUser({
+        email: data['email'],
+        name: data['name'],
+        password: data['password']
     })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+
+    resp.send({ msg: "Create success", id: createdUser.id })
+
+})

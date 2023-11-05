@@ -33,6 +33,7 @@
     ]
   },
   "dependencies": {
-    "@ledge/db": "workspace:^"
+    "@ledge/db": "workspace:^",
+    "express": "^4.18.2"
   }
 }
