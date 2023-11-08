@@ -1,3 +1,3 @@
 /**
- * @typedef {express.RequestHandler} RequestHandler
+ * @typedef {import("express").RequestHandler} RequestHandler
  */

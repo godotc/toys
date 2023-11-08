@@ -42,7 +42,7 @@ describe("User CRUD Operations", () => {
 
     it("should delete a user", async () => {
         await deleteUserByEmail(defaultUser.email);
-        const user = await getUserByEmail("john@example.com");
+        const user = await getUserByEmail(defaultUser.email);
         expect(user).toBeNull();
     });
 });
