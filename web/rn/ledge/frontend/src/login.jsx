@@ -19,8 +19,7 @@ function LoginPanel({ navigation }) {
     }, [account, password])
 
 
-
-    const tryLogin = () => {
+    const tryLogin = async () => {
         console.log(account)
         console.log(password)
         if (account == undefined || password == undefined) {
@@ -34,6 +33,29 @@ function LoginPanel({ navigation }) {
         if (account.length == 0 || password == 0) {
             alert("Empry acount/password")
             return;
+        }
+        // the login requset to server on react?
+
+        const params = {
+        }
+
+        try {
+            const resp = await fetch("localhost:8080/user/login", {
+                method: 'POST',
+                headers: { 'Conent-Type': 'application/json', },
+                body: JSON.stringify({ account, password }),
+
+            })
+
+            if (resp.ok) {
+                const data = await resp.json();
+                console.log(data);
+            } else {
+                alert("Login failed, please check your crendentials.");
+            }
+        } catch (err) {
+            alert("Login failed, please try agagin.");
+            console.err(err)
         }
 
     }

@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 import { prisma } from "./index";
 
 export type NewUserProps = {
-    name: string;
     email: string;
     password: string;
 };
@@ -23,7 +22,6 @@ export const createUser = async (params: NewUserProps) => {
 
         const user = await prisma.user.create({
             data: {
-                name: params.name,
                 email: params.email,
                 password: params.password,
             },
@@ -59,6 +57,7 @@ export const getUserByEmail = async (email: string) => {
     });
     return user;
 };
+
 
 // Method to delete a user by their email
 export const deleteUserByEmail = async (email: string) => {

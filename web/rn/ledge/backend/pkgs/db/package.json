@@ -11,6 +11,7 @@
   "scripts": {
     "pull": "prisma db pull",
     "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
     "test": "jest",
     "build": "tsc"
   },
@@ -24,7 +25,8 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@prisma/client": "5.5.2"
+    "@prisma/client": "5.5.2",
+    "dotenv": "^16.3.1"
   },
   "jest": {
     "preset": "ts-jest",

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "backend/pkgs/user"
+		},
+		{
+			"path": "backend/pkgs/db"
+		}
+	],
+	"settings": {}
+}
