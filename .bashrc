@@ -13,6 +13,7 @@ eval "$(dircolors -p | \
 	sed 's/ 4[0-9];/ 01;/; s/;4[0-9];/;01;/g; s/;4[0-9] /;01 /' | \
     	dircolors /dev/stdin)"
 
+
 PROMPT_COMMAND=build_prompt
 
 is_git_repository() {
@@ -111,12 +112,6 @@ build_prompt() {
 
 
 
-
-
-
-
-
-
 export PATH="$PATH:$(go env GOPATH)/bin"
 export PATH="$PATH:$(go env GOROOT)/bin"
 
@@ -133,7 +128,7 @@ export CARGO_NET_GIT_FETCH_WITH_CLI=true
 
 export NODE_PATH=/usr/lib/node_modules
 
-alias xmk=xmake
+
 alias gr="go run"
 alias py="python"
 alias tat="tmux attach -t"
@@ -141,4 +136,12 @@ alias sshRoot="ssh root@godot.link"
 alias dk=docker
 alias pm=pacman
 alias nhh='npx hardhat'
-alias v=vim
+alias v=nvim
+
+source ~/.bashrc_locale
+
+# >>> xmake >>>
+test -f "/home/hypercreep/.xmake/profile" && source "/home/hypercreep/.xmake/profile"
+alias xmk=xmake
+alias xmr="xmake b && xmake r"
+# <<< xmake <<<

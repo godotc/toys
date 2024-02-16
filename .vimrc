@@ -1,7 +1,7 @@
 call plug#begin()
 
 "Plug 'ycm-core/YouCompleteMe'
-Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'scrooloose/nerdtree'  "目录树
 Plug 'tpope/vim-surround'
 Plug 'jiangmiao/auto-pairs' "括号配对
@@ -221,3 +221,12 @@ let g:floaterm_height=0.8
 let g:floaterm_with=0.9
 "let g:floaterm_wintype=float 
 let g:floaterm_autoclose=2
+
+" WSL yank support
+let s:clip = '/mnt/c/Windows/System32/clip.exe'  " change this path according to your mount point
+if executable(s:clip)
+    augroup WSLYank
+        autocmd!
+        autocmd TextYankPost * if v:event.operator ==# 'y' | call system(s:clip, @0) | endif
+    augroup END
+endif
