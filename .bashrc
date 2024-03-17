@@ -145,3 +145,4 @@ test -f "/home/hypercreep/.xmake/profile" && source "/home/hypercreep/.xmake/pro
 alias xmk=xmake
 alias xmr="xmake b && xmake r"
 # <<< xmake <<<
+. "$HOME/.cargo/env"
