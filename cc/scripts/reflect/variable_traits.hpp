@@ -43,6 +43,14 @@ struct variable_traits<T *> : internal::basic_variable_traits<T> {
 
 template <typename Class, typename T>
 struct variable_traits<T Class::*> : internal::basic_variable_traits<T Class::*> {
-    using pointer_type = T Class::*;
-    using static_class = Class;
+    using pointer_type             = T Class::*;
+    using static_class             = Class;
+    static constexpr bool is_const = false;
+};
+
+template <typename Class, typename T>
+struct variable_traits<const T Class::*> : internal::basic_variable_traits<const T Class::*> {
+    using pointer_type             = T Class::*;
+    using static_class             = Class;
+    static constexpr bool is_const = true;
 };
