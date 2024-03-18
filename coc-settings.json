@@ -84,6 +84,11 @@
 					}
 				}
 			}
+		},
+		  "rust": {
+			"command": "rust-analyzer",
+			"filetypes": ["rust"],
+			"rootPatterns": ["Cargo.toml"]
 		}
 	},
   "@ignored/coc-solidity.telemetry": true,
