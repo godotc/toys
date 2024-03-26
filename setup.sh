@@ -35,14 +35,25 @@ cd ~
 #git clone git@github.com:godotc/toys.git
 cd toys
 PWD=`pwd`
-rm ~/.vimrc ~/.bashrc ~/.config/nvim/coc-settings.json ~/.vim/coc-settings.json
+
+mkdir -p ~/.config/nvim \
+	~/.vim/autoload \
+    /tmp/vim-setup  \
+    "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/ \
+	~/.config/nvim/init.lua
+
+rm ~/.vimrc ~/.bashrc \
+	~/.config/nvim/coc-settings.json \
+	~/.vim/coc-settings.json \
+	~/.config/nvim/init.lua
+
 ln -s $PWD/.bashrc ~/.bashrc
 ln -s $PWD/.vimrc ~/.vimrc
 ln -s $PWD/coc-settings.json  ~/.config/nvim/coc-settings.json
 ln -s $PWD/coc-settings.json  ~/.vim/coc-settings.json
+ln -s $PWD/init.lua  ~/.config/nvim/init.lua
 
 
-mkdir /tmp/vim-setup
 cd /tmp/vim-setup/
 git clone git@github.com:junegunn/vim-plug.git
 cp vim-plug/plug.vim ~/.vim/autoload/
@@ -51,3 +62,7 @@ cp vim-plug/plug.vim "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/
 set +x
 
 cd ~
+
+
+# execute this on windows to disable the vEthernet's firewall of WSL!!!
+# Set-NetFirewallProfile -Profile Public -DisabledInterfaceAliases "vEthernet (WSL)"

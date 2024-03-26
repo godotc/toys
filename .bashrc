@@ -122,7 +122,6 @@ eval "$(pyenv init -)"
 
 
 
-
 # Cargo cannot add 
 export CARGO_NET_GIT_FETCH_WITH_CLI=true
 
@@ -145,3 +144,13 @@ test -f "/home/hypercreep/.xmake/profile" && source "/home/hypercreep/.xmake/pro
 alias xmk=xmake
 alias xmr="xmake b && xmake r"
 # <<< xmake <<<
+. "$HOME/.cargo/env"
+
+port=10809
+nameserver=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}')   # find nameserver
+export http_proxy=$nameserver:$port
+export https_proxy=$nameserver:$port
+
+
+
+

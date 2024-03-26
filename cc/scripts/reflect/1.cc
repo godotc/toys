@@ -6,7 +6,7 @@ bool foo(int) { return false; }
 
 struct Person {
     int  age;
-    bool IsTransexl();
+    bool IsTransaxle();
     bool IsFemale();
 };
 
@@ -38,12 +38,15 @@ template <class TupleTypes, size_t Index>
 using get_arg_t = get_arg<TupleTypes, Index>::type;
 
 
+
+
 template <class T>
 struct variable_traits;
+
 template <class Type, class Class>
 struct variable_traits<Type(Class::*)> {
-    using type        = Type;
-    using staic_class = Class;
+    using type         = Type;
+    using static_class = Class;
 };
 
 
@@ -65,7 +68,7 @@ struct TypeInfo;
 BEGIN_CLASS(Person)
   FUNCTIONS(
       FUNCTION(&Person::IsFemale),
-      FUNCTION(&Person::IsTransexl)
+      FUNCTION(&Person::IsTransaxle)
   )
 END_CLASS()
 // clang-format off
@@ -85,10 +88,10 @@ int main()
     //  show_impl<param>{};
     //
     using info                        = function_traits<decltype(&Person::IsFemale)>;
-    bool (Person::*is_transexl)(void) = &Person::IsTransexl;
+    bool (Person::*is_transaxle)(void) = &Person::IsTransaxle;
     int(Person::*the_age)             = &Person::age;
 
-    // varialbe
+    // variable
     using var_info = variable_traits<decltype(&Person::age)>;
     using type     = var_info::type;
 }
