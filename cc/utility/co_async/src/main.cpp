@@ -1,3 +1,11 @@
+/**
+ *  Author: @godot42
+ *  Create Time: 2024-03-28 04:35:12
+ *  Modified by: @godot42
+ *  Modified time: 2024-03-28 04:50:57
+ *  Description:
+ */
+
 
 
 
@@ -12,10 +20,10 @@
 
 using namespace std::chrono_literals;
 
-struct SuspendNenver {
+struct SuspendNever {
     constexpr bool await_ready() const noexcept
     {
-        // never stop if returned by initialzied/yield_value/return_value
+        // never stop if returned by initialized/yield_value/return_value
         return true;
     }
 
@@ -67,10 +75,10 @@ struct Promise {
     Promise(Promise &&) = delete;
     ~Promise() noexcept = default;
 
-    // before initialze_suspend(), which do contruction before init
+    // before initialize_suspend(), which do construction before init
     std::coroutine_handle<Promise> get_return_object() { return std::coroutine_handle<Promise>::from_promise(*this); }
 
-    // on first initialze as a task -> block
+    // on first initialize as a task -> block
     auto initial_suspend() { return std::suspend_always(); }
 
     // after return value/return void
@@ -158,7 +166,6 @@ struct Task {
 
         std::coroutine_handle<> await_suspend(std::coroutine_handle<> coroutine) const noexcept
         {
-
             m_Coroutine.promise().m_Previous = coroutine;
             return m_Coroutine;
         }
@@ -174,14 +181,14 @@ struct Task {
 struct Scheduler {
 
     struct TimerEntry {
-        std::chrono::system_clock::time_point expeired_time;
+        std::chrono::system_clock::time_point expired_time;
         std::coroutine_handle<>               handle;
 
         bool operator<(const TimerEntry &other) const
         {
             // NOTICE: the priority_queue is the big top head! need a reverse
-            // we need the smaller timepint(earlier) at the top
-            return expeired_time > other.expeired_time;
+            // we need the smaller timepoint (earlier) at the top
+            return expired_time > other.expired_time;
         }
     };
 
@@ -196,9 +203,9 @@ struct Scheduler {
     {
         m_ReadyQueue.push_front(handle);
     }
-    void AddTimer(std::chrono::system_clock::time_point expeired_time, std::coroutine_handle<> handle)
+    void AddTimer(std::chrono::system_clock::time_point expired_time, std::coroutine_handle<> handle)
     {
-        m_Timers.push({expeired_time, handle});
+        m_Timers.push({expired_time, handle});
     }
 
     void RunAll()
@@ -216,7 +223,7 @@ struct Scheduler {
             while (!m_Timers.empty())
             {
                 const auto &timer = m_Timers.top();
-                if (timer.expeired_time > now) {
+                if (timer.expired_time > now) {
                     break;
                 }
 
@@ -240,22 +247,22 @@ Scheduler &GetScheduler()
 struct SleepAwaiter {
     using promise_type = Promise<void>;
 
-    std::chrono::system_clock::time_point m_ExperiedTime;
+    std::chrono::system_clock::time_point m_ExpiredTime;
 
     std::coroutine_handle<promise_type> m_Coroutine;
 
     bool await_ready() const noexcept
     {
-        return std::chrono::system_clock::now() >= m_ExperiedTime;
+        return std::chrono::system_clock::now() >= m_ExpiredTime;
     }
 
     std::coroutine_handle<> await_suspend(std::coroutine_handle<> coroutine) const noexcept
     {
-        // synchornous way
-        // std::this_thread::sleep_until(m_ExperiedTime);
+        // synchronous way
+        // std::this_thread::sleep_until(m_ExpiredTime);
         // return coroutine;
 
-        GetScheduler().AddTimer(m_ExperiedTime, coroutine);
+        GetScheduler().AddTimer(m_ExpiredTime, coroutine);
         return std::noop_coroutine();
     }
     constexpr void await_resume() const noexcept {}
