@@ -1,17 +1,20 @@
 
 
 
-#include <chrono>
 #include <coroutine>
-#include <deque>
 #include <exception>
-#include <queue>
-#include <thread>
+#include <iostream>
+#include <stacktrace>
 
 #include "ut.hpp"
 
-using namespace std::chrono_literals;
 
+
+/*
+ * 3 interfaces `Awaitable` required for compiler on coroutine
+ * system call process:
+ * if await_ready() is ture, go to await_resume(). Or call the await_suspend()
+ */
 struct SuspendNenver {
     constexpr bool await_ready() const noexcept
     {
@@ -29,6 +32,11 @@ struct SuspendNenver {
     }
     constexpr void await_resume() const noexcept {}
 };
+
+// struct RepeatAwaitable {
+//  implement this for some struct, define it's awaitable tpye inplementations
+//    RepeatAwaiter operator co_await() { return RepeatAwaiter(); }
+//};
 
 
 
@@ -57,6 +65,9 @@ struct PreviousAwaiter {
 
 template <typename RetType>
 struct Promise {
+    // call a task,  and in this task call co_await() another task,
+    // and the first task's caller will receive return value by the
+    // co_await's task
     std::coroutine_handle<> m_Previous = nullptr;
     std::exception_ptr      m_ExceptionPtr;
     union
@@ -80,6 +91,10 @@ struct Promise {
     auto unhandled_exception()
     {
         debug(), "unhandled_exception";
+        // 1. throw; // equivalent with -> std::rethrow_exception(std::current_exception());
+        // 2. // throw; if still do not handle, will be ignored
+
+        // 3. store it
         m_ExceptionPtr = std::current_exception();
     }
 
@@ -130,6 +145,8 @@ struct Promise<void> {
     void result()
     {
         if (m_ExceptionPtr) [[unlikely]] {
+            // auto st = std::stacktrace::current();
+            // std::cerr << std::to_string(st);
             std::rethrow_exception(m_ExceptionPtr);
         }
     }
@@ -168,111 +185,8 @@ struct Task {
         }
     };
     auto operator co_await() const { return Awaiter(m_Coroutine); }
-    operator std::coroutine_handle<>() const { return m_Coroutine; }
 };
 
-struct Scheduler {
-
-    struct TimerEntry {
-        std::chrono::system_clock::time_point expeired_time;
-        std::coroutine_handle<>               handle;
-
-        bool operator<(const TimerEntry &other) const
-        {
-            // NOTICE: the priority_queue is the big top head! need a reverse
-            // we need the smaller timepint(earlier) at the top
-            return expeired_time > other.expeired_time;
-        }
-    };
-
-
-    std::deque<std::coroutine_handle<>> m_ReadyQueue;
-    std::priority_queue<TimerEntry>     m_Timers;
-
-
-    Scheduler &operator=(Scheduler &&) = delete;
-
-    void AddTask(std::coroutine_handle<> handle)
-    {
-        m_ReadyQueue.push_front(handle);
-    }
-    void AddTimer(std::chrono::system_clock::time_point expeired_time, std::coroutine_handle<> handle)
-    {
-        m_Timers.push({expeired_time, handle});
-    }
-
-    void RunAll()
-    {
-        while (!m_Timers.empty() || !m_ReadyQueue.empty())
-        {
-            while (!m_ReadyQueue.empty())
-            {
-                auto task = m_ReadyQueue.front();
-                m_ReadyQueue.pop_front();
-                task.resume();
-            }
-
-            auto now = std::chrono::system_clock::now();
-            while (!m_Timers.empty())
-            {
-                const auto &timer = m_Timers.top();
-                if (timer.expeired_time > now) {
-                    break;
-                }
-
-                // timer.handle.resume();
-                m_Timers.pop();
-                m_ReadyQueue.push_front(timer.handle);
-            };
-        }
-    }
-};
-
-
-Scheduler &GetScheduler()
-{
-    static Scheduler scheduler;
-    return scheduler;
-}
-
-
-
-struct SleepAwaiter {
-    using promise_type = Promise<void>;
-
-    std::chrono::system_clock::time_point m_ExperiedTime;
-
-    std::coroutine_handle<promise_type> m_Coroutine;
-
-    bool await_ready() const noexcept
-    {
-        return std::chrono::system_clock::now() >= m_ExperiedTime;
-    }
-
-    std::coroutine_handle<> await_suspend(std::coroutine_handle<> coroutine) const noexcept
-    {
-        // synchornous way
-        // std::this_thread::sleep_until(m_ExperiedTime);
-        // return coroutine;
-
-        GetScheduler().AddTimer(m_ExperiedTime, coroutine);
-        return std::noop_coroutine();
-    }
-    constexpr void await_resume() const noexcept {}
-};
-
-
-Task<void> sleep_until(std::chrono::system_clock::time_point tp)
-{
-    co_await SleepAwaiter(tp);
-    co_return;
-}
-
-Task<void> sleep_for(std::chrono::system_clock::duration dur)
-{
-    co_await SleepAwaiter(std::chrono::system_clock::now() + dur);
-    co_return;
-}
 
 
 Task<void> nobody()
@@ -290,45 +204,25 @@ Task<int> world()
 
 Task<int> hello()
 {
+    debug(), "hello";
     auto i = co_await world();
     co_await nobody();
-
-    co_await sleep_for(1s);
-    debug(), "hello";
-    co_await sleep_for(3s);
-    debug(), "hello";
     co_return i + 1;
-}
-Task<int> hello2()
-{
-    auto i = co_await world();
-
-    co_await sleep_for(1ms);
-    debug(), "hello2";
-    co_await sleep_for(2s);
-    debug(), "hello2";
-    co_return i + 1;
+    debug(), "hello";
 }
 
 
 
 int main()
 {
-    try {
-        Task t  = hello();
-        auto t2 = hello2();
-        GetScheduler().AddTask(t);
-        GetScheduler().AddTask(t2);
+    Task t = hello();
 
-        GetScheduler().RunAll();
+    int i = 0;
 
-        debug(), t.m_Coroutine.promise().result();
-        debug(), t2.m_Coroutine.promise().result();
+    while (!t.m_Coroutine.done()) {
+        t.m_Coroutine.resume();
+        debug(), "[main] revice return value from hello:", i++, "->", t.m_Coroutine.promise().result();
     }
-    catch (std::exception &exception) {
-        debug(), exception.what();
-    }
-
 
     return 0;
 }
