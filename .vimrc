@@ -192,6 +192,15 @@ nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 
 
+nnoremap <silent><nowait> <space>l0  :set foldlevel=0<CR>
+nnoremap <silent><nowait> <space>l1  :set foldlevel=1<CR>
+nnoremap <silent><nowait> <space>l2  :set foldlevel=2<CR>
+nnoremap <silent><nowait> <space>l3  :set foldlevel=3<CR>
+nnoremap <silent><nowait> <space>l4  :set foldlevel=4<CR>
+nnoremap <silent><nowait> <space>l5  :set foldlevel=5<CR>
+nnoremap <silent><nowait> <space>l6  :set foldlevel=6<CR>
+
+
 
 
 " Status Line Color

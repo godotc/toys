@@ -4,172 +4,18 @@
 #include <chrono>
 #include <coroutine>
 #include <cstddef>
+#include <cstdlib>
 #include <exception>
 #include <span>
 #include <tuple>
 #include <utility>
 #include <variant>
 
-#include "helpers.hpp"
 #include "schelder.hpp"
-#include "type_list.hpp"
 #include "ut.hpp"
 
 using namespace std::chrono_literals;
 
-struct PreviousAwaiter {
-    std::coroutine_handle<> m_Previous;
-
-    constexpr bool await_ready() const noexcept
-    {
-        // block it
-        return false;
-    }
-
-    std::coroutine_handle<> await_suspend(std::coroutine_handle<> coroutine) const noexcept
-    {
-        // has parent coroutine
-        if (m_Previous) {
-            return m_Previous;
-        }
-        //  stop
-        return std::noop_coroutine();
-    }
-    constexpr void await_resume() const noexcept {};
-};
-
-
-
-template <typename RetType>
-struct Promise {
-    std::coroutine_handle<> m_Previous = nullptr;
-    std::exception_ptr      m_ExceptionPtr;
-    Uninitialized<RetType>  m_Result;
-
-    // Promise() noexcept  = default;
-    // Promise(Promise &&) = delete;
-    //~Promise() noexcept = default;
-    Promise &operator=(Promise &&) = delete;
-
-    // before initialze_suspend(), which do contruction before init
-    std::coroutine_handle<Promise> get_return_object() { return std::coroutine_handle<Promise>::from_promise(*this); }
-    // on first initialze as a task -> block
-    auto initial_suspend() { return std::suspend_always(); }
-    // after return value/return void
-    auto final_suspend() noexcept { return PreviousAwaiter(m_Previous); /* handle sub coroutine*/ }
-    auto unhandled_exception() { m_ExceptionPtr = std::current_exception(); }
-
-    // co_yield
-    /* disable yield in task, can only co_return
-    auto yield_value(RetType ret)
-    {
-        new (&m_Result) RetType(std::move(ret));
-        return std::suspend_always(); // block
-    }*/
-
-    // co_return
-    void return_value(RetType &&ret) { m_Result.put_values(std::move(ret)); }
-    void return_value(RetType const &ret) { m_Result.put_values(ret); }
-
-    RetType result()
-    {
-        if (m_ExceptionPtr) [[unlikely]] {
-            std::rethrow_exception(m_ExceptionPtr);
-        }
-
-        return m_Result.move_value();
-    }
-};
-
-template <>
-struct Promise<void> {
-    std::coroutine_handle<> m_Previous = nullptr;
-    std::exception_ptr      m_ExceptionPtr{};
-
-
-    Promise &operator=(Promise &&) = delete;
-
-    std::coroutine_handle<Promise> get_return_object() { return std::coroutine_handle<Promise>::from_promise(*this); }
-
-    auto initial_suspend() { return std::suspend_always(); }
-    auto final_suspend() noexcept { return PreviousAwaiter(m_Previous); /* handle sub coroutine*/ }
-    auto unhandled_exception() { m_ExceptionPtr = std::current_exception(); }
-    // auto yield_value() { m_ExceptionPtr = nullptr; }
-    void return_void() { m_ExceptionPtr = nullptr; }
-
-    void result()
-    {
-        if (m_ExceptionPtr) [[unlikely]] {
-            std::rethrow_exception(m_ExceptionPtr);
-        }
-    }
-};
-
-
-template <typename T = void>
-struct Task {
-    using promise_type = Promise<T>;
-
-    // curent
-    std::coroutine_handle<promise_type> m_Coroutine;
-
-    // 35 rule? and the compiler requires it...
-    Task(std::coroutine_handle<promise_type> coroutine) : m_Coroutine(coroutine) {}
-    Task(Task &&) = delete;
-    ~Task() { m_Coroutine.destroy(); }
-
-    struct Awaiter {
-        std::coroutine_handle<promise_type> m_Coroutine;
-
-        constexpr bool await_ready() const noexcept
-        {
-            // suspend when not ready
-            return false;
-        }
-
-        std::coroutine_handle<> await_suspend(std::coroutine_handle<> coroutine) const noexcept
-        {
-
-            m_Coroutine.promise().m_Previous = coroutine;
-            return m_Coroutine;
-        }
-        T await_resume() const noexcept { return m_Coroutine.promise().result(); }
-    };
-    auto operator co_await() const { return Awaiter(m_Coroutine); }
-    operator std::coroutine_handle<>() const { return m_Coroutine; }
-};
-
-
-
-struct SleepAwaiter {
-    std::chrono::system_clock::time_point m_ExperiedTime;
-
-    bool await_ready() const noexcept { return std::chrono::system_clock::now() >= m_ExperiedTime; }
-
-    std::coroutine_handle<> await_suspend(std::coroutine_handle<> coroutine) const noexcept
-    {
-        // synchornous way
-        // std::this_thread::sleep_until(m_ExperiedTime);
-        // return coroutine;
-
-        GetScheduler().AddTimer(m_ExperiedTime, coroutine);
-        return std::noop_coroutine();
-    }
-    constexpr void await_resume() const noexcept {}
-};
-
-
-Task<void> sleep_until(std::chrono::system_clock::time_point tp)
-{
-    co_await SleepAwaiter(tp);
-    co_return;
-}
-
-Task<void> sleep_for(std::chrono::system_clock::duration dur)
-{
-    co_await SleepAwaiter(std::chrono::system_clock::now() + dur);
-    co_return;
-}
 
 
 struct ReturnPreviousPromise {
@@ -222,10 +68,10 @@ namespace detail {
 				return coroutine;
 			}
 			m_Control.m_Previous = coroutine;
-			for (auto const &t : m_Tasks) { // 1....n
-				GetScheduler().AddTask(t.m_Corutine);
+			for (auto const &t : m_Tasks.subspan(0,m_Tasks.size()-1)) { // 1....n
+				t.m_Corutine.resume();
 			}
-			return m_Tasks.front().m_Corutine;
+			return m_Tasks.back().m_Corutine;
 		}
 		constexpr void await_resume() const 
 		{
@@ -309,10 +155,10 @@ namespace detail {
 				return coroutine;
 			}
 			m_Control.m_Previous = coroutine;
-			for (auto const &t : m_Tasks.subspan(1)) { // 1....n
-				GetScheduler().AddTask(t.m_Corutine);
+			for (auto const &t : m_Tasks.subspan(0,m_Tasks.size()-1)) { // 1....n
+				t.m_Corutine.resume();
 			}
-			return m_Tasks.front().m_Corutine;
+			return m_Tasks.back().m_Corutine;
 		}
 		constexpr void await_resume() const noexcept
 		{
@@ -459,18 +305,10 @@ int main()
     //}
 
     // when all
-    //{
-    //    auto t = test_wait_all();
-    //    GetScheduler().AddTask(t);
-    //    GetScheduler().RunAll();
-    //    debug(), t.m_Coroutine.promise().result();
-    //}
-
-    // when any
     {
+        // auto t = test_wait_all();
         auto t = test_wait_any();
-        GetScheduler().AddTask(t);
-        GetScheduler().RunAll();
+        GetScheduler().RunAll(t);
         debug(), t.m_Coroutine.promise().result();
     }
 

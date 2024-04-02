@@ -2,68 +2,64 @@
 
 #include <chrono>
 #include <coroutine>
-#include <deque>
-#include <queue>
+#include <thread>
 
-#include "ut.hpp"
+#include "base.hpp"
+#include "rbtree.hpp"
+
+
+
+struct SleepUntilPromise
+    : public RBTree<SleepUntilPromise>::RBNode,
+      public Promise<void> {
+
+
+    std::chrono::system_clock::time_point m_ExpireTime;
+
+    Promise &operator=(Promise &&) = delete;
+
+    auto get_return_object()
+    {
+        return std::coroutine_handle<SleepUntilPromise>::from_promise(*this);
+    }
+
+
+    friend bool operator<(SleepUntilPromise const &lhs, SleepUntilPromise const &rhs) noexcept
+    {
+        return lhs.m_ExpireTime < rhs.m_ExpireTime;
+    }
+};
+
 
 struct Scheduler {
-    struct TimerEntry {
-        std::chrono::system_clock::time_point expeired_time;
-        std::coroutine_handle<>               handle;
 
-        bool operator<(const TimerEntry &other) const
-        {
-            // NOTICE: the priority_queue is the big top head! need a reverse
-            // we need the smaller timepint(earlier) at the top
-            return expeired_time > other.expeired_time;
-        }
-    };
-
-
-    std::deque<std::coroutine_handle<>> m_ReadyQueue;
-    std::priority_queue<TimerEntry>     m_TimerHeap;
-
+    // did not owning the promise?
+    RBTree<SleepUntilPromise> m_TimeerRBTree{};
 
     Scheduler &operator=(Scheduler &&) = delete;
 
-    void AddTask(std::coroutine_handle<> handle)
+    void AddTimer(SleepUntilPromise &promise)
     {
-        m_ReadyQueue.push_front(handle);
-    }
-    void AddTimer(std::chrono::system_clock::time_point expeired_time, std::coroutine_handle<> handle)
-    {
-        m_TimerHeap.push({expeired_time, handle});
+        m_TimeerRBTree.insert(promise);
     }
 
-    void RunAll()
+    void RunAll(std::coroutine_handle<> coroutine)
     {
-        while (!m_TimerHeap.empty() || !m_ReadyQueue.empty())
-        {
-            // debug(), "Num timer and read: ", m_Timers.size(), ", ", m_ReadyQueue.size();
-            while (!m_ReadyQueue.empty())
-            {
-                // ptr
-                auto task = m_ReadyQueue.front();
-                debug(), "pop";
-                m_ReadyQueue.pop_front();
-                task.resume();
-            }
-
-            auto now = std::chrono::system_clock::now();
-            while (!m_TimerHeap.empty())
-            {
-                // we use const ref
-                const auto &timer = m_TimerHeap.top();
-                if (timer.expeired_time > now) {
-                    break;
+        while (!coroutine.done()) {
+            coroutine.resume();
+            while (!m_TimeerRBTree.empty()) {
+                if (!m_TimeerRBTree.empty()) {
+                    auto  now     = std::chrono::system_clock::now();
+                    auto &promise = m_TimeerRBTree.front();
+                    if (promise.m_ExpireTime < now) {
+                        m_TimeerRBTree.erase(promise);
+                        std::coroutine_handle<SleepUntilPromise>::from_promise(promise).resume();
+                    }
+                    else {
+                        std::this_thread::sleep_until(promise.m_ExpireTime);
+                    }
                 }
-                // timer.handle.resume();
-
-                // so need to push then pop (or nullable access)
-                m_ReadyQueue.push_front(timer.handle);
-                m_TimerHeap.pop();
-            };
+            }
         }
     }
 };
@@ -74,4 +70,34 @@ inline Scheduler &GetScheduler()
 {
     static Scheduler scheduler;
     return scheduler;
+}
+
+
+
+struct SleepAwaiter {
+    Scheduler                            &schelder;
+    std::chrono::system_clock::time_point m_ExpireTime;
+
+    bool await_ready() const noexcept { return false; }
+
+    void await_suspend(std::coroutine_handle<SleepUntilPromise> coroutine) const noexcept
+    {
+        auto &promise        = coroutine.promise();
+        promise.m_ExpireTime = m_ExpireTime;
+        schelder.AddTimer(promise);
+    }
+    constexpr void await_resume() const noexcept {}
+};
+
+
+inline Task<void, SleepUntilPromise> sleep_until(std::chrono::system_clock::time_point tp)
+{
+    auto &schelder = GetScheduler();
+    co_await SleepAwaiter(schelder, tp);
+}
+
+inline Task<void, SleepUntilPromise> sleep_for(std::chrono::system_clock::duration dur)
+{
+    auto &schelder = GetScheduler();
+    co_await SleepAwaiter(schelder, std::chrono::system_clock::now() + dur);
 }
