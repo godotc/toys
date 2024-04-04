@@ -102,7 +102,7 @@ void test_before_epolls()
         // when all
         // auto t = test_wait_all();
         auto t = test_wait_any();
-        GetScheduler().RunAll(t);
+        GetTimerLoop().RunAll(t);
         debug(), t.m_Coroutine.promise().result();
     }
     catch (std::exception &excep) {

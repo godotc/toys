@@ -1,11 +1,18 @@
 #pragma once
 
+#include <cerrno>
 #include <chrono>
 #include <coroutine>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <sys/epoll.h>
 #include <thread>
+#include <unistd.h>
 
 #include "base.hpp"
 #include "rbtree.hpp"
+#include "ut.hpp"
 
 
 
@@ -29,12 +36,11 @@ struct SleepUntilPromise
 };
 
 
-struct Scheduler {
-
+struct TimerLoop {
     // did not owning the promise?
     RBTree<SleepUntilPromise> m_TimeerRBTree{};
 
-    Scheduler &operator=(Scheduler &&) = delete;
+    TimerLoop &operator=(TimerLoop &&) = delete;
 
     void AddTimer(SleepUntilPromise &promise)
     {
@@ -64,13 +70,91 @@ struct Scheduler {
 
 
 // TODO: don't know what will happen
-inline Scheduler &GetScheduler()
+inline TimerLoop &GetTimerLoop()
 {
-    static Scheduler scheduler;
+    static TimerLoop scheduler;
     return scheduler;
 }
 
 
-struct EpollLoop{
 
+struct EpollFilePromise : Promise<void> {
+    int      m_FileNum;
+    uint32_t m_Events;
+
+    auto get_return_object()
+    {
+        return std::coroutine_handle<EpollFilePromise>::from_promise(*this);
+    }
+
+    EpollFilePromise &operator=(EpollFilePromise &&) = delete;
+};
+
+
+struct EpollLoop {
+    int m_epfd;
+
+    EpollLoop &operator=(EpollLoop &&) = delete;
+    EpollLoop()
+    {
+        m_epfd = epoll_create1(0);
+        if (-1 == m_epfd) {
+            perror("create epoll fd");
+        }
+    }
+    ~EpollLoop() { close(m_epfd); }
+
+
+    void AddListener(EpollFilePromise &promise)
+    {
+        struct epoll_event event;
+        event.events   = promise.m_Events;
+        event.data.ptr = &promise;
+        int ret        = epoll_ctl(m_epfd, EPOLL_CTL_ADD, promise.m_FileNum, &event);
+        if (-1 == ret) {
+            perror("add new listenser in EpollLoop");
+        }
+    }
+
+    void TryRun()
+    {
+        struct epoll_event ebuffers[10];
+
+        while (1) {
+
+            int ret = epoll_wait(
+                m_epfd,
+                ebuffers,
+                sizeof(ebuffers) / sizeof(ebuffers[0]),
+                5000); // 0.5
+            if (-1 == ret) {
+                perror("epoll wait in epoll loop");
+            }
+
+            for (int i = 0; i < ret; ++i) {
+                // auto task = std::coroutine_handle<EpollFilePromise>::from_address(
+                //     ebuffers[i].data.ptr);
+
+                // int  fd = task.promise().m_FileNum;
+                // char buf[512];
+                // while (1) {
+                //     int ret = read(fd, buf, sizeof(buf));
+                //     if (ret <= 0) {
+                //         if (ret == EAGAIN) {
+                //             break;
+                //         }
+                //         debug(), "error on reading the fd: ", fd,
+                //             " error: ", strerror(errno);
+                //     }
+                // }
+                auto &promise = *static_cast<EpollFilePromise *>(
+                    ebuffers[i].data.ptr);
+                if (-1 == epoll_ctl(m_epfd, EPOLL_CTL_DEL,
+                                    promise.m_FileNum, nullptr)) {
+                    perror("delete a listening fileno");
+                }
+                std::coroutine_handle<EpollFilePromise>::from_promise(promise).resume();
+            }
+        }
+    }
 };

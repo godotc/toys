@@ -5,7 +5,7 @@
 namespace co_async {
 
 struct SleepAwaiter {
-    Scheduler                            &schelder;
+    TimerLoop                            &schelder;
     std::chrono::system_clock::time_point m_ExpireTime;
 
     bool await_ready() const noexcept { return false; }
@@ -22,13 +22,13 @@ struct SleepAwaiter {
 
 inline Task<void, SleepUntilPromise> sleep_until(std::chrono::system_clock::time_point tp)
 {
-    auto &schelder = GetScheduler();
+    auto &schelder = GetTimerLoop();
     co_await SleepAwaiter(schelder, tp);
 }
 
 inline Task<void, SleepUntilPromise> sleep_for(std::chrono::system_clock::duration dur)
 {
-    auto &schelder = GetScheduler();
+    auto &schelder = GetTimerLoop();
     co_await SleepAwaiter(schelder, std::chrono::system_clock::now() + dur);
 }
 } // namespace co_async
