@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ut.hpp"
+#include <cstdio>
 #include <functional>
 #include <utility>
 
@@ -54,7 +56,7 @@ struct RBTree {
     {
         do_erase(&static_cast<RBNode &>(value));
     }
-    bool empty() noexcept
+    bool empty() const noexcept
     {
         return root == nullptr;
     }
@@ -215,6 +217,7 @@ struct RBTree {
         fix_violation(node);
     }
 
+
     void do_erase(RBNode *current) noexcept
     {
         current->tree = nullptr;
@@ -227,7 +230,7 @@ struct RBTree {
         {
             // find the minimum val on right tree  but maximum for left tree
             RBNode *replace = current;
-            replace         = current->right;
+            replace         = replace->right;
             while (replace->left != nullptr) {
                 replace = replace->left;
             }
@@ -245,11 +248,16 @@ struct RBTree {
             if (current == root) {
                 root = replace;
             }
-            else if (current->parent->left == current) {
-                current->parent->left = replace;
-            }
             else {
-                current->parent->right = replace;
+                if (!current->parent) {
+                    fprintf(stderr, "WTF! %s %s", __FILE__, __LINE__);
+                }
+                if (current->parent->left == current) {
+                    current->parent->left = replace;
+                }
+                else {
+                    current->parent->right = replace;
+                }
             }
 
             replace->left         = current->left;
@@ -273,11 +281,19 @@ struct RBTree {
         if (node == root) {
             root = child;
         }
-        else if (node->parent->left == node) {
-            node->parent->left = child;
-        }
         else {
-            node->parent->right = child;
+            // debug(), "node address ", std::hex, node;
+            // debug(), "parent address ", std::hex, node->parent;
+            if (node->parent == nullptr) {
+                fprintf(stdout, "WTF! %s %s\n", __FILE__, __LINE__);
+            }
+
+            if (node->parent->left == node) {
+                node->parent->left = child;
+            }
+            else {
+                node->parent->right = child;
+            }
         }
 
         if (color == BLACK && root) {
