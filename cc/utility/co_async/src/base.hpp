@@ -2,6 +2,7 @@
 
 #include <coroutine>
 #include <exception>
+#include <functional>
 
 
 template <class T = void>
@@ -13,6 +14,12 @@ struct NonVoidHelper<void> {
     using type = NonVoidHelper;
 
     explicit NonVoidHelper() = default;
+
+    template <class T>
+    constexpr friend T operator,(T &&t, NonVoidHelper)
+    {
+        return std::forward<T>(t);
+    }
 };
 
 template <class T>
@@ -49,7 +56,14 @@ template <typename T>
 struct Uninitialized<T const> : Uninitialized<T> {};
 
 template <typename T>
+struct Uninitialized<T &> : Uninitialized<std::reference_wrapper<T>> {};
+
+
+template <typename T>
 struct Uninitialized<T &&> : Uninitialized<T> {};
+
+//-------------------------------------------------------
+
 
 // clang-format off
 template <class T>

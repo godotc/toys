@@ -4,9 +4,19 @@
 
 
 #include "base.hpp"
+#include <concepts>
 #include <coroutine>
+#include <cstddef>
+#include <memory>
+#include <ranges>
 #include <span>
+#include <type_traits>
+#include <utility>
 #include <variant>
+#include <vector>
+
+namespace co_async {
+
 
 struct ReturnPreviousPromise {
     std::coroutine_handle<> m_Previous{};
@@ -77,7 +87,7 @@ namespace detail {
 	ReturnPreviousTask when_all_helper(Task<T> const &t, WhenAllControlBlock &control, Uninitialized<T> &result)
 	{
 		try {
-			result.put_values(co_await t);
+			result.put_values(co_await std::forward<decltype(t)> (t));
 		}
 		catch (...) {
 			control.m_ExceptionPtr = std::current_exception();
@@ -99,7 +109,7 @@ namespace detail {
 		WhenAllControlBlock control{
 			.m_Count = sizeof...(Ts),
 		};
-		std::tuple<Uninitialized<typename AwaitableTraits<Ts>::RetType>...> result;
+		std::tuple<Uninitialized<typename AwaitableTraits<Ts>::NonVoidRetType>...> result;
 
 		ReturnPreviousTask tasks[]{when_all_helper(ts, control, std::get<Is>(result))...};
 		co_await WhenAllAwaiter(control, tasks);
@@ -118,6 +128,42 @@ auto when_all(Ts &&...ts)
         std::make_index_sequence<sizeof...(Ts)>{},
         std::forward<Ts>(ts)...);
 }
+
+
+template <Awaitable T, class Alloc = std::allocator<T>>
+Task<std::conditional_t<std::same_as<void, typename AwaitableTraits<T>::RetType>,
+                        std::vector<typename AwaitableTraits<T>::RetType, Alloc>,
+                        void>>
+when_all(std::vector<T, Alloc> const &tasks)
+{
+    detail::WhenAllControlBlock control{.m_Count = tasks.size()};
+
+    Alloc alloc = tasks.get_allocator();
+
+    std::vector<Uninitialized<typename AwaitableTraits<T>::RetType>, Alloc> results(tasks.size(), alloc);
+    {
+        std::vector<ReturnPreviousTask, Alloc> task_array(alloc);
+        task_array.reserve(tasks.size());
+        for (std::size_t i = 0; i < tasks.size(); ++i) {
+            task_array.push_back(detail::when_all_helper(tasks[i], control, results[i]));
+        }
+        co_await detail::WhenAllAwaiter(control, task_array);
+    }
+    if constexpr (!std::same_as<void, typename AwaitableTraits<T>::RetType>)
+    {
+        std::vector<typename AwaitableTraits<T>::RetType, Alloc> res(alloc);
+        res.reserve(tasks.size());
+        for (auto &ret : results) {
+            res.push_back(ret.move_value());
+        }
+        co_return res;
+    }
+}
+
+
+
+//--------------------------------------------------
+
 
 
 // clang-format off
@@ -164,17 +210,24 @@ namespace detail {
 
 
 	template <typename T>
-	ReturnPreviousTask when_any_helper(Task<T> const &t, WhenAnyControlBlock &control, Uninitialized<T> &result, std::size_t index)
+	ReturnPreviousTask
+	when_any_helper(
+		auto &&t,
+		WhenAnyControlBlock &control,
+		Uninitialized<T> &result,
+		std::size_t index)
 	{
 		try {
-			result.put_values(co_await t);
+			result.put_values(
+					( co_await std::forward<decltype(t)>(t), NonVoidHelper<void>{})
+				);
 		}
 		catch (...) {
 			control.m_ExceptionPtr = std::current_exception();
 			co_return control.m_Previous;
 		}
 
-		--control.m_Index = index;
+		control.m_Index = index;
 		// return if any has complete (co_await complete)
 		co_return control.m_Previous;
 	}
@@ -185,21 +238,23 @@ namespace detail {
 	when_any_impl(std::index_sequence<Is...>, Ts &&...ts)
 	{
 		WhenAnyControlBlock control;
-		std::tuple<Uninitialized<typename AwaitableTraits<Ts>::RetType>...> result;
+		std::tuple<Uninitialized<typename AwaitableTraits<Ts>::NonVoidRetType>...> result;
 
-		ReturnPreviousTask tasks[]={when_any_helper(ts, control, std::get<Is>(result), Is)...};
+		ReturnPreviousTask tasks[]={ when_any_helper(ts, control, std::get<Is>(result), Is)...};
 		// get the finish index
 		co_await WhenAnyAwaiter(control, tasks);
 
 		Uninitialized<std::variant<typename AwaitableTraits<Ts>::NonVoidRetType...>> mono_result;
 
-		((control.m_Index == Is &&
-			(mono_result.put_values(
-					// special contruct function of variant, the first arg to specify the n type of variant
-					std::in_place_index<Is>, std::get<Is>(result).move_value()
-				),0
-			)
-		),...);
+		(
+		(control.m_Index == Is && 
+			 (mono_result.put_values(
+				// special contruct function of variant,
+				// the first arg to specify the n type of variant
+				std::in_place_index<Is>, std::get<Is>(result).move_value()),
+			  0)
+	 	),...
+		);
 
 
 		co_return  mono_result.move_value();
@@ -212,7 +267,31 @@ template <Awaitable... Ts>
     requires(sizeof...(Ts) != 0)
 auto when_any(Ts &&...ts)
 {
-    return detail::when_any_impl(
-        std::make_index_sequence<sizeof...(Ts)>{},
-        std::forward<Ts>(ts)...);
+    return detail::when_any_impl(std::make_index_sequence<sizeof...(Ts)>{},
+                                 std::forward<Ts>(ts)...);
 }
+
+template <Awaitable T, class Alloc = std::allocator<T>>
+Task<typename AwaitableTraits<T>::RetType>
+when_any(std::vector<T, Alloc> const &tasks)
+{
+    detail::WhenAnyControlBlock control;
+
+    Alloc alloc = tasks.get_allocator();
+
+    Uninitialized<typename AwaitableTraits<T>::RetType> result;
+    {
+        std::vector<ReturnPreviousTask, Alloc> task_array(alloc);
+        task_array.reserve(tasks.size());
+        for (auto &task : tasks) {
+            task_array.push_back(detail::when_any_helper(task, control, result));
+        }
+
+        co_await detail::WhenAnyAwaiter(control, task_array);
+    }
+    co_return result.move_value();
+}
+
+
+
+} // namespace co_async
