@@ -1,0 +1,10 @@
+map gi :vsc Edit.GoToImplementation<CR>
+nmap gd :vsc Edit.GoToDefinition<CR>
+nmap gr :vsc Edit.FindAllReferences<CR>
+nmap <C-O> :vsc View.NavigateBackward<CR>
+nmap <C-I> :vsc View.NavigateForward<CR>
+
+set hlsearch
+nmap <C-O> :vsc View.NavigateBackward<CR>
+nmap <C-I> :vsc View.NavigateForward<CR>
+nmap K :vsc Edit.QuickInfo<CR>
