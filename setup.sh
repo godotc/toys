@@ -8,10 +8,13 @@ if [ "$(uname -s)" = "Linux" ]; then
     # Check for package manager
     if command -v apt-get &> /dev/null; then
 		sudo apt-get update && sudo apt-get upgrade
-        INSTALL="sudo apt-get install"
+        INSTALL="sudo apt-get install -y"
     elif command -v pacman &> /dev/null; then
 		sudo pacman -Syyu
-        INSTALL="sudo pacman -S"
+        INSTALL="sudo pacman -S --noconfirm"
+    elif command -v yum &> /dev/null; then
+		sudo pacman -Syyu
+        INSTALL="sudo yum install -y"
     else
         echo "Unsupported package manager. Please define PKG variable manually."
         exit 1
