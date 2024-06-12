@@ -155,11 +155,7 @@ endfunction
 " Neartree
 nmap <F3> :NERDTreeMirror<CR>
 nmap <F3> :NERDTreeToggle<CR>
-noremap <C-s> :call SaveAndFormat()<CR>
-noremap <C-h> <Plug>(coc-fix-current)
 
-noremap <C-t> :call FloatTerm()<CR>
-tnoremap   <silent>   <C-t>   <C-\><C-n>:FloatermToggle<CR>
 
 nmap <Space>f :Files<CR>
 nmap <silent> <Space>b :Buffers<CR>
@@ -168,7 +164,7 @@ nmap <F1> :Commands<CR>
 
 
 
-function FloatTerm()
+function ToggleFloatTerm()
 	:w
 	:FloatermToggle  
 endfunction
@@ -176,12 +172,14 @@ endfunction
 " when open floatterm run in vim (useless)
 "autocmd User FloatermOpen  tmux
 
-function SaveAndFormat()
+function WriteAndFormat()
 	call CocAction('format')
 	:w
 endfunction
 
-"nnoremap   <silent>   <F7>    :FloatermNew<CR>
+noremap <C-t> :call ToggleFloatTerm()<CR>
+tnoremap   <silent>   <C-t>   <C-\><C-n>:FloatermToggle<CR>
+"nnoremap   <silent>   <C-t>     :FloatermNew<CR>
 "tnoremap   <silent>   <F7>    <C-\><C-n>:FloatermNew<CR>
 "nnoremap   <silent>   <F8>    :FloatermPrev<CR>
 "tnoremap   <silent>   <F8>    <C-\><C-n>:FloatermPrev<CR>
