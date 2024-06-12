@@ -1,15 +1,21 @@
-call plug#begin()
 
+function! IsCppSourceFile()
+  	let filetype = &ft
+	return filetype == 'cpp'
+endfunc
+
+
+
+call plug#begin()
 "Plug 'ycm-core/YouCompleteMe'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'scrooloose/nerdtree'  "目录树
+
+Plug 'scrooloose/nerdtree'
 Plug 'tpope/vim-surround'
 Plug 'jiangmiao/auto-pairs' "括号配对
-Plug 'vim-scripts/a.vim'
-Plug 'vim-scripts/DoxygenToolkit.vim'
 Plug 'voldikss/vim-floaterm'
 
-Plug 'octol/vim-cpp-enhanced-highlight'
+"Plug 'vim-scripts/DoxygenToolkit.vim'
 
 Plug 'itchyny/lightline.vim' "status line
 Plug 'frazrepo/vim-rainbow' "彩虹括号
@@ -22,14 +28,33 @@ Plug 'rakr/vim-one'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
-Plug 'pboettch/vim-cmake-syntax'
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+if IsCppSourceFile()
+	Plug 'vim-scripts/a.vim'
+	Plug 'octol/vim-cpp-enhanced-highlight'
+	Plug 'pboettch/vim-cmake-syntax'
+endif
 
+"Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 "Plug 'puremourning/vimspector'
 
 " All of your Plugins must be added before the following line
 call plug#end()            " required
 
+
+
+if has('win32') || has('win64')
+    " This is Windows
+    echo "Running on Windows"
+elseif has('unix')
+    " This is Linux or macOS
+    if system('uname -s') =~ "Linux"
+        echo "Running on Linux"
+    elseif system('uname -s') =~ "Darwin"
+        echo "Running on macOS"
+    endif
+else
+    echo "Unknown operating system"
+endif
 
 
 set termguicolors
@@ -52,10 +77,6 @@ let g:lightline = {
 function! LightlineFilename()
   return expand('%')
 endfunction
-
-
-
-
 
 let g:rainbow_active=1
 
