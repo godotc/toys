@@ -23,7 +23,7 @@
 				"--function-arg-placeholders=false", // 启用这项时，补全函数时，将会给参数提供占位符，键入后按 Tab 可以切换到下一占位符，乃至函数末k
 				"--enable-config",
 				"--pch-storage=memory",
-				"--query-driver=/bin/gcc"
+				"--query-driver=C:/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.40.33807/bin/Hostx64/x64/cl.exe"
 			]
 		},
 		"golang": {
@@ -85,12 +85,16 @@
 				}
 			}
 		},
-		  "rust": {
+		"rust": {
 			"command": "rust-analyzer",
-			"filetypes": ["rust"],
-			"rootPatterns": ["Cargo.toml"]
+			"filetypes": [
+				"rust"
+			],
+			"rootPatterns": [
+				"Cargo.toml"
+			]
 		}
 	},
-  "@ignored/coc-solidity.telemetry": true,
-  "@blockchainian/coc-solidity.telemetry": true
+	"@ignored/coc-solidity.telemetry": true,
+	"@blockchainian/coc-solidity.telemetry": true
 }

@@ -1,7 +1,11 @@
 
 function! IsCppSourceFile()
   	let filetype = &ft
-	return filetype == 'cpp'
+	if filetype == 'cpp'
+		"echo filetype
+		return 1
+	endif 
+	return 0
 endfunc
 
 
@@ -29,6 +33,7 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
 if IsCppSourceFile()
+	"echo "wtf"
 	Plug 'vim-scripts/a.vim'
 	Plug 'octol/vim-cpp-enhanced-highlight'
 	Plug 'pboettch/vim-cmake-syntax'
@@ -176,6 +181,7 @@ function WriteAndFormat()
 	call CocAction('format')
 	:w
 endfunction
+noremap <C-s> :call WriteAndFormat()<CR>
 
 noremap <C-t> :call ToggleFloatTerm()<CR>
 tnoremap   <silent>   <C-t>   <C-\><C-n>:FloatermToggle<CR>
