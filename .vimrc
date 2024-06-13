@@ -44,16 +44,16 @@ call plug#end()            " required
 
 if has('win32') || has('win64')
     " This is Windows
-    echo "Running on Windows"
+    "echo "Running on Windows"
 elseif has('unix')
     " This is Linux or macOS
     if system('uname -s') =~ "Linux"
-        echo "Running on Linux"
+        "echo "Running on Linux"
     elseif system('uname -s') =~ "Darwin"
-        echo "Running on macOS"
+        "echo "Running on macOS"
     endif
 else
-    echo "Unknown operating system"
+    "echo "Unknown operating system"
 endif
 
 
@@ -67,6 +67,20 @@ if exists('+termguicolors')
 endif
 
 
+" cursor shape
+if &term =~? 'rxvt' || &term =~? 'xterm' || &term =~? 'st-'
+    " 1 or 0 -> blinking block
+    " 2 -> solid block
+    " 3 -> blinking underscore
+    " 4 -> solid underscore
+    " Recent versions of xterm (282 or above) also support
+    " 5 -> blinking vertical bar
+    " 6 -> solid vertical bar
+    " Insert Mode
+    let &t_SI .= "\<Esc>[6 q"
+    " Normal Mode
+    let &t_EI .= "\<Esc>[2 q"
+endif
 
 set laststatus=2
 let g:lightline = {
