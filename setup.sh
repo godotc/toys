@@ -39,11 +39,12 @@ cd ~
 cd toys
 PWD=`pwd`
 
-mkdir -p ~/.config/nvim \
+mkdir -p  \
+	~/.config/nvim \
 	~/.vim/autoload \
-    /tmp/vim-setup  \
-    "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/ \
-	~/.config/nvim/init.lua
+    	/tmp/vim-setup  \
+    	"${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/ \
+	~/.config/nvim
 
 rm ~/.vimrc  \
 	~/.bashrc \

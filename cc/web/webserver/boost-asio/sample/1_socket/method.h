@@ -95,7 +95,6 @@ int inline create_acceptor_socket()
 int inline connect_to_server_end()
 {
     const auto server_raw_ip = "127.0.0.1";
-
     try {
         ip::tcp::endpoint ep(ip::address::from_string(server_raw_ip), port_num);
         io_context        ioc;

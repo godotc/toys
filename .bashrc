@@ -139,11 +139,7 @@ alias v=nvim
 
 source ~/.bashrc_locale
 
-# >>> xmake >>>
-test -f "/home/hypercreep/.xmake/profile" && source "/home/hypercreep/.xmake/profile"
-alias xmk=xmake
-alias xmr="xmake b && xmake r"
-# <<< xmake <<<
+
 
 source "$HOME/.cargo/env"
 
@@ -156,3 +152,6 @@ source "$HOME/.cargo/env"
 
 
 
+# >>> xmake >>>
+test -f "/root/.xmake/profile" && source "/root/.xmake/profile"
+# <<< xmake <<<

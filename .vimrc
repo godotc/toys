@@ -32,12 +32,11 @@ Plug 'rakr/vim-one'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
-if IsCppSourceFile()
-	"echo "wtf"
 	Plug 'vim-scripts/a.vim'
 	Plug 'octol/vim-cpp-enhanced-highlight'
 	Plug 'pboettch/vim-cmake-syntax'
-endif
+
+"Plug 'Exafunction/codeium.vim', { 'branch': 'main' }
 
 "Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 "Plug 'puremourning/vimspector'
@@ -240,7 +239,14 @@ nnoremap <silent><nowait> <space>l5  :set foldlevel=5<CR>
 nnoremap <silent><nowait> <space>l6  :set foldlevel=6<CR>
 
 
+" redirect the [Codeium] keybinds
+"let g:codeium_disable_bindings = 1
+"imap <script><silent><nowait><expr> <C-g> codeium#Accept()
+"imap <C-;>   <Cmd>call codeium#CycleCompletions(1)<CR>
+"imap <C-,>   <Cmd>call codeium#CycleCompletions(-1)<CR>
+"imap <C-x>   <Cmd>call codeium#Clear()<CR>
 
+		
 
 " Status Line Color
 "hi User1 cterm=none ctermfg=27 ctermbg=0 
@@ -261,6 +267,8 @@ let g:cpp_class_decl_highlight=1
 let g:cpp_posix_standard = 1
 let g:cpp_experimental_simple_template_highlight = 1
 let g:cpp_concepts_highlight = 1
+
+"let g:codeium_disable
 
 
 
