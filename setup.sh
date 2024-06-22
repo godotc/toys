@@ -45,13 +45,16 @@ mkdir -p ~/.config/nvim \
     "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/ \
 	~/.config/nvim/init.lua
 
-rm ~/.vimrc ~/.bashrc \
+rm ~/.vimrc  \
+	~/.bashrc \
+	~/.ideavimrc \
 	~/.config/nvim/coc-settings.json \
 	~/.vim/coc-settings.json \
-	~/.config/nvim/init.lua
+	~/.config/nvim/init.lua 
 
 ln -s $PWD/.bashrc ~/.bashrc
 ln -s $PWD/.vimrc ~/.vimrc
+ln -s $PWD/.ideavimrc ~/.ideavimrc
 ln -s $PWD/coc-settings.json  ~/.config/nvim/coc-settings.json
 ln -s $PWD/coc-settings.json  ~/.vim/coc-settings.json
 ln -s $PWD/init.lua  ~/.config/nvim/init.lua

@@ -13,7 +13,11 @@ iwr -useb https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim |`
 
 #New-Item -ItemType SymbolicLink -Path ~/.bashrc -Target  "$(Get-Location)/.bashrc"
 
+rm ~/.vimrc
+rm ~/.ideavimrc
+
 New-Item -ItemType SymbolicLink -Path ~/.vimrc -Target  "$(Get-Location)/.vimrc"
+New-Item -ItemType SymbolicLink -Path ~/.ideavimrc -Target  "$(Get-Location)/.ideavimrc"
 mkdir ~/AppData/Local/nvim
 New-Item -ItemType SymbolicLink -Path ~/AppData/Local/nvim/init.lua -Target  "$(Get-Location)/init.lua"
 New-Item -ItemType SymbolicLink -Path ~/AppData/Local/nvim/coc-settings.json -Target  "$(Get-Location)/coc-settings.json"
