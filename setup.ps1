@@ -13,13 +13,19 @@ iwr -useb https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim |`
 
 #New-Item -ItemType SymbolicLink -Path ~/.bashrc -Target  "$(Get-Location)/.bashrc"
 
+mkdir ~/AppData/Local/nvim
+mkdir ~/Documents/PowerShell
+
 rm ~/.vimrc
 rm ~/.ideavimrc
 rm ~/.vsvimrc
+rm ~/.vscodevimrc
+rm ~/Documents/PowerShell/*
 
 New-Item -ItemType SymbolicLink -Path ~/.vimrc -Target  "$(Get-Location)/.vimrc"
 New-Item -ItemType SymbolicLink -Path ~/.ideavimrc -Target  "$(Get-Location)/.ideavimrc"
 New-Item -ItemType SymbolicLink -Path ~/.vsvimrc -Target  "$(Get-Location)/.vsvimrc"
-mkdir ~/AppData/Local/nvim
+New-Item -ItemType SymbolicLink -Path ~/.vscodevimrc -Target  "$(Get-Location)/.vscodevimrc"
 New-Item -ItemType SymbolicLink -Path ~/AppData/Local/nvim/init.lua -Target  "$(Get-Location)/init.lua"
 New-Item -ItemType SymbolicLink -Path ~/AppData/Local/nvim/coc-settings.json -Target  "$(Get-Location)/coc-settings.json"
+New-Item -ItemType SymbolicLink -Path ~/Documents/PowerShell/Profile.ps1 -Target  "$(Get-Location)/Profile.ps1"

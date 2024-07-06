@@ -1,0 +1,51 @@
+set encoding=utf-8
+set nobackup
+set nowritebackup
+syntax on
+syntax enable
+set cindent
+set number
+set foldmethod=indent
+set autoindent
+set showcmd
+
+set hlsearch
+set incsearch
+
+set path^=/usr/include
+
+set list
+set listchars=tab:→\ ,eol:↓
+
+set timeoutlen=500
+filetype indent on
+
+
+
+
+" Use `[g` and `]g` to navigate diagnostics
+" Use `:CocDiagnostics` to get all diagnostics of current buffer in location list.
+"nmap <silent> [g <Plug>(coc-diagnostic-prev)
+"nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" GoTo code navigation.
+"nmap <silent> gd <Plug>(coc-definition)
+"nmap <silent> gy <Plug>(coc-type-definition)
+"nmap <silent> gi <Plug>(coc-implementation)
+"nmap <silent> gr <Plug>(coc-references)
+"nmap <silent> <F2> <Plug>(coc-rename)
+
+"vmap <C-c> "+y
+
+
+
+nnoremap <silent><nowait> <space>l0  :call VSCodeCall('editor.foldLevel0') <CR>
+nnoremap <silent><nowait> <space>l1  :call VSCodeCall('editor.foldLevel1') <CR>
+nnoremap <silent><nowait> <space>l2  :call VSCodeCall('editor.foldLevel2') <CR>
+nnoremap <silent><nowait> <space>l3  :call VSCodeCall('editor.foldLevel3') <CR>
+nnoremap <silent><nowait> <space>l4  :call VSCodeCall('editor.foldLevel4') <CR>
+nnoremap <silent><nowait> <space>l5  :call VSCodeCall('editor.foldLevel5') <CR>
+nnoremap <silent><nowait> <space>l6  :call VSCodeCall('editor.foldLevel6') <CR>
+
+
+
