@@ -12,7 +12,7 @@ if (Test-Path($ChocolateyProfile)) {
   Import-Module "$ChocolateyProfile"
 }
 
-Import-Module 'F:\vcpkg\scripts\posh-vcpkg'
+#Import-Module 'F:\vcpkg\scripts\posh-vcpkg'
 
 function Add-DirectoryToPath {
     param (
@@ -30,3 +30,9 @@ function Add-DirectoryToPath {
         Write-Host "Directory already in PATH: $DirectoryPath"
     }
 }
+
+#region conda initialize
+# !! Contents within this block are managed by 'conda init' !!
+(& "C:\Users\norm\miniconda3\Scripts\conda.exe" "shell.powershell" "hook") | Out-String | Invoke-Expression
+#endregion
+
