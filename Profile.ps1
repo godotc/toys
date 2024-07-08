@@ -12,7 +12,7 @@ if (Test-Path($ChocolateyProfile)) {
   Import-Module "$ChocolateyProfile"
 }
 
-Import-Module 'F:\vcpkg\scripts\posh-vcpkg'
+#Import-Module 'F:\vcpkg\scripts\posh-vcpkg'
 
 function Add-DirectoryToPath {
     param (
