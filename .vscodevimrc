@@ -38,6 +38,7 @@ filetype indent on
 "vmap <C-c> "+y
 
 
+noremap  zA zO
 
 nnoremap <silent><nowait> <space>l0  :call VSCodeCall('editor.foldLevel0') <CR>
 nnoremap <silent><nowait> <space>l1  :call VSCodeCall('editor.foldLevel1') <CR>
