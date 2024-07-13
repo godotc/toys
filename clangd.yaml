@@ -1,0 +1,12 @@
+
+
+#  user configuration: a config.yaml file in an OS-specific directory:
+#
+# Windows: %LocalAppData%\clangd\config.yaml, typically C:\Users\Bob\AppData\Local\clangd\config.yaml.
+#    macOS: ~/Library/Preferences/clangd/config.yaml
+#    Linux and others: $XDG_CONFIG_HOME/clangd/config.yaml, typically ~/.config/clangd/config.yaml.
+
+CompileFlags:
+  Add: [-std=c++23]
+
+
