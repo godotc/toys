@@ -2,6 +2,7 @@ use std::{
     fs::File,
     io::{BufReader, Read},
 };
+use std::io::Write;
 
 fn main() {
     println!("Hello, world!");
@@ -13,4 +14,5 @@ fn main() {
     let rd = BufReader::new(f);
 
     let a: Vec<u8> = vec![];
+
 }
