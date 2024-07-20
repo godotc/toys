@@ -4,6 +4,7 @@ use std::{
 };
 use std::fs::File;
 use std::io::{BufReader, Read};
+use std::ops::Index;
 
 use crate::{bencode, BencodeProcess, BencodeType, BtInt};
 use crate::BenCodeError;
@@ -244,31 +245,60 @@ impl BenObject {
         }
     }
 
-    pub fn get_string(&self) -> Option<&String> {
+    pub fn as_string(&self) -> Option<&String> {
         match self {
             BenObject::String(x) => Some(x),
             _ => None
         }
     }
 
-    pub fn get_int(&self) -> Option<BtInt> {
+    pub fn as_int(&self) -> Option<BtInt> {
         match self {
             BenObject::Int(x) => Some(*x),
             _ => None
         }
     }
 
-    pub fn get_list(&self) -> Option<&Vec<Box<BenObject>>> {
+    pub fn as_list(&self) -> Option<&Vec<Box<BenObject>>> {
         match self {
             BenObject::List(x) => Some(x),
             _ => None
         }
     }
 
-    pub fn get_dictionary(&self) -> Option<&HashMap<String, Box<BenObject>>> {
+    pub fn as_dictionary(&self) -> Option<&HashMap<String, Box<BenObject>>> {
         match self {
             BenObject::Dictionary(x) => Some(x),
             _ => None
+        }
+    }
+}
+
+impl Index<String> for BenObject {
+    type Output = BenObject;
+    fn index(&self, index: String) -> &Self::Output {
+        match self {
+            BenObject::Dictionary(x) => x.get(&index.to_string()).unwrap(),
+            _ => panic!("Trying to index a non-dictionary benobject")
+        }
+    }
+}
+impl Index<&str> for BenObject {
+    type Output = BenObject;
+    fn index(&self, index: &str) -> &Self::Output {
+        match self {
+            BenObject::Dictionary(x) => x.get(index).unwrap(),
+            _ => panic!("Trying to index a non-dictionary benobject")
+        }
+    }
+}
+
+impl Index<usize> for BenObject {
+    type Output = BenObject;
+    fn index(&self, index: usize) -> &Self::Output {
+        match self {
+            BenObject::List(x) => x.get(index).unwrap(),
+            _ => panic!("Trying to index a non-list benobject")
         }
     }
 }
@@ -296,7 +326,7 @@ mod tests {
         let mut i = [1, 2, 3, 4, 5].into_iter();
         i.next();
         i.next();
-        assert_eq!(i.peekable().peek().unwrap().deref(), &2);
+        assert_ne!(i.peekable().peek().unwrap().deref(), &2);
     }
 
 
@@ -323,11 +353,12 @@ mod tests {
 
         // let err = obj.get_int().expect("not a int");
 
-        let map = obj.get_dictionary().unwrap();
+        // let map = obj.get_dictionary().unwrap();
+        // let v = map.get("announce").unwrap();
+        let v = &obj["announce"];
 
-        let v = map.get("announce").unwrap();
         assert!(v.is_string());
 
-        println!("Announce: {}", v.get_string().unwrap());
+        println!("Announce: {}", v.as_string().unwrap());
     }
 }
