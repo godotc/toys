@@ -116,3 +116,70 @@ using concat = typename detail::concat<TypeList1, TypeList2>::type;
 
 template <typename TypeList, template <typename> typename Fn>
 using filter = typename detail::filter<TypeList, Fn>::type;
+
+
+
+#include <iostream>
+#include <string>
+
+
+
+struct Person2 final {
+    std::string last_name;
+    float       height;
+    // bool        is_transaxle;
+    bool is_female;
+
+    void Sleep() const
+    {
+        printf("Zzzzz....\n");
+    }
+    // bool IsTransaxle() const { return is_transaxle; }
+    bool IsFemale() const
+    {
+        printf("???....\n");
+        return is_female;
+    }
+    bool GetMarriedWith(Person2 other)
+    {
+        if (other.is_female != is_female) //&& is_transaxle != other.is_transaxle;)
+        {
+            if (is_female) {
+                last_name = "Mrs." + other.last_name;
+            }
+            else {
+                last_name = "Mr." + last_name;
+            }
+            return true;
+        }
+        return false;
+    }
+};
+
+
+
+template <typename T>
+struct only_integer {
+    constexpr static bool value = std::is_integral_v<T>;
+};
+template <typename T>
+struct change_to_float {
+    using type = std::conditional_t<std::is_integral_v<T>, float, T>;
+};
+
+
+inline void type_list_test()
+{
+
+    using type = type_list<int, char, bool, double>;
+
+    using first_elem = head_t<type>;
+    using the_2      = nth_t<type, 2>;
+
+    constexpr size_t num = count<type, std::is_integral>;
+    std::cout << num << std::endl;
+
+    using changed = detail::map<type, change_to_float>::type;
+
+    using filtered = filter<type, only_integer>;
+}
