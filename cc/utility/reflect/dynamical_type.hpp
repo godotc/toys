@@ -82,7 +82,7 @@ class Any
 {
   public:
     template <class T>
-    friend class operations_traits;
+    friend class any_operations_traits;
 
     enum class EStorageType
     {
@@ -98,6 +98,58 @@ class Any
         std::function<Any(Any &)>       steal;
         std::function<void(Any &)>      release;
     };
+
+
+  private:
+    template <class T>
+    struct operation_traits {
+        static Any copy(const Any &elem)
+        {
+            assert(elem.typeinfo == GetType<T>());
+
+            Any ret;
+            ret.payload      = new T{*static_cast<T *>(elem.payload)}; // erase type
+            ret.typeinfo     = elem.typeinfo;
+            ret.storage_type = Any::EStorageType::Owned;
+            ret.operations   = elem.operations;
+            return ret;
+        }
+
+        static Any steal(Any &elem)
+        {
+            assert(elem.typeinfo == GetType<T>());
+            Any ret;
+
+#if __SSO
+            if constexpr (sizeof(T) <= sizeof(Any::small_size_object)) {
+                // Emplacement New:  call the construct on a memory that already allocated which on stack
+                new (ret.small_size_object) T{*static_cast<T *>(other.payload)};
+            }
+            else {
+                ret.payload = new T{*static_cast<T *>(other.payload)};
+            }
+#else
+            ret.payload = new T{std::move(*static_cast<T *>(elem.payload))}; // erase type
+#endif
+            ret.typeinfo      = elem.typeinfo;
+            ret.storage_type  = Any::EStorageType::Owned;
+            elem.storage_type = Any::EStorageType::Stolen; // update origin's data state
+            ret.operations    = elem.operations;
+            return ret;
+        }
+
+
+        static void release(Any &elem)
+        {
+            assert(elem.typeinfo == GetType<T>());
+
+            delete static_cast<T *>(elem.payload); // TODO: maybe force convert (void*)
+            elem.payload      = nullptr;
+            elem.storage_type = Any::EStorageType::Empty;
+            elem.typeinfo     = nullptr;
+        }
+    };
+
 
   private:
 #if __SSO
@@ -245,54 +297,6 @@ class Any
   private:
 };
 
-template <class T>
-struct operations_traits {
-    static Any copy(const Any &elem)
-    {
-        assert(elem.typeinfo == GetType<T>());
-
-        Any ret;
-        ret.payload      = new T{*static_cast<T *>(elem.payload)}; // erase type
-        ret.typeinfo     = elem.typeinfo;
-        ret.storage_type = Any::EStorageType::Owned;
-        ret.operations   = elem.operations;
-        return ret;
-    }
-
-    static Any steal(Any &elem)
-    {
-        assert(elem.typeinfo == GetType<T>());
-        Any ret;
-
-#if __SSO
-        if constexpr (sizeof(T) <= sizeof(Any::small_size_object)) {
-            // Emplacement New:  call the construct on a memory that already allocated which on stack
-            new (ret.small_size_object) T{*static_cast<T *>(other.payload)};
-        }
-        else {
-            ret.payload = new T{*static_cast<T *>(other.payload)};
-        }
-#else
-        ret.payload = new T{std::move(*static_cast<T *>(elem.payload))}; // erase type
-#endif
-        ret.typeinfo      = elem.typeinfo;
-        ret.storage_type  = Any::EStorageType::Owned;
-        elem.storage_type = Any::EStorageType::Stolen; // update origin's data state
-        ret.operations    = elem.operations;
-        return ret;
-    }
-
-
-    static void release(Any &elem)
-    {
-        assert(elem.typeinfo == GetType<T>());
-
-        delete static_cast<T *>(elem.payload); // TODO: maybe force convert (void*)
-        elem.payload      = nullptr;
-        elem.storage_type = Any::EStorageType::Empty;
-        elem.typeinfo     = nullptr;
-    }
-};
 
 
 // TODO: little object optimized for int short char long ....
@@ -304,13 +308,13 @@ inline auto Any::make_copy(const T &other)
     ret.typeinfo     = GetType<T>();
     ret.storage_type = EStorageType::Owned;
     if constexpr (std::is_copy_constructible_v<T>) {
-        ret.operations.copy = operations_traits<T>::copy;
+        ret.operations.copy = operation_traits<T>::copy;
     }
     if constexpr (std::is_move_constructible_v<T>) {
-        ret.operations.steal = operations_traits<T>::steal;
+        ret.operations.steal = operation_traits<T>::steal;
     }
     if constexpr (std::is_destructible_v<T>) {
-        ret.operations.release = operations_traits<T>::release;
+        ret.operations.release = operation_traits<T>::release;
     }
     return ret;
 }
@@ -325,13 +329,13 @@ inline auto Any::make_steal(T &&other)
     ret.typeinfo     = GetType<t1>();
     ret.storage_type = EStorageType::Owned;
     if constexpr (std::is_copy_constructible_v<t1>) {
-        ret.operations.copy = operations_traits<t1>::copy;
+        ret.operations.copy = operation_traits<t1>::copy;
     }
     if constexpr (std::is_move_constructible_v<t1>) {
-        ret.operations.steal = operations_traits<t1>::steal;
+        ret.operations.steal = operation_traits<t1>::steal;
     }
     if constexpr (std::is_destructible_v<t1>) {
-        ret.operations.release = operations_traits<t1>::release;
+        ret.operations.release = operation_traits<t1>::release;
     }
     return ret;
 }
@@ -344,13 +348,13 @@ inline auto Any::make_ref(T &other)
     ret.typeinfo     = GetType<T>();
     ret.storage_type = EStorageType::Ref;
     if constexpr (std::is_copy_constructible_v<T>) {
-        ret.operations.copy = operations_traits<T>::copy;
+        ret.operations.copy = operation_traits<T>::copy;
     }
     if constexpr (std::is_move_constructible_v<T>) {
-        ret.operations.steal = operations_traits<T>::steal;
+        ret.operations.steal = operation_traits<T>::steal;
     }
     if constexpr (std::is_destructible_v<T>) {
-        ret.operations.release = operations_traits<T>::release;
+        ret.operations.release = operation_traits<T>::release;
     }
     return ret;
 }
@@ -364,13 +368,13 @@ inline auto Any::make_const_ref(const T &other)
     ret.typeinfo     = GetType<T>();
     ret.storage_type = EStorageType::ConstRef;
     if constexpr (std::is_copy_constructible_v<T>) {
-        ret.operations.copy = operations_traits<T>::copy;
+        ret.operations.copy = operation_traits<T>::copy;
     }
     if constexpr (std::is_move_constructible_v<T>) {
-        ret.operations.steal = operations_traits<T>::steal;
+        ret.operations.steal = operation_traits<T>::steal;
     }
     if constexpr (std::is_destructible_v<T>) {
-        ret.operations.release = operations_traits<T>::release;
+        ret.operations.release = operation_traits<T>::release;
     }
     return ret;
 }
