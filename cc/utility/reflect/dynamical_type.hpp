@@ -59,6 +59,18 @@ class Type
     const Numeric *AsNumeric() const;
     const Enum    *AsEnum() const;
     const Class   *AsClass() const;
+
+    static std::string EKind2String(EKind kind)
+    {
+        switch (kind) {
+        case EKind::Numeric:
+            return "Numeric";
+        case EKind::Enum:
+            return "Enum";
+        case EKind::Class:
+            return "Class";
+        }
+    }
 };
 
 
@@ -74,7 +86,8 @@ class Numeric : public Type
         Int64,
         Int128,
         Float,
-        Double
+        Double,
+        Bool
     };
 
   private:
@@ -111,6 +124,8 @@ class Numeric : public Type
             return "Float";
         case EKind::Double:
             return "Double";
+        case EKind::Bool:
+            return "Bool";
         }
 
         return "Unknown";
@@ -142,6 +157,9 @@ class Numeric : public Type
         }
         else if constexpr (std::is_same_v<t1, double>) {
             return EKind::Double;
+        }
+        else if constexpr (std::is_same_v<t1, bool>) {
+            return EKind::Bool;
         }
 
         // what type is T?
