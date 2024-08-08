@@ -3,11 +3,15 @@
 #include "function_traits.hpp"
 #include "variable_traits.hpp"
 #include <cassert>
+#include <cstdarg>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <functional>
+#include <memory>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -83,6 +87,8 @@ class Any
   public:
     template <class T>
     friend class any_operations_traits;
+
+    friend class Numeric;
 
     enum class EStorageType
     {
@@ -438,8 +444,44 @@ class Numeric : public Type
         }
     }
 
-    void SetValue(long long value, Any &elem)
+    void SetValue(double value, Any &elem)
     {
+        auto typeinfo = elem.GetTypeInfo();
+        if (typeinfo->GetKind() == Type::EKind::Numeric) {
+            auto numeric = typeinfo->AsNumeric();
+            switch (numeric->kind) {
+            case EKind::Unknown:
+                assert(false);
+                break;
+            case EKind::Int8:
+            {
+                if (numeric->IsSigned()) {
+                    *(int8_t *)elem.payload = value;
+                }
+                else {
+                    *(uint8_t *)elem.payload = value;
+                }
+                break;
+            }
+            case EKind::Int16:
+            {
+                if (numeric->IsSigned()) {
+                    *(int16_t *)elem.payload = value;
+                }
+                else {
+                    *(uint16_t *)elem.payload = value;
+                }
+            }
+            // TODO....
+            case EKind::Int32:
+            case EKind::Int64:
+            case EKind::Int128:
+            case EKind::Float:
+            case EKind::Double:
+            case EKind::Bool:
+                break;
+            }
+        }
     }
 
   private:
@@ -512,18 +554,67 @@ class Enum : public Type
 class Class : public Type
 {
   public:
-    struct MemberVariable {
-        std::string name;
-        const Type *type;
+
+    class Member
+    {
+        virtual Any call(const std::vector<Any> &args) = 0;
+    };
+
+    template <typename OwnerClass, typename VariableStaticType>
+    struct MemberVariable : public Member {
+        std::string        name;
+        const Type        *type;
+        VariableStaticType OwnerClass::*ptr;
+
+
+        Any call(const std::vector<Any> &args) override
+        {
+            assert(args.size() == 1 && args[0].GetTypeInfo() == GetType<OwnerClass>());
+            OwnerClass        *instance = (OwnerClass *)args[0].GetPayload();
+            VariableStaticType value    = instance->*ptr;
+            return make_copy(value);
+        }
+
 
         template <typename T>
         static MemberVariable Create(const std::string &name);
     };
 
-    struct MemberFunction {
+    template <typename T, bool IsConst>
+    static std::conditional_t<IsConst, const T &, T> unwrap(Any &any)
+    {
+        if constexpr (IsConst) {
+            assert(any.GetTypeInfo() == GetType<T>());
+            return *(const T *)any.GetPayload();
+        }
+        else {
+            return *(T *)any.GetPayload();
+        }
+    }
+
+    template <typename OwnerClass, typename RetType, size_t... Idx, typename... Args>
+    static Any inner_call(RetType (OwnerClass::*ptr)(Args...), const std::vector<Any> &args, std::index_sequence<Idx...>)
+    {
+        OwnerClass *instance = (OwnerClass *)args[0].GetPayload();
+        auto        ret      = instance->*ptr(unwrap<Args>(args[Idx + 1])...);
+        return make_copy(ret);
+    }
+
+    template <typename OwnerClass, typename RetType, typename... Args>
+    struct MemberFunction : public Member {
         std::string               name;
         const Type               *return_type;
-        std::vector<const Type *> parameters;
+        std::vector<const Type *> parameter_types;
+        RetType (OwnerClass::*ptr)(Args...);
+
+        Any call(const std::vector<Any> &args) override
+        {
+            assert(args.size() == parameter_types.size() + 1);
+            for (size_t i = 0; i < parameter_types.size(); ++i) {
+                assert(args[i + 1].GetTypeInfo() == parameter_types[i]);
+            }
+            return inner_call(ptr, args, std::make_index_sequence<sizeof...(Args)>());
+        }
 
         template <typename T>
         static MemberFunction Create(const std::string &name);
@@ -535,18 +626,18 @@ class Class : public Type
 
 
   private:
-    std::vector<MemberFunction> functions;
-    std::vector<MemberVariable> variables;
+    std::vector<Member> functions;
+    std::vector<Member> variables;
 
   public:
     Class() : Type("Unknown-Class", Type::EKind::Class) {}
     Class(const std::string &name) : Type(name, Type::EKind::Class) {}
 
-    void AddVariable(MemberVariable &&member) { variables.emplace_back(std::move(member)); }
-    void AddFunction(MemberFunction &&member) { functions.emplace_back(std::move(member)); }
+    void AddVariable(Member &&member) { variables.emplace_back(std::make_unique(std::move(member))); }
+    void AddFunction(Member &&member) { functions.emplace_back(std::move(member)); }
 
-    const std::vector<MemberFunction> &GetFunctions() const { return functions; }
-    const std::vector<MemberVariable> &GetVariables() const { return variables; }
+    const std::vector<std::unique_ptr<Member>> &GetFunctions() const { return functions; }
+    const std::vector<std::unique_ptr<Member>> &GetVariables() const { return variables; }
 };
 
 
