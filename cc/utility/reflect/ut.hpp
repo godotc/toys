@@ -86,8 +86,3 @@ inline std::chrono::seconds operator""_s(unsigned long long value)
 {
     return std::chrono::seconds(value);
 }
-
-
-namespace co_async {
-
-} // namespace co_async

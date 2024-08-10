@@ -3,22 +3,26 @@
 #include "function_traits.hpp"
 #include "variable_traits.hpp"
 #include <cassert>
+#include <cstdarg>
 #include <cstddef>
-#include <iostream>
+#include <cstdint>
+#include <cstdio>
+#include <functional>
+#include <memory>
 #include <set>
 #include <string>
-#include <tuple>
 #include <type_traits>
-#include <typeindex>
 #include <utility>
-#include <vcruntime_typeinfo.h>
 #include <vector>
+
 
 
 class Type;
 class Numeric;
 class Enum;
 class Class;
+class Any;
+
 
 
 inline std::set<const Type *> &GlobalTypes()
@@ -26,6 +30,10 @@ inline std::set<const Type *> &GlobalTypes()
     static std::set<const Type *> global_types;
     return global_types;
 };
+
+
+template <typename T>
+inline const Type *GetType();
 
 
 class Type
@@ -59,8 +67,323 @@ class Type
     const Numeric *AsNumeric() const;
     const Enum    *AsEnum() const;
     const Class   *AsClass() const;
+
+    static std::string EKind2String(EKind kind)
+    {
+        switch (kind) {
+        case EKind::Numeric:
+            return "Numeric";
+        case EKind::Enum:
+            return "Enum";
+        case EKind::Class:
+            return "Class";
+        }
+    }
 };
 
+
+class Any
+{
+  public:
+    template <class T>
+    friend class any_operations_traits;
+
+    friend class Numeric;
+
+    enum class EStorageType
+    {
+        Empty,
+        Owned,
+        Stolen,
+        Ref,
+        ConstRef,
+    };
+
+    struct Operations {
+        std::function<Any(const Any &)> copy;
+        std::function<Any(Any &)>       steal;
+        std::function<void(Any &)>      release;
+    };
+
+
+  private:
+    template <class T>
+    struct operation_traits {
+        static Any copy(const Any &elem)
+        {
+            assert(elem.typeinfo == GetType<T>());
+
+            Any ret;
+            ret.payload      = new T{*static_cast<T *>(elem.payload)}; // erase type
+            ret.typeinfo     = elem.typeinfo;
+            ret.storage_type = Any::EStorageType::Owned;
+            ret.operations   = elem.operations;
+            return ret;
+        }
+
+        static Any steal(Any &elem)
+        {
+            assert(elem.typeinfo == GetType<T>());
+            Any ret;
+
+#if __SSO
+            if constexpr (sizeof(T) <= sizeof(Any::small_size_object)) {
+                // Emplacement New:  call the construct on a memory that already allocated which on stack
+                new (ret.small_size_object) T{*static_cast<T *>(other.payload)};
+            }
+            else {
+                ret.payload = new T{*static_cast<T *>(other.payload)};
+            }
+#else
+            ret.payload = new T{std::move(*static_cast<T *>(elem.payload))}; // erase type
+#endif
+            ret.typeinfo      = elem.typeinfo;
+            ret.storage_type  = Any::EStorageType::Owned;
+            elem.storage_type = Any::EStorageType::Stolen; // update origin's data state
+            ret.operations    = elem.operations;
+            return ret;
+        }
+
+
+        static void release(Any &elem)
+        {
+            assert(elem.typeinfo == GetType<T>());
+
+            delete static_cast<T *>(elem.payload); // TODO: maybe force convert (void*)
+            elem.payload      = nullptr;
+            elem.storage_type = Any::EStorageType::Empty;
+            elem.typeinfo     = nullptr;
+        }
+    };
+
+
+  private:
+#if __SSO
+    union
+    {
+        void *payload;
+        char  small_size_object[1024]; // SSO
+    };
+#else
+    void *payload;
+#endif
+    Type const  *typeinfo;
+    EStorageType storage_type = EStorageType::Empty;
+    Operations   operations;
+
+  public:
+    template <typename T>
+    const Type *GetTypeInfo();
+    template <class T>
+    static auto make_copy(const T &other);
+
+    template <class T>
+    static auto make_steal(T &&other);
+
+    template <class T>
+    static auto make_ref(T &other);
+
+    template <class T>
+    static auto make_const_ref(const T &other);
+
+    Any() = default;
+
+    // Copy constructor
+    Any(const Any &other)
+    {
+        typeinfo     = other.typeinfo;
+        storage_type = other.storage_type;
+        operations   = other.operations;
+        if (operations.copy) {
+            // payload = operations.copy(other).payload;
+            auto new_any               = operations.copy(other);
+            payload                    = new_any.payload;
+            new_any.payload            = nullptr; //
+            new_any.operations.release = nullptr;
+        }
+        else {
+            storage_type = EStorageType::Empty;
+            typeinfo     = nullptr;
+        }
+    }
+
+    // Move constructor
+    Any(Any &&other) // noexcept
+    {
+        typeinfo     = std::move(other.typeinfo);
+        payload      = std::move(other.payload);
+        storage_type = std::move(other.storage_type);
+        operations   = std::move(other.operations);
+    }
+
+    // Copy assignment
+    Any &operator=(const Any &other)
+    {
+        if (this != &other) {
+            typeinfo     = other.typeinfo;
+            storage_type = other.storage_type;
+            operations   = other.operations;
+
+            if (operations.copy) {
+                auto new_any               = operations.copy(other);
+                payload                    = new_any.payload;
+                new_any.payload            = nullptr;
+                new_any.operations.release = nullptr;
+            }
+            else {
+                storage_type = EStorageType::Empty;
+                typeinfo     = nullptr;
+            }
+        }
+        return *this;
+    }
+
+
+    // Move assignment
+    Any &operator=(Any &&other) // noexcept
+    {
+        if (this != &other) {
+            typeinfo     = std::move(other.typeinfo);
+            payload      = std::move(other.payload);
+            storage_type = std::move(other.storage_type);
+            operations   = std::move(other.operations);
+        }
+        return *this;
+    }
+
+
+    ~Any()
+    {
+        if (operations.release && (storage_type == EStorageType::Owned || storage_type == EStorageType::Stolen)) {
+#ifndef NODEBUG
+            printf("Any::~Any() deallocate payload, storage_type: %s\n", StorageType2String(storage_type).c_str());
+#endif
+            operations.release(*this);
+        }
+        else {
+            // #ifndef NODEBUG
+            //             printf("Any::~Any() %s -> Do not deallocate\n", StorageType2String(storage_type).c_str());
+            // #endif
+        }
+    }
+
+    // temp
+    const void  *GetPayload() const { return payload; }
+    const Type  *GetTypeInfo() const { return typeinfo; }
+    EStorageType GetStorageType() const { return storage_type; }
+
+    template <class T>
+    T *as() const
+    {
+        if (typeinfo == GetType<T>()) {
+            return static_cast<T *>(payload);
+        }
+        return nullptr;
+    }
+
+
+    static std::string StorageType2String(EStorageType type)
+    {
+        switch (type) {
+        case EStorageType::Empty:
+            return "Empty";
+        case EStorageType::Owned:
+            return "Owned";
+        case EStorageType::Stolen:
+            return "Stolen";
+        case EStorageType::Ref:
+            return "Ref";
+        case EStorageType::ConstRef:
+            return "ConstRef";
+            break;
+        }
+    }
+
+
+  private:
+};
+
+
+
+// TODO: little object optimized for int short char long ....
+template <class T>
+inline auto Any::make_copy(const T &other)
+{
+    Any ret;
+    ret.payload      = new T{other};
+    ret.typeinfo     = GetType<T>();
+    ret.storage_type = EStorageType::Owned;
+    if constexpr (std::is_copy_constructible_v<T>) {
+        ret.operations.copy = operation_traits<T>::copy;
+    }
+    if constexpr (std::is_move_constructible_v<T>) {
+        ret.operations.steal = operation_traits<T>::steal;
+    }
+    if constexpr (std::is_destructible_v<T>) {
+        ret.operations.release = operation_traits<T>::release;
+    }
+    return ret;
+}
+
+template <class T>
+inline auto Any::make_steal(T &&other)
+{
+    using t1 = std::remove_cv_t< // remove const and volatile
+        std::remove_reference_t<T>>;
+    Any ret;
+    ret.payload      = new t1{std::move(other)};
+    ret.typeinfo     = GetType<t1>();
+    ret.storage_type = EStorageType::Owned;
+    if constexpr (std::is_copy_constructible_v<t1>) {
+        ret.operations.copy = operation_traits<t1>::copy;
+    }
+    if constexpr (std::is_move_constructible_v<t1>) {
+        ret.operations.steal = operation_traits<t1>::steal;
+    }
+    if constexpr (std::is_destructible_v<t1>) {
+        ret.operations.release = operation_traits<t1>::release;
+    }
+    return ret;
+}
+
+template <class T>
+inline auto Any::make_ref(T &other)
+{
+    Any ret;
+    ret.payload      = &other; // pointer to this deref value
+    ret.typeinfo     = GetType<T>();
+    ret.storage_type = EStorageType::Ref;
+    if constexpr (std::is_copy_constructible_v<T>) {
+        ret.operations.copy = operation_traits<T>::copy;
+    }
+    if constexpr (std::is_move_constructible_v<T>) {
+        ret.operations.steal = operation_traits<T>::steal;
+    }
+    if constexpr (std::is_destructible_v<T>) {
+        ret.operations.release = operation_traits<T>::release;
+    }
+    return ret;
+}
+
+template <class T>
+inline auto Any::make_const_ref(const T &other)
+{
+    Any ret;
+    // ret.payload      = static_cast<void *>(&other); // also pointer to this deref value
+    ret.payload      = (void *)(&other); // also pointer to this deref value
+    ret.typeinfo     = GetType<T>();
+    ret.storage_type = EStorageType::ConstRef;
+    if constexpr (std::is_copy_constructible_v<T>) {
+        ret.operations.copy = operation_traits<T>::copy;
+    }
+    if constexpr (std::is_move_constructible_v<T>) {
+        ret.operations.steal = operation_traits<T>::steal;
+    }
+    if constexpr (std::is_destructible_v<T>) {
+        ret.operations.release = operation_traits<T>::release;
+    }
+    return ret;
+}
 
 
 class Numeric : public Type
@@ -68,13 +391,15 @@ class Numeric : public Type
   public:
     enum class EKind
     {
+        Unknown,
         Int8,
         Int16,
         Int32,
         Int64,
         Int128,
         Float,
-        Double
+        Double,
+        Bool
     };
 
   private:
@@ -111,9 +436,52 @@ class Numeric : public Type
             return "Float";
         case EKind::Double:
             return "Double";
+        case EKind::Bool:
+            return "Bool";
+        case EKind::Unknown:
+            return "Unknown";
+            break;
         }
+    }
 
-        return "Unknown";
+    void SetValue(double value, Any &elem)
+    {
+        auto typeinfo = elem.GetTypeInfo();
+        if (typeinfo->GetKind() == Type::EKind::Numeric) {
+            auto numeric = typeinfo->AsNumeric();
+            switch (numeric->kind) {
+            case EKind::Unknown:
+                assert(false);
+                break;
+            case EKind::Int8:
+            {
+                if (numeric->IsSigned()) {
+                    *(int8_t *)elem.payload = value;
+                }
+                else {
+                    *(uint8_t *)elem.payload = value;
+                }
+                break;
+            }
+            case EKind::Int16:
+            {
+                if (numeric->IsSigned()) {
+                    *(int16_t *)elem.payload = value;
+                }
+                else {
+                    *(uint16_t *)elem.payload = value;
+                }
+            }
+            // TODO....
+            case EKind::Int32:
+            case EKind::Int64:
+            case EKind::Int128:
+            case EKind::Float:
+            case EKind::Double:
+            case EKind::Bool:
+                break;
+            }
+        }
     }
 
   private:
@@ -143,12 +511,14 @@ class Numeric : public Type
         else if constexpr (std::is_same_v<t1, double>) {
             return EKind::Double;
         }
+        else if constexpr (std::is_same_v<t1, bool>) {
+            return EKind::Bool;
+        }
 
         // what type is T?
-        std::cerr << typeid(T).name() << std::endl;
-
+        fprintf(stderr, "Unknown type: %s\n", typeid(T).name());
         assert(false);
-        return (EKind)-1;
+        return EKind::Unknown;
     }
 };
 
@@ -184,18 +554,67 @@ class Enum : public Type
 class Class : public Type
 {
   public:
-    struct MemberVariable {
-        std::string name;
-        const Type *type;
+
+    class Member
+    {
+        virtual Any call(const std::vector<Any> &args) = 0;
+    };
+
+    template <typename OwnerClass, typename VariableStaticType>
+    struct MemberVariable : public Member {
+        std::string        name;
+        const Type        *type;
+        VariableStaticType OwnerClass::*ptr;
+
+
+        Any call(const std::vector<Any> &args) override
+        {
+            assert(args.size() == 1 && args[0].GetTypeInfo() == GetType<OwnerClass>());
+            OwnerClass        *instance = (OwnerClass *)args[0].GetPayload();
+            VariableStaticType value    = instance->*ptr;
+            return make_copy(value);
+        }
+
 
         template <typename T>
         static MemberVariable Create(const std::string &name);
     };
 
-    struct MemberFunction {
+    template <typename T, bool IsConst>
+    static std::conditional_t<IsConst, const T &, T> unwrap(Any &any)
+    {
+        if constexpr (IsConst) {
+            assert(any.GetTypeInfo() == GetType<T>());
+            return *(const T *)any.GetPayload();
+        }
+        else {
+            return *(T *)any.GetPayload();
+        }
+    }
+
+    template <typename OwnerClass, typename RetType, size_t... Idx, typename... Args>
+    static Any inner_call(RetType (OwnerClass::*ptr)(Args...), const std::vector<Any> &args, std::index_sequence<Idx...>)
+    {
+        OwnerClass *instance = (OwnerClass *)args[0].GetPayload();
+        auto        ret      = instance->*ptr(unwrap<Args>(args[Idx + 1])...);
+        return make_copy(ret);
+    }
+
+    template <typename OwnerClass, typename RetType, typename... Args>
+    struct MemberFunction : public Member {
         std::string               name;
         const Type               *return_type;
-        std::vector<const Type *> parameters;
+        std::vector<const Type *> parameter_types;
+        RetType (OwnerClass::*ptr)(Args...);
+
+        Any call(const std::vector<Any> &args) override
+        {
+            assert(args.size() == parameter_types.size() + 1);
+            for (size_t i = 0; i < parameter_types.size(); ++i) {
+                assert(args[i + 1].GetTypeInfo() == parameter_types[i]);
+            }
+            return inner_call(ptr, args, std::make_index_sequence<sizeof...(Args)>());
+        }
 
         template <typename T>
         static MemberFunction Create(const std::string &name);
@@ -207,18 +626,18 @@ class Class : public Type
 
 
   private:
-    std::vector<MemberFunction> functions;
-    std::vector<MemberVariable> variables;
+    std::vector<Member> functions;
+    std::vector<Member> variables;
 
   public:
     Class() : Type("Unknown-Class", Type::EKind::Class) {}
     Class(const std::string &name) : Type(name, Type::EKind::Class) {}
 
-    void AddVariable(MemberVariable &&member) { variables.emplace_back(std::move(member)); }
-    void AddFunction(MemberFunction &&member) { functions.emplace_back(std::move(member)); }
+    void AddVariable(Member &&member) { variables.emplace_back(std::make_unique(std::move(member))); }
+    void AddFunction(Member &&member) { functions.emplace_back(std::move(member)); }
 
-    const std::vector<MemberFunction> &GetFunctions() const { return functions; }
-    const std::vector<MemberVariable> &GetVariables() const { return variables; }
+    const std::vector<std::unique_ptr<Member>> &GetFunctions() const { return functions; }
+    const std::vector<std::unique_ptr<Member>> &GetVariables() const { return variables; }
 };
 
 
@@ -519,5 +938,133 @@ inline void dynamic_function_test()
             d, param->GetName(), ",";
         }
         d, ")";
+    }
+}
+
+struct Person3 {
+    std::string last_name;
+    float       height;
+    // bool        is_transaxle;
+    bool is_female;
+
+    Person3() { printf("Person3 default construct\n"); }
+
+    // Copy
+    Person3(const Person3 &other) : last_name(other.last_name), height(other.height), is_female(other.is_female)
+    {
+        printf("Person3 copy\n");
+    }
+    // Move
+    Person3(Person3 &&other) : last_name(std::move(other.last_name)), height(other.height), is_female(other.is_female)
+    {
+        printf("Person3 move/steal\n");
+    }
+    // Copy assign
+    Person3 &operator=(const Person3 &other)
+    {
+        last_name = other.last_name;
+        height    = other.height;
+        is_female = other.is_female;
+        printf("Person3 copy assign\n");
+        return *this;
+    }
+
+    ~Person3()
+    {
+        printf("Person3 destruct\n");
+    }
+
+
+
+    void Sleep() const
+    {
+        printf("Zzzzz....\n");
+    }
+    // bool IsTransaxle() const { return is_transaxle; }
+    bool IsFemale() const
+    {
+        printf("???....\n");
+        return is_female;
+    }
+    bool GetMarriedWith(Person3 other)
+    {
+        if (other.is_female != is_female) //&& is_transaxle != other.is_transaxle;)
+        {
+            if (is_female) {
+                last_name = "Mrs." + other.last_name;
+            }
+            else {
+                last_name = "Mr." + last_name;
+            }
+            return true;
+        }
+        return false;
+    }
+};
+
+
+inline void any_test()
+{
+    Register<Person3>()
+        .Register("Person3")
+        .AddVariable<decltype(&Person3::height)>("height")
+        .AddFunction<decltype(&Person3::GetMarriedWith)>("GetMarriedWith");
+
+    {
+        Person3 p;
+        p.last_name = "John";
+        p.height    = 1.75f;
+        p.is_female = true;
+        Any a       = Any::make_copy(p);
+
+        // debug(), Any::StorageType2String(a.GetStorageType()), " ", a.GetTypeInfo()->GetName(), " ", (int)a.GetTypeInfo()->GetKind();
+        // auto b = a.GetPayload();
+        // auto c = (Person3 *)b;
+        // debug(), c->last_name, " ", c->height, " ", c->is_female;
+    }
+    debug(), "------------------";
+    {
+        Person3 p;
+        p.last_name = "John";
+        p.height    = 1.75f;
+        p.is_female = true;
+        Any a       = Any::make_steal(p);
+
+        debug(), Any::StorageType2String(a.GetStorageType()), " ", a.GetTypeInfo()->GetName(), " ", (int)a.GetTypeInfo()->GetKind();
+        auto b = a.GetPayload();
+        auto c = (Person3 *)b;
+        debug(), c->last_name, " ", c->height, " ", c->is_female;
+    }
+    debug(), "------------------";
+    {
+        Person3 p;
+        p.last_name = "John";
+        p.height    = 1.75f;
+        p.is_female = true;
+        Any a       = Any::make_ref(p);
+
+        debug(), Any::StorageType2String(a.GetStorageType()), " ", a.GetTypeInfo()->GetName(), " ", Type::EKind2String(a.GetTypeInfo()->GetKind());
+        auto b = a.GetPayload();
+        auto c = (Person3 *)b;
+        debug(), c->last_name, " ", c->height, " ", c->is_female;
+    }
+    debug(), "------------------";
+    {
+        Person3 p;
+        p.last_name = "John";
+        p.height    = 1.75f;
+        p.is_female = true;
+        Any a       = Any::make_const_ref(p);
+
+
+        debug(), Any::StorageType2String(a.GetStorageType()), " ", a.GetTypeInfo()->GetName(), " ", Type::EKind2String(a.GetTypeInfo()->GetKind());
+        auto b = a.GetPayload();
+        auto c = (Person3 *)b;
+        debug(), c->last_name, " ", c->height, " ", c->is_female;
+
+
+        auto e = a.as<Person3>();
+        assert(e != nullptr);
+        debug(), e->last_name, " ", e->height, " ", e->is_female;
     }
 }
