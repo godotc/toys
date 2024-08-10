@@ -8,6 +8,7 @@ set number
 set foldmethod=indent
 set autoindent
 set showcmd
+set ingorecase
 
 set hlsearch
 set incsearch
