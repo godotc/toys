@@ -8,10 +8,10 @@ set number
 set foldmethod=indent
 set autoindent
 set showcmd
-set ignorecase
 
 set hlsearch
 set incsearch
+set ignorecase
 
 set path^=/usr/include
 

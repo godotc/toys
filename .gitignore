@@ -24,6 +24,8 @@ compile_commands.json
 a.exe
 *.exe
 *.out
+*.ilk
+*.pdb
 
 game/bevy
 *.swo
