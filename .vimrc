@@ -32,9 +32,9 @@ Plug 'rakr/vim-one'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
-	Plug 'vim-scripts/a.vim'
-	Plug 'octol/vim-cpp-enhanced-highlight'
-	Plug 'pboettch/vim-cmake-syntax'
+Plug 'vim-scripts/a.vim'
+Plug 'octol/vim-cpp-enhanced-highlight'
+Plug 'pboettch/vim-cmake-syntax'
 
 "Plug 'Exafunction/codeium.vim', { 'branch': 'main' }
 
@@ -42,6 +42,7 @@ Plug 'junegunn/fzf.vim'
 "Plug 'puremourning/vimspector'
 
 " All of your Plugins must be added before the following line
+Plug 'Exafunction/codeium.vim'
 call plug#end()            " required
 
 
@@ -277,6 +278,10 @@ let g:floaterm_height=0.8
 let g:floaterm_with=0.9
 "let g:floaterm_wintype=float 
 let g:floaterm_autoclose=2
+if has("win32")
+	let g:floaterm_shell='pwsh'
+endif
+
 
 " WSL yank support
 let s:clip = '/mnt/c/Windows/System32/clip.exe'  " change this path according to your mount point
@@ -286,3 +291,14 @@ if executable(s:clip)
         autocmd TextYankPost * if v:event.operator ==# 'y' | call system(s:clip, @0) | endif
     augroup END
 endif
+
+
+" codeium
+"
+ let g:codeium_disable_bindings = 1
+"imap <script><silent><nowait><expr> <C-g> codeium#Accept()
+"imap <script><silent><nowait><expr> <C-h> codeium#AcceptNextWord()
+imap <script><silent><nowait><expr> <C-space> codeium#AcceptNextLine()
+"imap <C-;>   <Cmd>call codeium#CycleCompletions(1)<CR>
+"imap <C-,>   <Cmd>call codeium#CycleCompletions(-1)<CR>
+"imap <C-x>   <Cmd>call codeium#Clear()<CR>

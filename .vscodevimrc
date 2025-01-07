@@ -18,7 +18,10 @@ set path^=/usr/include
 set list
 set listchars=tab:→\ ,eol:↓
 
-set timeoutlen=500
+set cursorline
+hi CursorLine term=bold cterm=bold guibg=Grey40
+
+set timeoutlen=400
 filetype indent on
 
 
