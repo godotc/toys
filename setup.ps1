@@ -16,16 +16,23 @@ iwr -useb https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim |`
 mkdir ~/AppData/Local/nvim
 mkdir ~/Documents/PowerShell
 
-rm ~/.vimrc
-rm ~/.ideavimrc
-rm ~/.vsvimrc
-rm ~/.vscodevimrc
-rm ~/Documents/PowerShell/*
+function Force-Add-SymLink($dst, $src, $bRelative=$true) {
+    if (Test-Path $dst) {
+        Remove-Item $dst
+    }
+    if($bRelative) {
+        New-Item -ItemType SymbolicLink -Path $dst -Target (Resolve-Path $src).Path
+    }else{
+        New-Item -ItemType SymbolicLink -Path $dst -Target $src
+    }
+}
 
-New-Item -ItemType SymbolicLink -Path ~/.vimrc -Target  "$(Get-Location)/.vimrc"
-New-Item -ItemType SymbolicLink -Path ~/.ideavimrc -Target  "$(Get-Location)/.ideavimrc"
-New-Item -ItemType SymbolicLink -Path ~/.vsvimrc -Target  "$(Get-Location)/.vsvimrc"
-New-Item -ItemType SymbolicLink -Path ~/.vscodevimrc -Target  "$(Get-Location)/.vscodevimrc"
-New-Item -ItemType SymbolicLink -Path ~/AppData/Local/nvim/init.lua -Target  "$(Get-Location)/init.lua"
-New-Item -ItemType SymbolicLink -Path ~/AppData/Local/nvim/coc-settings.json -Target  "$(Get-Location)/coc-settings.json"
-New-Item -ItemType SymbolicLink -Path ~/Documents/PowerShell/Profile.ps1 -Target  "$(Get-Location)/Profile.ps1"
+
+
+Force-Add-SymLink  ~/.vimrc 	    ./.vimrc
+Force-Add-SymLink  ~/.ideavimrc     ./.ideavimrc
+Force-Add-SymLink  ~/.vsvimrc       ./.vsvimrc
+Force-Add-SymLink  ~/.vscodevimrc   ./.vscodevimrc
+Force-Add-SymLink  ~/AppData/Local/nvim/init.lua            ./init.lua
+Force-Add-SymLink  ~/AppData/Local/nvim/coc-settings.json   ./coc-settings.json
+Force-Add-SymLink  ~/Documents/PowerShell/Profile.ps1       ./Profile.ps1
