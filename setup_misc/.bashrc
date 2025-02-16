@@ -128,12 +128,14 @@ export CARGO_NET_GIT_FETCH_WITH_CLI=true
 export NODE_PATH=/usr/lib/node_modules
 
 
+
 alias gr="go run"
 alias py="python"
 alias tat="tmux attach -t"
 alias sshRoot="ssh root@godot.link"
 alias dk=docker
 alias pm=pacman
+alias spm="sudo pacman"
 alias nhh='npx hardhat'
 alias v=nvim
 
@@ -143,11 +145,17 @@ source ~/.bashrc_locale
 
 source "$HOME/.cargo/env"
 
-# proxy configuration
-#port=10809
-#nameserver=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}')   # find nameserver
-#export http_proxy=$nameserver:$port
-#export https_proxy=$nameserver:$port
+
+# wsl get host ip
+nameserver=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}')   # find nameserver
+# proxy configuration if needed
+port=10809
+export http_proxy=$nameserver:$port
+export https_proxy=$nameserver:$port
+
+# set DISPLAY if needed
+#export DISPLAY=$nameserver:0
+
 
 
 

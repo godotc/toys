@@ -62,14 +62,14 @@ else
 endif
 
 
-set termguicolors
+"set termguicolors
 "tmux Error color setting
 " Enable true color 启用终端24位色
-if exists('+termguicolors')
-   let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-   set termguicolors
-endif
+"if exists('+termguicolors')
+"   let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+"   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+"   set termguicolors
+"endif
 
 
 " cursor shape
@@ -134,7 +134,7 @@ filetype indent on
 set wildmode=list:full 
 "set wildmenu
 
-set background=dark " for the dark version
+"set background=dark " for the dark version
 " set background=light " for the light version
 colorscheme onedark
 
@@ -156,7 +156,10 @@ nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 nmap <silent> <F2> <Plug>(coc-rename)
 
-vmap <C-c> "+y
+" no need for clipboard from linux to windows 
+" see "WSL yank support" the post copy action in this file
+" vmap <C-c> "+y 
+vmap <C-c> y
 
 
 " hover show detail or 'K'
@@ -291,14 +294,20 @@ if executable(s:clip)
         autocmd TextYankPost * if v:event.operator ==# 'y' | call system(s:clip, @0) | endif
     augroup END
 endif
-
-
 " codeium
-"
- let g:codeium_disable_bindings = 1
-"imap <script><silent><nowait><expr> <C-g> codeium#Accept()
-"imap <script><silent><nowait><expr> <C-h> codeium#AcceptNextWord()
+
+
+
+let g:codeium_disable_bindings = 1
+imap <script><silent><nowait><expr> <C-A> codeium#Accept()
+"imap <script><silent><nowait><expr> <C-l> codeium#AcceptNextLine()	
 imap <script><silent><nowait><expr> <C-space> codeium#AcceptNextLine()
-"imap <C-;>   <Cmd>call codeium#CycleCompletions(1)<CR>
-"imap <C-,>   <Cmd>call codeium#CycleCompletions(-1)<CR>
-"imap <C-x>   <Cmd>call codeium#Clear()<CR>
+imap <C-Down>   <Cmd>call codeium#CycleCompletions(1)<CR>
+imap <C-Up>   <Cmd>call codeium#CycleCompletions(-1)<CR>
+imap <C-x>   <Cmd>call codeium#Clear()<CR>
+"
+" use space to esaced completion context window
+" then use tab to accept complete
+"inoremap <script><silent><nowait><expr> <space>call codeium#CycleOrComplete()<CR>
+
+

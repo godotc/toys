@@ -33,10 +33,11 @@ $INSTALL llvm
 $INSTALL nodejs
 $INSTALL npm
 
-cd ~
 # thought you already in this repo
 #git clone git@github.com:godotc/toys.git
-cd toys
+cd ~/toys/setup_misc
+
+	
 PWD=`pwd`
 
 mkdir -p  \
