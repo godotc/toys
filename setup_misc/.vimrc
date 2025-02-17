@@ -90,11 +90,15 @@ endif
 set laststatus=2
 let g:lightline = {
       \ 'component_function': {
-      \   'filename': 'LightlineFilename'
+      \   'filename': 'LightlineFilename',
+      \   'codeium': 'CodeiumStatusString',
       \ }
       \ }
 function! LightlineFilename()
-  return expand('%')
+  return expand('%')  
+endfunction
+function! CodeiumStatusString()
+	return eval(\{…\}%3{codeium#GetStatusString()})
 endfunction
 
 let g:rainbow_active=1
@@ -141,7 +145,35 @@ colorscheme onedark
 
 " Make <TAB> to accept selected completion item or notify coc.nvim to format
 " <C-g>u breaks current undo, please make your own choice.
- inoremap <silent><expr> <TAB>  coc#pum#visible() ? coc#pum#confirm():"\<TAB>"
+ "inoremap <silent><expr> <TAB>  coc#pum#visible() ? coc#pum#confirm():"\<TAB>"
+
+
+
+function! DoComplete()
+  if coc#pum#visible()
+    return coc#pum#confirm()
+  endif
+
+  let status = codeium#GetStatusString()
+  if status != "0" && status != "*"
+    return codeium#Accept()
+  endif
+
+  return "\<TAB>"
+endfunction
+
+imap <script><silent><nowait><expr> <TAB> DoComplete()
+
+let g:codeium_disable_bindings = 1
+"imap <script><silent><nowait><expr> <C-l> codeium#AcceptNextLine()	
+imap <script><silent><nowait><expr> <C-space> codeium#AcceptNextLine()
+imap <C-Down>   <Cmd>call codeium#CycleCompletions(1)<CR>
+imap <C-Up>   <Cmd>call codeium#CycleCompletions(-1)<CR>
+imap <C-x>   <Cmd>call codeium#Clear()<CR>
+"
+" use space to esaced completion context window
+" then use tab to accept complete
+"inoremap <script><silent><nowait><expr> <space>call codeium#CycleOrComplete()<CR>
 
 
 " Use `[g` and `]g` to navigate diagnostics
@@ -295,19 +327,5 @@ if executable(s:clip)
     augroup END
 endif
 " codeium
-
-
-
-let g:codeium_disable_bindings = 1
-imap <script><silent><nowait><expr> <C-A> codeium#Accept()
-"imap <script><silent><nowait><expr> <C-l> codeium#AcceptNextLine()	
-imap <script><silent><nowait><expr> <C-space> codeium#AcceptNextLine()
-imap <C-Down>   <Cmd>call codeium#CycleCompletions(1)<CR>
-imap <C-Up>   <Cmd>call codeium#CycleCompletions(-1)<CR>
-imap <C-x>   <Cmd>call codeium#Clear()<CR>
-"
-" use space to esaced completion context window
-" then use tab to accept complete
-"inoremap <script><silent><nowait><expr> <space>call codeium#CycleOrComplete()<CR>
 
 

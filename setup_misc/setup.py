@@ -204,8 +204,12 @@ def main():
             (".ideavimrc", os.path.join(HOME_DIR, ".ideavimrc")),
             ("coc-settings.json", os.path.join(HOME_DIR, ".config", "nvim", "coc-settings.json")),
             ("coc-settings.json", os.path.join(HOME_DIR, ".vim", "coc-settings.json")),
+
             ("init.lua", os.path.join(HOME_DIR, ".config", "nvim", "init.lua")),
+            ("init.lua",  os.path.join(HOME_DIR, ".vimrc.lua")),
+
             ("config.fish", os.path.join(HOME_DIR, ".config", "fish", "config.fish")),
+            ("config.fish", os.path.join(HOME_DIR,  ".fishrc")),
         ]
     elif system == "Windows":
         files_to_link = [
@@ -213,7 +217,10 @@ def main():
             (".ideavimrc", os.path.join(HOME_DIR, ".ideavimrc")),
             (".vsvimrc", os.path.join(HOME_DIR, ".vsvimrc")),
             (".vscodevimrc", os.path.join(HOME_DIR, ".vscodevimrc")),
+
             ("init.lua", os.path.join(HOME_DIR, "AppData", "Local", "nvim", "init.lua")),
+            ("init.lua",  os.path.join(HOME_DIR, ".vimrc.lua")),
+
             ("coc-settings.json", os.path.join(HOME_DIR, "AppData", "Local", "nvim", "coc-settings.json")),
             ("Profile.ps1", os.path.join(HOME_DIR, "Documents", "PowerShell", "Profile.ps1"))
         ]
