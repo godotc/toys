@@ -193,6 +193,7 @@ nmap <silent> <F2> <Plug>(coc-rename)
 " vmap <C-c> "+y 
 vmap <C-c> y
 
+nnoremap <C-h> :call CocAction('codeAction')<CR>
 
 " hover show detail or 'K'
 nnoremap <silent> K :call ShowDocumentation()<CR>
@@ -244,8 +245,8 @@ tnoremap   <silent>   <C-t>   <C-\><C-n>:FloatermToggle<CR>
 "tnoremap   <silent>   <F12>   <C-\><C-n>:FloatermToggle<CR>
 
 
-" Highlight the symbol and its references when holding the cursor.
-" autocmd CursorHold * silent call CocActionAsync('highlight')
+" Highlight the symbol and its references when holding the cursor
+autocmd CursorHold * silent call CocActionAsync('highlight')
 
 " Mappings for CoCList
 " Show all diagnostics.

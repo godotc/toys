@@ -102,7 +102,11 @@ function fish_prompt
 
 
     # Construct the prompt
-    echo -n "$prompt_color→ $cyan"(prompt_pwd)"$BRANCH"
+
+#set -l max_length 20
+#echo -n "$prompt_color→ $cyan"$(echo "$PWD" | sed -e "s/\(.\{$max_length\}\).*/\1/")"$BRANCH"
+#echo -n "$prompt_color→ $cyan"(pwd)"$BRANCH"
+    echo -n "$prompt_color→ $cyan"(pwd)"$BRANCH"
 
 	# 获取上一条命令的返回值
     set -l last_status $status
