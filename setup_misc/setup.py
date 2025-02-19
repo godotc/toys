@@ -8,6 +8,7 @@ import shutil
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 HOME_DIR = os.path.expanduser("~")
 
+SCRIPT_DIR=  SCRIPT_DIR.replace("\\", "/")
 print(f"SCRIPT_DIR={SCRIPT_DIR}")
 assert SCRIPT_DIR.endswith("toys/setup_misc")
 
@@ -18,7 +19,7 @@ def run_command(command, shell=False):
         subprocess.run(command, shell=shell, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error executing command: {e}")
-        sys.exit(1)
+        #sys.exit(1)
 
 def install_packages(install_command, packages):
     """Install packages using the specified install command."""
@@ -47,30 +48,25 @@ def create_symlink(src, dst):
         os.makedirs(os.path.dirname(dst))
 
     # Remove the destination if it already exists
-    if os.path.exists(dst):
-        print(f"Removing existing file or directory: {dst}")
-        if os.path.isdir(dst):
-            os.rmdir(dst)
-        else:
-            os.remove(dst)
-    if os.path.islink(dst):
-        print(f"Removing existing link: {dst}")
-        os.remove(dst)
-
+    print(f"Destination exists: {os.path.exists(dst)}")
+    print(f"Destination is a symlink: {os.path.islink(dst)}")
+    print(f"Destination is a directory: {os.path.isdir(dst)}")
+    print(f"Destination is a file: {os.path.isfile(dst)}")
+    if os.path.exists(dst) or os.path.islink(dst):
+        print(f"Removing existing file or directory or link: {dst}")
+        try: 
+            if os.path.isdir(dst):
+                os.rmdir(dst)
+            elif os.path.islink(dst):
+                os.remove(dst)
+            else:
+                os.remove(dst)
+        except Exception as e:
+            prinf(f"failed to remvoe {dst}, {e}")
 
     # Create the symbolic link
-    system = platform.system()
-    if system == "Windows":
-        # Use PowerShell to create a symbolic link on Windows
-        command = f'New-Item -ItemType SymbolicLink -Path "{dst}" -Target "{src}"'
-        run_command(["powershell", "-Command", command])
-    elif system == "Linux":
-        # Use os.symlink to create a symbolic link on Linux
-        print(f"os.symlink ({src}, {dst})")
-        os.symlink(src, dst)
-    else:
-        print(f"Unsupported operating system: {system}")
-        sys.exit(1)
+    print(f"os.symlink ({src}, {dst})")
+    os.symlink(src, dst)
 
     print(f"Symbolic link created: {dst} -> {src}")
     print("-----------------------------")
@@ -155,7 +151,40 @@ def main():
 
     # Change directory to the setup_misc directory
     setup_misc_dir = SCRIPT_DIR
-    
+
+    # Create symbolic links
+    files_to_link= []
+    if system == "Linux":
+        files_to_link = [
+            (".bashrc", os.path.join(HOME_DIR, ".bashrc")),
+            (".vimrc", os.path.join(HOME_DIR, ".vimrc")),
+            (".ideavimrc", os.path.join(HOME_DIR, ".ideavimrc")),
+            ("coc-settings.json", os.path.join(HOME_DIR, ".config", "nvim", "coc-settings.json")),
+            ("coc-settings.json", os.path.join(HOME_DIR, ".vim", "coc-settings.json")),
+
+            ("init.lua", os.path.join(HOME_DIR, ".config", "nvim", "init.lua")),
+            ("init.lua",  os.path.join(HOME_DIR, ".vimrc.lua")),
+
+            ("config.fish", os.path.join(HOME_DIR, ".config", "fish", "config.fish")),
+            ("config.fish", os.path.join(HOME_DIR,  ".fishrc")),
+        ]
+    elif system == "Windows":
+        files_to_link = [
+            (".vimrc", os.path.join(HOME_DIR, ".vimrc")),
+            (".ideavimrc", os.path.join(HOME_DIR, ".ideavimrc")),
+            (".vsvimrc", os.path.join(HOME_DIR, ".vsvimrc")),
+            (".vscodevimrc", os.path.join(HOME_DIR, ".vscodevimrc")),
+
+            ("init.lua", os.path.join(HOME_DIR, "AppData", "Local", "nvim", "init.lua")),
+            ("init.lua",  os.path.join(HOME_DIR, ".vimrc.lua")),
+
+            ("coc-settings.json", os.path.join(HOME_DIR, "AppData", "Local", "nvim", "coc-settings.json")),
+            ("Profile.ps1", os.path.join(HOME_DIR, "Documents", "PowerShell", "Profile.ps1"))
+        ]
+
+    for source, target in files_to_link:
+            create_symlink(os.path.join(setup_misc_dir, source), target)
+
 
     # install packages
     install_command = None
@@ -194,42 +223,9 @@ def main():
         print("Unsupported operating system.")
         sys.exit(1)
 
-
-    # Create symbolic links
-    files_to_link= []
-    if system == "Linux":
-        files_to_link = [
-            (".bashrc", os.path.join(HOME_DIR, ".bashrc")),
-            (".vimrc", os.path.join(HOME_DIR, ".vimrc")),
-            (".ideavimrc", os.path.join(HOME_DIR, ".ideavimrc")),
-            ("coc-settings.json", os.path.join(HOME_DIR, ".config", "nvim", "coc-settings.json")),
-            ("coc-settings.json", os.path.join(HOME_DIR, ".vim", "coc-settings.json")),
-
-            ("init.lua", os.path.join(HOME_DIR, ".config", "nvim", "init.lua")),
-            ("init.lua",  os.path.join(HOME_DIR, ".vimrc.lua")),
-
-            ("config.fish", os.path.join(HOME_DIR, ".config", "fish", "config.fish")),
-            ("config.fish", os.path.join(HOME_DIR,  ".fishrc")),
-        ]
-    elif system == "Windows":
-        files_to_link = [
-            (".vimrc", os.path.join(HOME_DIR, ".vimrc")),
-            (".ideavimrc", os.path.join(HOME_DIR, ".ideavimrc")),
-            (".vsvimrc", os.path.join(HOME_DIR, ".vsvimrc")),
-            (".vscodevimrc", os.path.join(HOME_DIR, ".vscodevimrc")),
-
-            ("init.lua", os.path.join(HOME_DIR, "AppData", "Local", "nvim", "init.lua")),
-            ("init.lua",  os.path.join(HOME_DIR, ".vimrc.lua")),
-
-            ("coc-settings.json", os.path.join(HOME_DIR, "AppData", "Local", "nvim", "coc-settings.json")),
-            ("Profile.ps1", os.path.join(HOME_DIR, "Documents", "PowerShell", "Profile.ps1"))
-        ]
-
-    for source, target in files_to_link:
-            create_symlink(os.path.join(setup_misc_dir, source), target)
-
+    if system == "Linux" :
+        set_fish_as_default_shell()
     install_vim_plug()
-    set_fish_as_default_shell()
 
     # Change back to home directory
     os.chdir(HOME_DIR)
