@@ -163,3 +163,4 @@ export https_proxy=$nameserver:$port
 # >>> xmake >>>
 test -f "/root/.xmake/profile" && source "/root/.xmake/profile"
 # <<< xmake <<<
+git config --global alias.s status

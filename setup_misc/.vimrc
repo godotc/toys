@@ -216,6 +216,15 @@ nmap <Space>f :Files<CR>
 nmap <silent> <Space>b :Buffers<CR>
 nmap <F1> :Commands<CR>
 
+" Function to copy the current file name to the clipboard using xclip
+function! CopyFileNameToClipboard()
+    let filename = expand('%:p')  " Get the current file name/abs
+	call system(s:clip, filename)
+    echo 'Copied "' . filename . '" to clipboard'
+endfunction
+
+" Map Shift+Alt+C to the function
+nnoremap <S-A-C> :call CopyFileNameToClipboard()<CR>
 
 
 

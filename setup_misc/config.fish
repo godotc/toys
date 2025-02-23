@@ -163,3 +163,4 @@ set -x all_proxy http://$nameserver:$port
 if test -f "/root/.xmake/profile"
     source "/root/.xmake/profile"
 end
+git config --global alias.s status
