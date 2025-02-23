@@ -1,4 +1,5 @@
 
+t:=
 
 cfg:
 	xmake f -c -m deubg
@@ -7,5 +8,5 @@ cfg:
 b: 
 	xamke b
 r:
-	xmake b && xmake r
+	xmake b $(t) && xmake r $(t)
 
