@@ -1,3 +1,4 @@
+# vim: set ft=bash:
 # ~/.config/fish/config.fish
 
 # Source global Fish configuration
@@ -98,15 +99,9 @@ function fish_prompt
         set BRANCH "$white:$BRANCH"
     end
 
-	#echo $BRANCH
-
-
     # Construct the prompt
-
-#set -l max_length 20
-#echo -n "$prompt_color→ $cyan"$(echo "$PWD" | sed -e "s/\(.\{$max_length\}\).*/\1/")"$BRANCH"
-#echo -n "$prompt_color→ $cyan"(pwd)"$BRANCH"
-    echo -n "$prompt_color→ $cyan"(pwd)"$BRANCH"
+    # echo -n "$prompt_color→ $cyan"(pwd)"$BRANCH"
+	echo -n "$prompt_color→ $cyan"(prompt_pwd)"$BRANCH"
 
 	# 获取上一条命令的返回值
     set -l last_status $status
@@ -118,7 +113,7 @@ function fish_prompt
 		echo -n "$status_color[$last_status]"()  # 显示上一条命令的返回值
     end
 
-	echo -n (set_color normal)"\$ "
+	echo -n (set_color normal)" \$ "
 end
 
 # Add Go paths to PATH
