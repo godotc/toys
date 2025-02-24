@@ -12,8 +12,16 @@ int Summation(lua_State *L)
     int narg = lua_gettop(L);
 
     printf("narg = %d\n", narg);
-
-    return 0;
+    int ret = 0;
+    for (int i = 1; i <= narg; ++i) {
+        int n = lua_tointeger(L, i);
+        printf("arg %d\n", n);
+        ret += n;
+    }
+    printf("ret %d\n", ret);
+    lua_pop(L, narg);
+    lua_pushinteger(L, ret);
+    return 1;
 }
 
 static const struct luaL_Reg mylib[] = {
