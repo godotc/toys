@@ -244,12 +244,12 @@ noremap <C-s> :call WriteAndFormat()<CR>
 
 noremap <C-t> :call ToggleFloatTerm()<CR>
 tnoremap   <silent>   <C-t>   <C-\><C-n>:FloatermToggle<CR>
-"nnoremap   <silent>   <C-t>     :FloatermNew<CR>
-"tnoremap   <silent>   <F7>    <C-\><C-n>:FloatermNew<CR>
+tnoremap   <silent>   <C-w>   <C-\><C-n>:FloatermKill<CR>
+tnoremap   <silent>   <C-A-C>   <C-\><C-n>:FloatermNew<CR>
 "nnoremap   <silent>   <F8>    :FloatermPrev<CR>
-"tnoremap   <silent>   <F8>    <C-\><C-n>:FloatermPrev<CR>
+tnoremap   <silent>   <C-A-k>    <C-\><C-n>:FloatermPrev<CR>
 "nnoremap   <silent>   <F9>    :FloatermNext<CR>
-"tnoremap   <silent>   <F9>    <C-\><C-n>:FloatermNext<CR>
+tnoremap   <silent>   <C-A-j>    <C-\><C-n>:FloatermNext<CR>
 "nnoremap   <silent>   <F12>   :FloatermToggle<CR>
 "tnoremap   <silent>   <F12>   <C-\><C-n>:FloatermToggle<CR>
 
