@@ -73,3 +73,16 @@ If (Test-Path "C:\ProgramData\miniconda3\Scripts\conda.exe") {
 }
 #endregion
 
+
+function Pretty-Log {
+    $input | ForEach-Object {
+        switch -Regex ($_) {
+            '^error:|error [A-Z]\d+:' { Write-Host $_ -ForegroundColor Red }
+            '^warning:|warning [A-Z]\d+:' { Write-Host $_ -ForegroundColor Yellow }
+            '^\s*\[\s*\d+%\]' { Write-Host $_ -ForegroundColor Cyan }
+            '^--\[.*\]' { Write-Host $_ -ForegroundColor Green }
+            default { Write-Host $_ }
+        }
+    }
+}
+

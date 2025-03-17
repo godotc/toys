@@ -179,7 +179,8 @@ def main():
             ("init.lua",  os.path.join(HOME_DIR, ".vimrc.lua")),
 
             ("coc-settings.json", os.path.join(HOME_DIR, "AppData", "Local", "nvim", "coc-settings.json")),
-            ("Profile.ps1", os.path.join(HOME_DIR, "Documents", "PowerShell", "Profile.ps1"))
+            ("Profile.ps1", os.path.join(HOME_DIR, "Documents", "PowerShell", "Profile.ps1")),
+            ("Profile.ps1", os.path.join(HOME_DIR, ".pwshrc")),
         ]
 
     for source, target in files_to_link:
