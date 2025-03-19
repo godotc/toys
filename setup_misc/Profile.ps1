@@ -73,3 +73,4 @@ If (Test-Path "C:\ProgramData\miniconda3\Scripts\conda.exe") {
 }
 #endregion
 
+git config --global alias.s "status"
