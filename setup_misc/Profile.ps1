@@ -75,15 +75,83 @@ If (Test-Path "C:\ProgramData\miniconda3\Scripts\conda.exe") {
 
 git config --global alias.s "status"
 
+function Write-ColoredWithPaths {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Text,
+        
+        [Parameter(Mandatory=$true)]
+        [System.ConsoleColor]$BaseColor
+    )
+    
+    $pathPattern = '(?:[a-zA-Z]:\\[^:]+)|(?:/[^:]+)'
+    if ($Text -match $pathPattern) {
+        $match = $matches[0]
+        $parts = $Text -split [regex]::Escape($match)
+        Write-Host $parts[0] -ForegroundColor $BaseColor -NoNewline
+        Write-Host $match -ForegroundColor Blue -NoNewline
+        Write-Host $parts[1] -ForegroundColor $BaseColor
+    } else {
+        Write-Host $Text -ForegroundColor $BaseColor
+    }
+}
+
 function Pretty-Log {
     $input | ForEach-Object {
-        switch -Regex ($_) {
-            '^error:|error [A-Z]\d+:' { Write-Host $_ -ForegroundColor Red }
-            '^warning:|warning [A-Z]\d+:' { Write-Host $_ -ForegroundColor Yellow }
-            '^\s*\[\s*\d+%\]' { Write-Host $_ -ForegroundColor Cyan }
-            '^--\[.*\]' { Write-Host $_ -ForegroundColor Green }
-            default { Write-Host $_ }
+        $line = $_
+        switch -Regex ($line) {
+            '^error:|error:|error C\d+:|C\d+: error' { 
+                Write-ColoredWithPaths -Text $line -BaseColor Red
+                continue 
+            }
+            '^warning:|warning:|warning C\d+:|C\d+: warning|WARNING:' { 
+                Write-ColoredWithPaths -Text $line -BaseColor Yellow
+                continue 
+            }
+            '(?:[a-zA-Z]:\\[^:]+)|(?:/[^:]+)' {
+                Write-ColoredWithPaths -Text $line -BaseColor Grey
+                continue
+            }
+            '^\s*\[\s*\d+%\]' { 
+                Write-Host $line -ForegroundColor Cyan
+                continue 
+            }
+            '^--\[.*\]' { 
+                Write-Host $line -ForegroundColor Green
+                continue 
+            }
+            default { Write-Host $line }
         }
     }
 }
 
+
+function Get-GitBranch {
+    try {
+        $branch = git rev-parse --abbrev-ref HEAD 2>$null
+        if ($branch) {
+            return " [$branch]"
+        }
+    }
+    catch {
+        return ""
+    }
+    return ""
+}
+
+function prompt {
+    $currentPath = Get-Location
+    $gitBranch = Get-GitBranch
+    
+    # Display conda environment if it exists
+    $condaEnv = if ($env:CONDA_DEFAULT_ENV) { "($env:CONDA_DEFAULT_ENV) " } else { "" }
+    
+    # Create the prompt
+    Write-Host "$condaEnv" -NoNewline -ForegroundColor Green
+    Write-Host "PS " -NoNewline -ForegroundColor White
+    Write-Host "$currentPath" -NoNewline -ForegroundColor Blue
+    Write-Host "$gitBranch" -NoNewline -ForegroundColor Yellow
+    Write-Host "> " -NoNewline -ForegroundColor White
+    
+    return " "
+}
