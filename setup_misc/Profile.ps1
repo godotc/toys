@@ -148,7 +148,7 @@ function prompt {
     
     # Create the prompt
     Write-Host "$condaEnv" -NoNewline -ForegroundColor Green
-    Write-Host "PS " -NoNewline -ForegroundColor White
+	# Write-Host "PS " -NoNewline -ForegroundColor White # we don't need this right?	
     Write-Host "$currentPath" -NoNewline -ForegroundColor Blue
     Write-Host "$gitBranch" -NoNewline -ForegroundColor Yellow
     Write-Host "> " -NoNewline -ForegroundColor White
