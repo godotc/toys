@@ -1,7 +1,6 @@
-# toys
+# toys (ignore me)
 
 
-**Ignore ME**
 
 A repository for myself to stash temp files or synchronization in multiple places. This repo contains many codes in multiple program langs.
 
@@ -11,7 +10,7 @@ And the structure/directries were not  organizaed with rules that could make sen
 Maybe some test demos, that I just settup it once, then just forgget to continue coding. And didn not to know when to fill the holes. So there are a bunch of semi-finish brainfxxks.
 
 But if you rummage through it...
-Maybe you could find serval funny things that could be considered as some useful sample or some meaningful testings that made by me.
+Maybe you could find serval funny things that could be considered as some useful sample or some meaningful testings that made by me.~~
 
 
 
