@@ -1,0 +1,5 @@
+no_users_available: "抽奖中没有可用的用户。"
+current_user_count: "当前用户数量: %d"
+no_users_for_lottery: "抽奖中没有可用的用户。请先添加用户。"
+lucky_user_selected: "当前抽奖中有 %d 个用户。幸运用户是: %s"
+users_imported: "已添加 %d 个用户到抽奖中。总用户数现在是: %d (之前: %d)"

@@ -1,0 +1,13 @@
+
+GET http://localhost:8080
+
+
+###
+
+GET http://localhost:8080/lucky HTTP/1.1
+
+###
+POST http://localhost:8080/import HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+users=1,2,3

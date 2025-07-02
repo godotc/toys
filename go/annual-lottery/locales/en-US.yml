@@ -1,0 +1,5 @@
+no_users_available: "No users available for the lottery."
+current_user_count: "Current user count: %d"
+no_users_for_lottery: "No users available for the lottery. Please add users first."
+lucky_user_selected: "Currently %d users in the lottery. The lucky user is: %s"
+users_imported: "Added %d users to the lottery. Total users now: %d (previously: %d)"
