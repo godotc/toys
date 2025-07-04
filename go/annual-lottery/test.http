@@ -4,10 +4,37 @@ GET http://localhost:8080
 
 ###
 
-GET http://localhost:8080/lucky HTTP/1.1
+GET http://localhost:8080/lottery/lucky HTTP/1.1
 
 ###
-POST http://localhost:8080/import HTTP/1.1
+POST http://localhost:8080/lottery/import HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 
 users=1,2,3
+
+
+### Ticket
+
+GET http://localhost:8080/ticket HTTP/1.1
+
+###
+GET http://localhost:8080/ticket/prize HTTP/1.1
+
+
+### Wechat
+
+GET http://localhost:8080/wechat-shake/lucky HTTP/1.1
+
+
+### Weibo Red Packet
+
+POST http://localhost:8080/weibo-redpacket/set HTTP/1.1
+Content-Type: application/json
+
+{"uid": 12345, "money": 100, "size": 3}
+
+###
+GET http://localhost:8080/weibo-redpacket/get HTTP/1.1
+Content-Type: application/json
+
+{"uid": 12345, "id": 3049037797}

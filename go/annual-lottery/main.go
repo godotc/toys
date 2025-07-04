@@ -22,6 +22,14 @@ func newApp() *iris.Application {
 	}
 
 	mvc.New(app.Party("/lottery")).Handle(&controllers.LotteryController{})
+	mvc.New(app.Party("/ticket")).Handle(&controllers.TicketController{})
+
+	wechatShakeController := &controllers.WeChatShakeController{}
+	wechatShakeController.Init()
+	mvc.New(app.Party("/wechat-shake")).Handle(wechatShakeController)
+
+	mvc.New(app.Party("/weibo-redpacket")).Handle(&controllers.WeiBoRedPacketController{})
+
 	return app
 }
 

@@ -54,8 +54,8 @@ func (c *LotteryController) Get() {
 func (c *LotteryController) GetLucky() {
 	c.Ctx.ContentType("application/json")
 
-	// userListMutex.Lock()
-	// defer userListMutex.Unlock()
+	userListMutex.Lock()
+	defer userListMutex.Unlock()
 
 	count := len(userList)
 	if count == 0 {
