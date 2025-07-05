@@ -152,9 +152,9 @@ source ~/.cargo/env
 # WSL proxy configuration
 set nameserver (grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}')
 set port 10809
-set -x http_proxy http://$nameserver:$port
-set -x https_proxy http://$nameserver:$port
-set -x all_proxy http://$nameserver:$port
+#set -x http_proxy http://$nameserver:$port
+#set -x https_proxy http://$nameserver:$port
+#set -x all_proxy http://$nameserver:$port
 
 # Set DISPLAY if needed
 # set -x DISPLAY $nameserver:0

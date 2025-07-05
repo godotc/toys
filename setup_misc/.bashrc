@@ -148,10 +148,11 @@ source "$HOME/.cargo/env"
 
 # wsl get host ip
 nameserver=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}')   # find nameserver
+
 # proxy configuration if needed
-port=10809
-export http_proxy=$nameserver:$port
-export https_proxy=$nameserver:$port
+#port=10809
+#export http_proxy=$nameserver:$port
+#export https_proxy=$nameserver:$port
 
 # set DISPLAY if needed
 #export DISPLAY=$nameserver:0

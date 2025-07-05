@@ -15,7 +15,7 @@ assert SCRIPT_DIR.endswith("toys/setup_misc")
 def run_command(command, shell=False):
     """Run a shell command and check for errors."""
     try:
-        print(f"run> {command}")
+        print(f"\n-- {command}")
         subprocess.run(command, shell=shell, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error executing command: {e}")
@@ -139,7 +139,7 @@ def set_fish_as_default_shell():
 
     # Set Fish as the default shell
     try:
-        subprocess.run(["chsh", "-s", fish_path], check=True)
+        run_command([ "chsh", "-s", fish_path])
         print(f"Fish shell has been set as the default shell: {fish_path}")
     except subprocess.CalledProcessError as e:
         print(f"Failed to set Fish as the default shell: {e}")
