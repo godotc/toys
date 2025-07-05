@@ -81,7 +81,7 @@ def install_vim_plug():
     if system == "Linux":
         vim_plug_dir = os.path.join("/tmp/vim-setup", "vim-plug")
         if not os.path.exists(vim_plug_dir):
-            run_command(["git", "clone", "git@github.com:junegunn/vim-plug.git", vim_plug_dir])
+            run_command(["git", "clone", "https://github.com/junegunn/vim-plug.git", vim_plug_dir])
 
         plug_vim_source = os.path.join(vim_plug_dir, "plug.vim")
         plug_vim_targets = [
