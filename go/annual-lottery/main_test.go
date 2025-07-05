@@ -13,7 +13,7 @@ func TestMVC(t *testing.T) {
 	e := httptest.New(t, testApp())
 
 	var wg sync.WaitGroup
-	e.GET("/").Expect().Status(200).
+	e.GET("/lottery").Expect().Status(200).
 		JSON().Object().ContainsKey("count").Value("count").IsEqual(0)
 
 	// test concurrent requests
@@ -21,13 +21,13 @@ func TestMVC(t *testing.T) {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			e.POST("/import").
+			e.POST("/lottery/import").
 				WithFormField("users", "test_user_"+fmt.Sprint(i)).
 				Expect().Status(200)
 		}(i)
 	}
 	wg.Wait()
 
-	e.GET("/").Expect().Status(200).JSON().Object().ContainsKey("count").Value("count").IsEqual(100)
-	e.GET("/lucky").Expect().Status(200).JSON().Object().ContainsKey("winner").NotEmpty()
+	e.GET("/lottery").Expect().Status(200).JSON().Object().ContainsKey("count").Value("count").IsEqual(100)
+	e.GET("/lottery/lucky").Expect().Status(200).JSON().Object().ContainsKey("winner").NotEmpty()
 }
