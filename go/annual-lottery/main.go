@@ -3,14 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"lottery/controllers"
+	"lottery/pkgs/test_controllers"
 	"lottery/pkgs/utils"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/mvc"
 )
 
-func newApp() *iris.Application {
+func testApp() *iris.Application {
 	app := iris.New()
 
 	// Development middleware to log request URLs (only in dev mode)
@@ -21,14 +21,14 @@ func newApp() *iris.Application {
 		})
 	}
 
-	mvc.New(app.Party("/lottery")).Handle(&controllers.LotteryController{})
-	mvc.New(app.Party("/ticket")).Handle(&controllers.TicketController{})
+	mvc.New(app.Party("/lottery")).Handle(&test_controllers.LotteryController{})
+	mvc.New(app.Party("/ticket")).Handle(&test_controllers.TicketController{})
 
-	wechatShakeController := &controllers.WeChatShakeController{}
+	wechatShakeController := &test_controllers.WeChatShakeController{}
 	wechatShakeController.Init()
 	mvc.New(app.Party("/wechat-shake")).Handle(wechatShakeController)
 
-	mvc.New(app.Party("/weibo-redpacket")).Handle(&controllers.WeiBoRedPacketController{})
+	mvc.New(app.Party("/weibo-redpacket")).Handle(&test_controllers.WeiBoRedPacketController{})
 
 	return app
 }
@@ -39,7 +39,7 @@ func main() {
 		// Development code here
 	}
 
-	app := newApp()
+	app := testApp()
 	// userList = []string{"Alice", "Bob", "Charlie"}
 
 	addr := "localhost:8080"

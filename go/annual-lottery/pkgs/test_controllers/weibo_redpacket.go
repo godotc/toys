@@ -1,4 +1,4 @@
-package controllers
+package test_controllers
 
 import (
 	"fmt"
@@ -11,6 +11,8 @@ import (
 
 // red-pack uid -> money list
 var packageList map[uint32][]uint32 = map[uint32][]uint32{}
+
+// var packageList2 *sync.Map = new(sync.Map) // why? I used mutex manage
 
 type WeiBoRedPacketController struct {
 	Ctx iris.Context

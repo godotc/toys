@@ -10,7 +10,7 @@ import (
 
 func TestMVC(t *testing.T) {
 
-	e := httptest.New(t, newApp())
+	e := httptest.New(t, testApp())
 
 	var wg sync.WaitGroup
 	e.GET("/").Expect().Status(200).
